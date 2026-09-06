@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShieldCheck,
@@ -7,12 +7,16 @@ import {
   CheckCircle2,
   ChevronDown,
   Eye,
-  Layers,
-  Activity,
-  Package,
+  Video,
+  LineChart,
+  Wrench,
   Truck,
+  X,
 } from 'lucide-react';
 import MountHologram from './MountHologram.jsx';
+
+/* Price anchor reused across hero + sticky bar */
+const PRICE_ANCHOR = 'פחות ממחיר של שעת מגרש – ונשאר איתך לתמיד!';
 
 /* ------------------------------------------------------------------ */
 /*  Shared motion presets                                             */
@@ -73,26 +77,29 @@ const Hero = () => (
       className="space-y-6"
     >
       <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold tracking-wide text-emerald-800">
-        <Zap size={14} /> נגמרו הויכוחים על הקווים
+        <Zap size={14} /> תוכן, טכניקה וסוף לויכוחים על הקווים
       </div>
 
       <h1 className="text-4xl font-extrabold leading-tight text-slate-900 lg:text-5xl">
-        אין יותר "בפנים או בחוץ".
+        צלם כל נקודה.
         <br />
-        <span className="text-emerald-800">עין הנץ שלך בכל משחק פאדל וטניס.</span>
+        <span className="text-emerald-800">שדרג את המשחק, את התוכן ואת הטכניקה.</span>
       </h1>
 
       <p className="text-lg leading-relaxed text-slate-600">
-        תושבת חכמה שמתלבשת בשניות על רשת המגרש, שומרת על יציבות מוחלטת גם בראלי
-        אינטנסיבי, ומצלמת וידאו ברור שסוגר כל ויכוח על קו — פשוט מריצים אחורה
-        ורואים בדיוק איפה נחת הכדור.
+        תושבת חכמה שמתלבשת בשניות על רשת המגרש ונותנת לך זווית צילום מושלמת: מפיקים
+        סרטונים מרשימים ל-Reels ול-TikTok, מנתחים ומשפרים את הטכניקה שלכם — וכשיש
+        ספק אם הכדור היה בפנים או בחוץ, פשוט מריצים אחורה עם "עין הנץ" וסוגרים את הויכוח.
       </p>
 
-      <div className="flex items-center gap-4 pt-2">
-        <div className="text-3xl font-black text-slate-900">₪89</div>
-        <div className="rounded-lg bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-700">
-          משלוח מהיר לנקודת איסוף / לוקר כלול
+      <div className="space-y-2 pt-2">
+        <div className="flex items-center gap-4">
+          <div className="text-3xl font-black text-slate-900">₪89</div>
+          <div className="rounded-lg bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-700">
+            משלוח מהיר לנקודת איסוף / לוקר כלול
+          </div>
         </div>
+        <p className="text-sm font-semibold text-emerald-800">{PRICE_ANCHOR}</p>
       </div>
 
       <div className="pt-2">
@@ -142,24 +149,24 @@ const Hero = () => (
 
 const features = [
   {
+    icon: Video,
+    title: 'יצירת תוכן לרשתות',
+    desc: 'מצלמים בזווית גבוהה ויציבה סרטונים שנראים מקצועי — מוכנים ישר ל-Reels, ל-TikTok ולסטוריז.',
+  },
+  {
     icon: Eye,
-    title: 'נגמרו הויכוחים (עין הנץ)',
-    desc: 'הכדור היה בפנים או בחוץ? במקום לריב על קווים, פשוט מציצים בהקלטה וסוגרים עניין.',
+    title: 'עין הנץ – סוף לויכוחים',
+    desc: 'הכדור היה בפנים או בחוץ? במקום לריב על קווים, מריצים אחורה את ההקלטה ורואים בדיוק איפה נחת הכדור.',
   },
   {
-    icon: Layers,
-    title: 'מותאם לפאדל וטניס',
-    desc: 'מתלבש באופן מושלם על רשת הברזל בשני העולמות ומעניק זווית צילום בגובה האידיאלי.',
+    icon: LineChart,
+    title: 'ניתוח ושיפור טכניקה',
+    desc: 'צופים במשחק מהצד, מזהים טעויות בתנועה ובחבטה ומשפרים את הטכניקה מנקודה לנקודה.',
   },
   {
-    icon: Activity,
-    title: 'יציבות בזמן ראלי',
-    desc: 'מבנה קשיח שבנוי לספוג פגיעות כדורים ולשמור על הטלפון יציב לחלוטין בלי רעידות.',
-  },
-  {
-    icon: Package,
-    title: 'קומפקטי וקל משקל',
-    desc: 'נכנס בקלות לכל תיק מחבט, נשלף בשניות ומוכן לעבודה מיד כשעולים למגרש.',
+    icon: Wrench,
+    title: 'התקנה מהירה ויציבות',
+    desc: 'אחיזה קשיחה שמתלבשת על הרשת בשניות ושומרת על זווית צילום יציבה גם בזמן ראלי אינטנסיבי.',
   },
 ];
 
@@ -204,7 +211,7 @@ const faqs = [
   },
   {
     q: 'איך זה עוזר בויכוחים על הקווים?',
-    a: 'המצלמה מתעדת את כל המשחק מזווית גבוהה ויציבה. כשיש ספק אם הכדור היה בפנים או בחוץ — פשוט מריצים את ההקלטה אחורה ורואים בדיוק איפה נחת הכדור. סוף לויכוחים.',
+    a: 'המצלמה מתעדת את המשחק מזווית גבוהה ויציבה. כשיש ספק אם הכדור היה בפנים או בחוץ — פשוט מריצים את ההקלטה אחורה ורואים איפה נחת הכדור. פחות ויכוחים, יותר משחק.',
   },
   {
     q: 'תוך כמה זמן המשלוח מגיע?',
@@ -212,7 +219,7 @@ const faqs = [
   },
   {
     q: 'האם הטלפון יכול ליפול מפגיעת כדור?',
-    a: 'לא. המבנה הקשיח ומנגנון האחיזה המחוזק תוכננו במיוחד לספוג פגיעות כדורים ולשמור על הטלפון נעול ויציב במקומו.',
+    a: 'התושבת בנויה מאחיזה קשיחה המיועדת להתלבש על הרשת, אך השימוש בה ובטיחות המכשיר הם באחריות המשתמש בלבד.',
   },
 ];
 
@@ -269,12 +276,92 @@ const Faq = () => {
 };
 
 /* ------------------------------------------------------------------ */
+/*  Terms & Conditions modal                                         */
+/* ------------------------------------------------------------------ */
+
+const TermsModal = ({ open, onClose }) => (
+  <AnimatePresence>
+    {open && (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+      >
+        <motion.div
+          initial={{ y: 30, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: 30, opacity: 0 }}
+          onClick={(e) => e.stopPropagation()}
+          className="relative max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 text-slate-700 shadow-2xl sm:p-8"
+          dir="rtl"
+        >
+          <button
+            onClick={onClose}
+            className="absolute left-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
+            aria-label="סגור"
+          >
+            <X size={20} />
+          </button>
+
+          <h3 className="mb-5 text-2xl font-bold text-slate-900">תקנון ותנאי שימוש</h3>
+
+          <div className="space-y-5 text-sm leading-relaxed">
+            <div>
+              <h4 className="mb-1.5 font-bold text-slate-900">1. הגבלת אחריות</h4>
+              <p>
+                החברה/האתר אינם נושאים בכל אחריות לנזק ישיר או עקיף, כולל שבר, נפילה,
+                נזק למכשיר הסלולרי, לגוף או לרכוש צד שלישי שנגרם במהלך או כתוצאה
+                מהשימוש במוצר. השימוש במוצר, ברשת ובסביבת המגרש הינו באחריות המלאה של
+                המשתמש בלבד.
+              </p>
+            </div>
+
+            <div>
+              <h4 className="mb-1.5 font-bold text-slate-900">2. שימוש נכון במוצר</h4>
+              <p>
+                על המשתמש לוודא כי המוצר מותקן כראוי ומאובטח לפני כל שימוש, ולפעול בזהירות
+                בהתאם לתנאי המגרש. אין להשאיר את המכשיר ללא השגחה ואין להשתמש במוצר באופן
+                החורג מייעודו.
+              </p>
+            </div>
+
+            <div>
+              <h4 className="mb-1.5 font-bold text-slate-900">3. ביטול עסקה</h4>
+              <p>
+                בהתאם לחוק הגנת הצרכן, התשמ"א-1981, ניתן לבטל את העסקה תוך 14 ימים מיום
+                קבלת המוצר, ובלבד שהמוצר מוחזר באריזתו המקורית ולא נעשה בו שימוש. החזר
+                כספי יינתן בהתאם להוראות החוק.
+              </p>
+            </div>
+
+            <div>
+              <h4 className="mb-1.5 font-bold text-slate-900">4. משלוחים</h4>
+              <p>
+                אספקת המוצר מתבצעת לנקודת איסוף/לוקר תוך 7–12 ימי עסקים ממועד ביצוע ההזמנה,
+                בכפוף לזמינות מלאי ולתנאי חברת השילוח.
+              </p>
+            </div>
+
+            <p className="border-t border-slate-100 pt-4 text-xs text-slate-500">
+              האמור לעיל אינו מהווה ייעוץ משפטי. מומלץ להתאים את התקנון לפעילות העסק בפועל
+              בליווי עורך/ת דין.
+            </p>
+          </div>
+        </motion.div>
+      </motion.div>
+    )}
+  </AnimatePresence>
+);
+
+/* ------------------------------------------------------------------ */
 /*  Footer                                                            */
 /* ------------------------------------------------------------------ */
 
-const Footer = () => (
-  <footer className="border-t border-slate-800 bg-slate-900 py-10 text-center text-sm text-slate-400">
-    <div className="mx-auto max-w-6xl space-y-3 px-4">
+const Footer = ({ onOpenTerms }) => (
+  <footer className="border-t border-slate-800 bg-slate-900 py-10 text-sm text-slate-400">
+    <div className="mx-auto max-w-4xl space-y-5 px-4 text-center">
       <div className="flex items-center justify-center gap-2 text-lg font-bold tracking-wider text-white">
         <span className="inline-block h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
         COURTSNAP
@@ -282,28 +369,94 @@ const Footer = () => (
       <p className="flex items-center justify-center gap-1.5">
         <Truck size={14} /> הכלי המושלם לתיעוד משחקי פאדל וטניס בישראל.
       </p>
-      <div className="pt-4 text-xs text-slate-600">© 2026 COURTSNAP · כל הזכויות שמורות.</div>
+
+      {/* Legal disclaimer */}
+      <p className="mx-auto max-w-2xl text-xs leading-relaxed text-slate-500">
+        החברה/האתר אינם נושאים בכל אחריות לנזק ישיר או עקיף, כולל שבר, נפילה, נזק
+        למכשיר הסלולרי, לגוף או לרכוש צד שלישי שנגרם במהלך או כתוצאה מהשימוש במוצר.
+        השימוש במוצר, ברשת ובסביבת המגרש הינו באחריות המלאה של המשתמש בלבד. ביטול
+        עסקה בהתאם לחוק הגנת הצרכן, התשמ"א-1981 — תוך 14 ימים מקבלת המוצר, באריזתו
+        המקורית וללא שימוש.
+      </p>
+
+      <div className="flex items-center justify-center gap-4 text-xs">
+        <button
+          onClick={onOpenTerms}
+          className="font-medium text-emerald-400 underline-offset-4 transition-colors hover:text-emerald-300 hover:underline"
+        >
+          תקנון ותנאי שימוש
+        </button>
+      </div>
+
+      <div className="pt-2 text-xs text-slate-600">© 2026 COURTSNAP · כל הזכויות שמורות.</div>
     </div>
   </footer>
 );
+
+/* ------------------------------------------------------------------ */
+/*  Sticky mobile buy bar                                             */
+/* ------------------------------------------------------------------ */
+
+const StickyBar = () => {
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setShow(window.scrollY > 500);
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  return (
+    <AnimatePresence>
+      {show && (
+        <motion.div
+          initial={{ y: 100 }}
+          animate={{ y: 0 }}
+          exit={{ y: 100 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+          className="fixed inset-x-0 bottom-0 z-[60] border-t border-slate-200 bg-white/95 p-3 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] backdrop-blur-md lg:hidden"
+        >
+          <div className="flex items-center gap-3">
+            <div className="flex-shrink-0 text-right">
+              <div className="text-xl font-black text-slate-900">₪89</div>
+              <div className="text-[11px] font-medium leading-tight text-emerald-700">
+                פחות מעלות שעת מגרש
+              </div>
+            </div>
+            <motion.a
+              href="#buy"
+              whileTap={{ scale: 0.97 }}
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-800 py-3.5 text-base font-semibold text-white shadow-lg shadow-emerald-900/10"
+            >
+              הזמן עכשיו <ArrowLeft size={18} />
+            </motion.a>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
 
 /* ------------------------------------------------------------------ */
 /*  App                                                               */
 /* ------------------------------------------------------------------ */
 
 export default function App() {
+  const [termsOpen, setTermsOpen] = useState(false);
+
   return (
     <div
       dir="rtl"
       className="min-h-screen bg-white font-sans text-slate-900 selection:bg-emerald-700 selection:text-white"
     >
       <Header />
-      <main>
+      <main className="pb-24 lg:pb-0">
         <Hero />
         <Features />
         <Faq />
       </main>
-      <Footer />
+      <Footer onOpenTerms={() => setTermsOpen(true)} />
+      <StickyBar />
+      <TermsModal open={termsOpen} onClose={() => setTermsOpen(false)} />
     </div>
   );
 }
