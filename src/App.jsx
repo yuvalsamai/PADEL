@@ -41,6 +41,7 @@ const ArrowChip = ({ className = '' }) => (
 const navLinks = [
   { label: 'בית', href: '#top' },
   { label: 'יתרונות', href: '#features' },
+  { label: 'איך זה עובד', href: '#how' },
   { label: 'המוצר', href: '#product' },
   { label: 'עין הנץ', href: '#hawkeye' },
   { label: 'ביקורות', href: '#reviews' },
@@ -256,6 +257,55 @@ const Features = () => (
                 <h3 className="font-display text-xl font-bold text-ink">{f.title}</h3>
                 <p className="mt-3 text-sm leading-relaxed text-ink/60">{f.desc}</p>
               </div>
+            </div>
+          </Reveal>
+        ))}
+      </div>
+    </div>
+  </section>
+);
+
+/* ================================================================== */
+/*  How it works — 3 steps                                           */
+/* ================================================================== */
+
+const steps = [
+  {
+    n: '01',
+    title: 'מחברים',
+    desc: 'מחברים את COURTCHECK לרשת.',
+  },
+  {
+    n: '02',
+    title: 'מצלמים',
+    desc: 'מכניסים את הטלפון ומתחילים להקליט.',
+  },
+  {
+    n: '03',
+    title: 'משחקים',
+    desc: 'משחקים. יכולים לצפות במידה ויש מחלוקת על המהלך או סתם נקודה מדהימה.',
+  },
+];
+
+const Steps = () => (
+  <section id="how" className="bg-bone2 px-5 py-20 sm:px-8 sm:py-24">
+    <div className="mx-auto max-w-6xl">
+      <Reveal className="max-w-2xl">
+        <Eyebrow className="text-moss">איך זה עובד</Eyebrow>
+        <h2 className="mt-4 font-display text-4xl font-black leading-tight tracking-tight text-ink sm:text-5xl">
+          שלושה שלבים. פחות מדקה.
+        </h2>
+      </Reveal>
+
+      <div className="mt-14 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        {steps.map((s, i) => (
+          <Reveal key={s.n} delay={(i % 3) * 0.08}>
+            <div className="group flex h-full flex-col rounded-3xl bg-chalk p-7 ring-1 ring-ink/5 transition-all duration-300 hover:-translate-y-1 hover:ring-ink/15">
+              <span className="font-display text-5xl font-black leading-none text-ball">
+                {s.n}
+              </span>
+              <h3 className="mt-6 font-display text-2xl font-bold text-ink">{s.title}</h3>
+              <p className="mt-3 text-[15px] leading-relaxed text-ink/60">{s.desc}</p>
             </div>
           </Reveal>
         ))}
@@ -648,6 +698,7 @@ export default function App() {
       <div className="overflow-hidden rounded-panel bg-bone">
         <Hero />
         <Features />
+        <Steps />
         <Showcase />
         <HawkEye />
         <Reviews />
