@@ -41,6 +41,7 @@ const ArrowChip = ({ className = '' }) => (
 const navLinks = [
   { label: 'בית', href: '#top' },
   { label: 'יתרונות', href: '#features' },
+  { label: 'המוצר', href: '#product' },
   { label: 'עין הנץ', href: '#hawkeye' },
   { label: 'שאלות', href: '#faq' },
 ];
@@ -49,8 +50,8 @@ const Nav = () => {
   const [openMenu, setOpenMenu] = useState(false);
   return (
     <div className="flex items-center justify-between">
-      <a href="#top" className="font-display text-3xl font-black tracking-tight text-bone">
-        court<span className="text-ball">snap</span>
+      <a href="#top" aria-label="CourtCheck" className="inline-flex items-center rounded-2xl bg-bone px-3 py-2">
+        <img src="/LOGO.png" alt="CourtCheck" className="h-8 w-auto sm:h-9" />
       </a>
 
       {/* desktop pill */}
@@ -160,7 +161,7 @@ const Hero = () => (
           className="group relative flex h-40 items-end overflow-hidden rounded-3xl border border-white/15 p-4"
           style={{
             backgroundImage:
-              'linear-gradient(180deg, rgba(17,24,19,0.1), rgba(17,24,19,0.7)), radial-gradient(100% 100% at 50% 0%, #3a6f9c 0%, #1f4e6b 60%, #14352b 100%)',
+              'linear-gradient(180deg, rgba(13,13,13,0.1), rgba(13,13,13,0.8)), radial-gradient(100% 100% at 50% 0%, #2A2A2A 0%, #1A1A1A 55%, #0D0D0D 100%)',
           }}
         >
           <div>
@@ -263,6 +264,38 @@ const Features = () => (
 );
 
 /* ================================================================== */
+/*  Product showcase — real photo of the mount on the net            */
+/*  Drop the image at public/STUND.png                                */
+/* ================================================================== */
+
+const Showcase = () => (
+  <section id="product" className="bg-ink px-5 py-20 sm:px-8 sm:py-24">
+    <div className="mx-auto max-w-6xl">
+      <Reveal className="max-w-2xl">
+        <Eyebrow className="text-ball">המוצר בפעולה</Eyebrow>
+        <h2 className="mt-4 font-display text-4xl font-black leading-tight tracking-tight text-bone sm:text-5xl">
+          מתלבש על הרשת. מצלם מלמעלה.
+        </h2>
+        <p className="mt-5 max-w-lg text-lg leading-relaxed text-bone/70">
+          אחיזה קשיחה שננעלת על עמוד הרשת תוך שניות ומחזיקה את הטלפון בזווית גבוהה
+          ויציבה — בדיוק מהמקום שממנו רואים כל נקודה.
+        </p>
+      </Reveal>
+
+      <Reveal className="mt-14">
+        <div className="overflow-hidden rounded-3xl bg-pine ring-1 ring-white/10">
+          <img
+            src="/STUND.png"
+            alt="תושבת CourtCheck ננעלת על עמוד הרשת ומחזיקה את הטלפון"
+            className="aspect-[16/9] w-full object-cover"
+          />
+        </div>
+      </Reveal>
+    </div>
+  </section>
+);
+
+/* ================================================================== */
 /*  Hawk-Eye band                                                     */
 /* ================================================================== */
 
@@ -277,7 +310,7 @@ const HawkEye = () => (
         </h2>
         <p className="mt-6 max-w-md text-lg leading-relaxed text-bone/75">
           במקום לריב על סנטימטרים, פשוט מריצים את ההקלטה אחורה. הזווית הגבוהה והיציבה
-          של COURTSNAP הופכת כל נקודה שנויה במחלוקת להכרעה של שנייה.
+          של COURTCHECK הופכת כל נקודה שנויה במחלוקת להכרעה של שנייה.
         </p>
         <a
           href="#buy"
@@ -460,9 +493,10 @@ const Footer = ({ onOpenTerms }) => (
     <div className="mx-auto max-w-6xl">
       <div className="flex flex-col gap-8 border-b border-white/10 pb-10 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <div className="font-display text-3xl font-black tracking-tight text-bone">
-            court<span className="text-ball">snap</span>
-          </div>
+          <span className="inline-flex items-center rounded-2xl bg-bone px-4 py-3">
+            <img src="/LOGO.png" alt="CourtCheck" className="h-11 w-auto" />
+          </span>
+
           <p className="mt-3 max-w-sm text-lg text-bone/70">
             עין הנץ שלך על המגרש. צלם, נתח והכרע.
           </p>
@@ -486,7 +520,7 @@ const Footer = ({ onOpenTerms }) => (
         ברשת ובסביבת המגרש הינו באחריות המלאה של המשתמש בלבד. ביטול עסקה בהתאם לחוק הגנת
         הצרכן, התשמ"א‑1981 — תוך 14 ימים מקבלת המוצר, באריזתו המקורית וללא שימוש.
       </p>
-      <div className="mt-6 text-xs text-bone/40">© 2026 COURTSNAP · כל הזכויות שמורות</div>
+      <div className="mt-6 text-xs text-bone/40">© 2026 COURTCHECK · כל הזכויות שמורות</div>
     </div>
   </footer>
 );
@@ -543,6 +577,7 @@ export default function App() {
       <div className="overflow-hidden rounded-panel bg-bone">
         <Hero />
         <Features />
+        <Showcase />
         <HawkEye />
         <Faq />
         <Footer onOpenTerms={() => setTermsOpen(true)} />

@@ -28,7 +28,7 @@ class Boundary extends React.Component {
     return { failed: true };
   }
   render() {
-    if (this.state.failed) return <Placeholder label="COURTSNAP MOUNT" />;
+    if (this.state.failed) return <Placeholder label="COURTCHECK MOUNT" />;
     return this.props.children;
   }
 }
