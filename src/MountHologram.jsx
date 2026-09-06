@@ -2,9 +2,9 @@ import React, { useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Edges, Float, ContactShadows, Environment } from '@react-three/drei';
 
-const BRAND = '#2E6A54'; // moss green product body
-const GLOW = '#1C4A3A'; // pine
-const EDGE = '#DDEB3D'; // optic-yellow accent (the ball)
+const BRAND = '#141414'; // black product body
+const GLOW = '#1E1E1E'; // dark charcoal
+const EDGE = '#A6D720'; // lime-green accent (the check)
 
 /* A single U-shaped clamp jaw built from three thin boxes (bottom + 2 walls) */
 function UChannel({ width = 0.9, height = 1.1, depth = 1.1, thickness = 0.16, ...props }) {
@@ -49,7 +49,7 @@ function RoundedBox({ size = [1, 1, 1], position = [0, 0, 0], rotation = [0, 0, 
   );
 }
 
-/* The full COURTSNAP mount: a wide fence-clamp base carrying a central phone slot */
+/* The full COURTCHECK mount: a wide fence-clamp base carrying a central phone slot */
 function MountModel() {
   const group = useRef();
   useFrame((state, delta) => {

@@ -12,21 +12,21 @@ html {
 
 body {
   margin: 0;
-  background-color: #787B4B;
-  color: #111813;
+  background-color: #0D0D0D;
+  color: #0D0D0D;
   font-family: 'Heebo', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
 ::selection {
-  background: #DFF24C;
-  color: #111813;
+  background: #A6D720;
+  color: #0D0D0D;
 }
 
 ::-webkit-scrollbar { width: 11px; }
-::-webkit-scrollbar-track { background: #5E613A; }
-::-webkit-scrollbar-thumb { background: #25412C; border-radius: 999px; }
+::-webkit-scrollbar-track { background: #1A1A1A; }
+::-webkit-scrollbar-thumb { background: #A6D720; border-radius: 999px; }
 
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }

@@ -4,17 +4,18 @@ export default {
   theme: {
     extend: {
       colors: {
-        ink: '#111813',
-        court: '#1B2A1E',
-        pine: '#25412C',
-        moss: '#4B6B4E',
-        olive: '#787B4B',
-        oliveDark: '#5E613A',
-        bone: '#F4F1E9',
-        bone2: '#EAE6DA',
-        chalk: '#FCFBF7',
-        ball: '#DFF24C',
-        stone: '#6B7269',
+        // CourtCheck brand: black · white · lime-green
+        ink: '#0D0D0D',
+        court: '#141414',
+        pine: '#1E1E1E',
+        moss: '#6B7280',
+        olive: '#0D0D0D',
+        oliveDark: '#1A1A1A',
+        bone: '#F6F7F5',
+        bone2: '#ECEEEA',
+        chalk: '#FFFFFF',
+        ball: '#A6D720',
+        stone: '#6B7280',
       },
       fontFamily: {
         display: ['"Rubik"', 'system-ui', 'sans-serif'],

@@ -50,7 +50,7 @@ const Nav = () => {
   return (
     <div className="flex items-center justify-between">
       <a href="#top" className="font-display text-3xl font-black tracking-tight text-bone">
-        court<span className="text-ball">snap</span>
+        court<span className="text-ball">check</span>
       </a>
 
       {/* desktop pill */}
@@ -160,7 +160,7 @@ const Hero = () => (
           className="group relative flex h-40 items-end overflow-hidden rounded-3xl border border-white/15 p-4"
           style={{
             backgroundImage:
-              'linear-gradient(180deg, rgba(17,24,19,0.1), rgba(17,24,19,0.7)), radial-gradient(100% 100% at 50% 0%, #3a6f9c 0%, #1f4e6b 60%, #14352b 100%)',
+              'linear-gradient(180deg, rgba(13,13,13,0.1), rgba(13,13,13,0.8)), radial-gradient(100% 100% at 50% 0%, #2A2A2A 0%, #1A1A1A 55%, #0D0D0D 100%)',
           }}
         >
           <div>
@@ -277,7 +277,7 @@ const HawkEye = () => (
         </h2>
         <p className="mt-6 max-w-md text-lg leading-relaxed text-bone/75">
           במקום לריב על סנטימטרים, פשוט מריצים את ההקלטה אחורה. הזווית הגבוהה והיציבה
-          של COURTSNAP הופכת כל נקודה שנויה במחלוקת להכרעה של שנייה.
+          של COURTCHECK הופכת כל נקודה שנויה במחלוקת להכרעה של שנייה.
         </p>
         <a
           href="#buy"
@@ -461,7 +461,7 @@ const Footer = ({ onOpenTerms }) => (
       <div className="flex flex-col gap-8 border-b border-white/10 pb-10 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <div className="font-display text-3xl font-black tracking-tight text-bone">
-            court<span className="text-ball">snap</span>
+            court<span className="text-ball">check</span>
           </div>
           <p className="mt-3 max-w-sm text-lg text-bone/70">
             עין הנץ שלך על המגרש. צלם, נתח והכרע.
@@ -486,7 +486,7 @@ const Footer = ({ onOpenTerms }) => (
         ברשת ובסביבת המגרש הינו באחריות המלאה של המשתמש בלבד. ביטול עסקה בהתאם לחוק הגנת
         הצרכן, התשמ"א‑1981 — תוך 14 ימים מקבלת המוצר, באריזתו המקורית וללא שימוש.
       </p>
-      <div className="mt-6 text-xs text-bone/40">© 2026 COURTSNAP · כל הזכויות שמורות</div>
+      <div className="mt-6 text-xs text-bone/40">© 2026 COURTCHECK · כל הזכויות שמורות</div>
     </div>
   </footer>
 );

@@ -1,10 +1,10 @@
-# PADELMOUNT / COURT SNAP — Landing Page
+# COURTCHECK — Landing Page
 
 A high-end, RTL (Hebrew) single-page landing for a premium Padel & Tennis phone mount.
 Built with **React + Vite**, **Tailwind CSS**, **Framer Motion**, and **Lucide React**.
 
 ## Design
-- Deep dark emerald-charcoal palette with electric volt-green accents
+- CourtCheck brand palette: black · white · lime-green accents
 - Glassmorphism cards, neon ambient grid, and glow lighting
 - Simulated auto-rotating 3D mount viewer (CSS 3D + Framer Motion) with floating hotspot callouts
 
