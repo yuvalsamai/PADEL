@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 html {
@@ -12,34 +12,50 @@ html {
 
 body {
   margin: 0;
-  background-color: #0A120D;
-  color: #ffffff;
-  font-family: 'Heebo', 'Rubik', system-ui, sans-serif;
+  background-color: #F4F0E6;
+  color: #10231C;
+  font-family: 'Heebo', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 10px;
-}
-::-webkit-scrollbar-track {
-  background: #0A120D;
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(0, 255, 102, 0.3);
-  border-radius: 999px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 255, 102, 0.5);
+/* Fine paper grain — subtle, adds the "printed" luxury feel */
+.grain::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-@keyframes floatSlow {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-14px); }
+/* Utility eyebrow label */
+.eyebrow {
+  font-family: 'IBM Plex Mono', monospace;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-size: 0.7rem;
 }
-.float-slow { animation: floatSlow 5s ease-in-out infinite; }
 
-@keyframes gridPulse {
-  0%, 100% { opacity: 0.35; }
-  50% { opacity: 0.6; }
+/* Hero line-call: chalk lines drawing in on load */
+@keyframes drawLine {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+@keyframes drawLineY {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+
+::selection {
+  background: #DDEB3D;
+  color: #10231C;
+}
+
+::-webkit-scrollbar { width: 11px; }
+::-webkit-scrollbar-track { background: #EAE4D5; }
+::-webkit-scrollbar-thumb { background: #1C4A3A; border-radius: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
 }

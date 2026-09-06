@@ -1,0 +1,16 @@
+import { chromium } from 'playwright';
+const dir='/tmp/claude-0/-home-user-PADEL/37194ec9-b781-5373-a822-b9aeac6e533a/scratchpad';
+const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+const ctx = await b.newContext({ viewport: { width: 1280, height: 900 } });
+const p = await ctx.newPage();
+p.on('pageerror', e => console.log('PAGEERROR', e.message));
+await p.goto('http://localhost:4181/', { waitUntil: 'load' });
+await p.waitForTimeout(2500);
+await p.screenshot({ path: dir+'/hero.png', fullPage: false });
+await p.evaluate(() => window.scrollTo(0, 1000));
+await p.waitForTimeout(1500);
+await p.screenshot({ path: dir+'/mid.png' });
+await p.evaluate(() => window.scrollTo(0, 2100));
+await p.waitForTimeout(1200);
+await p.screenshot({ path: dir+'/feat.png' });
+await b.close();

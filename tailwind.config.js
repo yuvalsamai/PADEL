@@ -4,17 +4,23 @@ export default {
   theme: {
     extend: {
       colors: {
-        charcoal: '#0A120D',
-        charcoal2: '#0D1711',
-        volt: '#00FF66',
-        lime: '#BFFF00',
-        slateGray: '#A1A1AA',
+        ink: '#10231C',
+        court: '#14352B',
+        pine: '#1C4A3A',
+        moss: '#2E6A54',
+        bone: '#F4F0E6',
+        bone2: '#EAE4D5',
+        chalk: '#FBF9F3',
+        ball: '#DDEB3D',
+        stone: '#6B7269',
       },
       fontFamily: {
-        sans: ['"Heebo"', '"Rubik"', 'system-ui', 'sans-serif'],
+        serif: ['"Frank Ruhl Libre"', 'Georgia', 'serif'],
+        sans: ['"Heebo"', 'system-ui', 'sans-serif'],
+        mono: ['"IBM Plex Mono"', 'ui-monospace', 'monospace'],
       },
-      boxShadow: {
-        volt: '0 0 40px -8px rgba(0,255,102,0.55)',
+      letterSpacing: {
+        label: '0.22em',
       },
     },
   },

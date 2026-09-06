@@ -1,198 +1,276 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  ShieldCheck,
-  Zap,
-  ArrowLeft,
-  CheckCircle2,
-  ChevronDown,
-  Eye,
-  Video,
-  LineChart,
-  Wrench,
-  Truck,
-  X,
-} from 'lucide-react';
-import MountHologram from './MountHologram.jsx';
+import { ArrowLeft, ChevronDown, Plus, X } from 'lucide-react';
+import MountViewer from './MountViewer.jsx';
 
-/* Price anchor reused across hero + sticky bar */
-const PRICE_ANCHOR = 'פחות ממחיר של שעת מגרש – ונשאר איתך לתמיד!';
+const PRICE_ANCHOR = 'פחות ממחיר של שעת מגרש — ונשאר איתך לתמיד.';
 
-/* ------------------------------------------------------------------ */
-/*  Shared motion presets                                             */
-/* ------------------------------------------------------------------ */
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 24 },
-  show: { opacity: 1, y: 0 },
-};
+/* ================================================================== */
+/*  Small primitives                                                  */
+/* ================================================================== */
 
 const Reveal = ({ children, delay = 0, className = '' }) => (
   <motion.div
-    variants={fadeUp}
-    initial="hidden"
-    whileInView="show"
+    initial={{ opacity: 0, y: 20 }}
+    whileInView={{ opacity: 1, y: 0 }}
     viewport={{ once: true, margin: '-60px' }}
-    transition={{ duration: 0.55, ease: 'easeOut', delay }}
+    transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay }}
     className={className}
   >
     {children}
   </motion.div>
 );
 
-/* ------------------------------------------------------------------ */
+const Eyebrow = ({ children, className = '' }) => (
+  <span className={`eyebrow text-moss ${className}`}>{children}</span>
+);
+
+/* ================================================================== */
 /*  Header                                                            */
-/* ------------------------------------------------------------------ */
+/* ================================================================== */
 
 const Header = () => (
-  <header className="sticky top-0 z-50 border-b border-slate-100 bg-white/80 backdrop-blur-md">
-    <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-      <div className="flex items-center gap-2 text-xl font-bold tracking-tight text-slate-900">
-        <span className="inline-block h-2.5 w-2.5 rounded-full bg-emerald-700"></span>
-        COURTSNAP
-      </div>
+  <header className="sticky top-0 z-50 border-b border-ink/10 bg-bone/85 backdrop-blur-md">
+    <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-8">
+      <a href="#top" className="flex items-baseline gap-2">
+        <span className="font-mono text-sm font-medium tracking-[0.2em] text-ink">
+          COURTSNAP
+        </span>
+        <span className="h-1.5 w-1.5 rounded-full bg-ball ring-1 ring-ink/20" />
+      </a>
       <motion.a
         href="#buy"
-        whileHover={{ scale: 1.04 }}
-        whileTap={{ scale: 0.97 }}
-        className="rounded-full bg-emerald-800 px-5 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-emerald-900"
+        whileHover={{ y: -1 }}
+        whileTap={{ y: 0 }}
+        className="group inline-flex items-center gap-2 border border-ink px-4 py-2 font-mono text-xs tracking-wide text-ink transition-colors hover:bg-ink hover:text-bone"
       >
-        הזמן עכשיו
+        הזמנה — ₪89
+        <ArrowLeft size={14} className="transition-transform group-hover:-translate-x-0.5" />
       </motion.a>
     </div>
   </header>
 );
 
-/* ------------------------------------------------------------------ */
+/* ================================================================== */
+/*  Hawk-Eye line-call signature                                      */
+/* ================================================================== */
+
+const LineCall = ({ compact = false }) => (
+  <div className={`relative ${compact ? 'h-40' : 'h-full min-h-[240px]'} w-full overflow-hidden`}>
+    {/* baseline (horizontal) */}
+    <motion.span
+      initial={{ scaleX: 0 }}
+      whileInView={{ scaleX: 1 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.9, ease: 'easeInOut' }}
+      style={{ transformOrigin: 'right' }}
+      className="absolute bottom-10 right-0 h-[2px] w-full bg-ink/70"
+    />
+    {/* sideline (vertical) */}
+    <motion.span
+      initial={{ scaleY: 0 }}
+      whileInView={{ scaleY: 1 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.9, ease: 'easeInOut', delay: 0.15 }}
+      style={{ transformOrigin: 'bottom' }}
+      className="absolute bottom-10 right-24 h-full w-[2px] bg-ink/70 sm:right-40"
+    />
+    {/* ball mark — lands just inside the line */}
+    <motion.span
+      initial={{ scale: 0, opacity: 0 }}
+      whileInView={{ scale: 1, opacity: 1 }}
+      viewport={{ once: true }}
+      transition={{ delay: 0.9, type: 'spring', stiffness: 260, damping: 16 }}
+      className="absolute bottom-[3.1rem] right-14 h-7 w-7 rounded-full bg-ball shadow-[0_6px_16px_rgba(0,0,0,0.18)] ring-1 ring-ink/30 sm:right-28"
+    />
+    {/* verdict stamp */}
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay: 1.15, duration: 0.5 }}
+      className="absolute right-6 top-6 flex items-center gap-3 sm:right-10"
+    >
+      <span className="font-mono text-[0.6rem] tracking-[0.3em] text-moss">HAWK-EYE</span>
+      <span className="font-serif text-3xl font-black leading-none text-ink sm:text-4xl">
+        בפנים<span className="text-ball">.</span>
+      </span>
+    </motion.div>
+  </div>
+);
+
+/* ================================================================== */
 /*  Hero                                                              */
-/* ------------------------------------------------------------------ */
+/* ================================================================== */
 
 const Hero = () => (
-  <section className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-12 px-4 pb-20 pt-12 lg:grid-cols-2">
-    {/* Copy + buy */}
-    <motion.div
-      initial={{ opacity: 0, x: 24 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.6, ease: 'easeOut' }}
-      className="space-y-6"
-    >
-      <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold tracking-wide text-emerald-800">
-        <Zap size={14} /> תוכן, טכניקה וסוף לויכוחים על הקווים
-      </div>
+  <section id="top" className="relative overflow-hidden">
+    <div className="mx-auto grid max-w-6xl grid-cols-1 gap-14 px-5 pb-24 pt-16 sm:px-8 lg:grid-cols-12 lg:gap-8 lg:pt-24">
+      {/* Left — editorial copy */}
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="lg:col-span-7"
+      >
+        <Eyebrow>תושבת צילום למגרש · פאדל &amp; טניס</Eyebrow>
 
-      <h1 className="text-4xl font-extrabold leading-tight text-slate-900 lg:text-5xl">
-        צלם כל נקודה.
-        <br />
-        <span className="text-emerald-800">שדרג את המשחק, את התוכן ואת הטכניקה.</span>
-      </h1>
+        <h1 className="mt-6 font-serif text-[2.6rem] font-black leading-[1.04] text-ink sm:text-6xl lg:text-[4.2rem]">
+          אין יותר
+          <br />
+          "בפנים או בחוץ".
+          <br />
+          <span className="text-moss">עין הנץ שלך</span> בכל נקודה.
+        </h1>
 
-      <p className="text-lg leading-relaxed text-slate-600">
-        תושבת חכמה שמתלבשת בשניות על רשת המגרש ונותנת לך זווית צילום מושלמת: מפיקים
-        סרטונים מרשימים ל-Reels ול-TikTok, מנתחים ומשפרים את הטכניקה שלכם — וכשיש
-        ספק אם הכדור היה בפנים או בחוץ, פשוט מריצים אחורה עם "עין הנץ" וסוגרים את הויכוח.
-      </p>
+        <p className="mt-7 max-w-xl text-lg leading-relaxed text-ink/70">
+          תושבת שמתלבשת בשניות על רשת המגרש ומצלמת בזווית גבוהה ויציבה. מפיקים תוכן
+          שנראה מקצועי ל‑Reels ול‑TikTok, מנתחים ומשפרים טכניקה — וכשיש ספק על קו,
+          מריצים אחורה ורואים בדיוק איפה נחת הכדור.
+        </p>
 
-      <div className="space-y-2 pt-2">
-        <div className="flex items-center gap-4">
-          <div className="text-3xl font-black text-slate-900">₪89</div>
-          <div className="rounded-lg bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-700">
-            משלוח מהיר לנקודת איסוף / לוקר כלול
+        {/* Price + buy */}
+        <div className="mt-10 flex flex-col gap-5 border-t border-ink/15 pt-8 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <div className="flex items-baseline gap-3">
+              <span className="font-serif text-5xl font-black text-ink">₪89</span>
+              <span className="font-mono text-xs tracking-wide text-stone">
+                כולל משלוח ללוקר
+              </span>
+            </div>
+            <p className="mt-2 max-w-xs text-sm leading-snug text-moss">{PRICE_ANCHOR}</p>
+          </div>
+
+          <motion.a
+            id="buy"
+            href="#checkout"
+            whileHover={{ y: -2 }}
+            whileTap={{ y: 0 }}
+            className="group inline-flex items-center justify-center gap-3 bg-ink px-8 py-4 font-mono text-sm tracking-wide text-bone shadow-[0_10px_30px_-10px_rgba(16,35,28,0.6)] transition-colors hover:bg-pine"
+          >
+            לרכישה מהירה
+            <ArrowLeft size={18} className="transition-transform group-hover:-translate-x-1" />
+          </motion.a>
+        </div>
+
+        <div className="mt-6 flex flex-wrap gap-x-8 gap-y-2 font-mono text-[0.7rem] tracking-wide text-stone">
+          <span>— מתאים לכל הטלפונים</span>
+          <span>— התקנה בשניות</span>
+          <span>— 160 גרם</span>
+        </div>
+      </motion.div>
+
+      {/* Right — product plinth with 3D + gallery placard */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.97 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+        className="lg:col-span-5"
+      >
+        <div className="relative flex h-full flex-col justify-between bg-court p-6 text-bone">
+          <div className="flex items-center justify-between font-mono text-[0.62rem] tracking-[0.2em] text-bone/50">
+            <span>MOUNT No.01</span>
+            <span>360° VIEW</span>
+          </div>
+
+          <MountViewer />
+
+          {/* gallery placard */}
+          <div className="mt-2 flex items-end justify-between border-t border-bone/15 pt-4">
+            <div>
+              <div className="font-serif text-xl font-bold text-bone">COURTSNAP Mount</div>
+              <div className="font-mono text-[0.62rem] tracking-wide text-bone/50">
+                פולימר מחוזק · אחיזת רשת
+              </div>
+            </div>
+            <span className="font-mono text-[0.62rem] tracking-wide text-ball">160g</span>
           </div>
         </div>
-        <p className="text-sm font-semibold text-emerald-800">{PRICE_ANCHOR}</p>
-      </div>
-
-      <div className="pt-2">
-        <motion.a
-          id="buy"
-          href="#checkout"
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.98 }}
-          className="inline-flex w-full items-center justify-center gap-3 rounded-xl bg-emerald-800 px-8 py-4 text-lg font-semibold text-white shadow-lg shadow-emerald-900/10 transition-colors hover:bg-emerald-900 lg:w-auto"
-        >
-          לרכישה מהירה <ArrowLeft size={20} />
-        </motion.a>
-      </div>
-
-      <div className="flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-slate-100 pt-4 text-xs text-slate-500">
-        <div className="flex items-center gap-1.5">
-          <ShieldCheck size={16} className="text-emerald-700" /> מתאים לכל סוגי הטלפונים
-        </div>
-        <div className="flex items-center gap-1.5">
-          <CheckCircle2 size={16} className="text-emerald-700" /> התקנה בשניות על הרשת
-        </div>
-      </div>
-    </motion.div>
-
-    {/* 3D viewer */}
-    <motion.div
-      initial={{ opacity: 0, scale: 0.96 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.6, ease: 'easeOut', delay: 0.1 }}
-      className="relative flex min-h-[420px] flex-col items-center justify-center rounded-3xl border border-slate-100 bg-slate-50 p-6 shadow-inner"
-    >
-      <div className="absolute right-4 top-4 z-10 rounded-full border border-emerald-100 bg-white/80 px-3 py-1 text-xs font-medium text-emerald-700 shadow-sm backdrop-blur">
-        הולוגרמה תלת-ממדית
-      </div>
-
-      {/* Procedural holographic 3D model of the COURTSNAP fence clip. */}
-      <MountHologram />
-
-      <span className="mt-2 text-xs text-slate-400">סיבוב אוטומטי · דגם תלת-ממד של התושבת</span>
-    </motion.div>
+      </motion.div>
+    </div>
   </section>
 );
 
-/* ------------------------------------------------------------------ */
-/*  Features                                                          */
-/* ------------------------------------------------------------------ */
+/* ================================================================== */
+/*  Hawk-Eye band — the signature moment                             */
+/* ================================================================== */
+
+const HawkEyeBand = () => (
+  <section className="bg-ink text-bone">
+    <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-10 px-5 py-20 sm:px-8 lg:grid-cols-2 lg:py-28">
+      <Reveal>
+        <Eyebrow className="!text-ball/80">התיק שסוגר את הויכוח</Eyebrow>
+        <h2 className="mt-5 font-serif text-4xl font-black leading-tight text-bone sm:text-5xl">
+          הכדור היה על הקו.
+          <br />
+          עכשיו יש הוכחה.
+        </h2>
+        <p className="mt-6 max-w-md text-lg leading-relaxed text-bone/70">
+          במקום לריב על סנטימטרים, פשוט מריצים את ההקלטה אחורה. הזווית הגבוהה
+          והיציבה של COURTSNAP הופכת כל נקודה שנויה במחלוקת להכרעה של שנייה.
+        </p>
+      </Reveal>
+
+      <Reveal delay={0.15}>
+        <div className="relative aspect-[4/3] w-full bg-court/60 p-6">
+          <LineCall />
+        </div>
+      </Reveal>
+    </div>
+  </section>
+);
+
+/* ================================================================== */
+/*  Features — editorial ledger                                       */
+/* ================================================================== */
 
 const features = [
   {
-    icon: Video,
-    title: 'יצירת תוכן לרשתות',
-    desc: 'מצלמים בזווית גבוהה ויציבה סרטונים שנראים מקצועי — מוכנים ישר ל-Reels, ל-TikTok ולסטוריז.',
+    kicker: 'CONTENT',
+    title: 'תוכן שנראה מקצועי',
+    desc: 'זווית גבוהה ויציבה שמפיקה סרטונים מוכנים ל‑Reels, ל‑TikTok ולסטוריז — בלי צלם ובלי חצובה על הגדר.',
   },
   {
-    icon: Eye,
-    title: 'עין הנץ – סוף לויכוחים',
-    desc: 'הכדור היה בפנים או בחוץ? במקום לריב על קווים, מריצים אחורה את ההקלטה ורואים בדיוק איפה נחת הכדור.',
+    kicker: 'HAWK-EYE',
+    title: 'סוף לויכוחים על הקווים',
+    desc: 'הכדור בפנים או בחוץ? מריצים אחורה את ההקלטה ורואים בדיוק איפה נחת. הכרעה, לא ויכוח.',
   },
   {
-    icon: LineChart,
+    kicker: 'TECHNIQUE',
     title: 'ניתוח ושיפור טכניקה',
-    desc: 'צופים במשחק מהצד, מזהים טעויות בתנועה ובחבטה ומשפרים את הטכניקה מנקודה לנקודה.',
+    desc: 'צופים במשחק מהצד, מזהים טעויות בתנועה ובחבטה, ומשפרים את המשחק מנקודה לנקודה.',
   },
   {
-    icon: Wrench,
+    kicker: 'BUILD',
     title: 'התקנה מהירה ויציבות',
     desc: 'אחיזה קשיחה שמתלבשת על הרשת בשניות ושומרת על זווית צילום יציבה גם בזמן ראלי אינטנסיבי.',
   },
 ];
 
 const Features = () => (
-  <section className="border-y border-slate-100 bg-slate-50 py-16">
-    <div className="mx-auto max-w-6xl px-4">
-      <Reveal>
-        <h2 className="mb-12 text-center text-2xl font-bold text-slate-900 lg:text-3xl">
-          למה שחקני פאדל וטניס חייבים את זה בתיק?
+  <section className="bg-bone">
+    <div className="mx-auto max-w-6xl px-5 py-24 sm:px-8">
+      <Reveal className="max-w-2xl">
+        <Eyebrow>למה זה נכנס לתיק המחבט</Eyebrow>
+        <h2 className="mt-5 font-serif text-4xl font-black leading-tight text-ink sm:text-5xl">
+          כלי אחד. שלוש סיבות להשתמש בו בכל משחק.
         </h2>
       </Reveal>
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-16 grid grid-cols-1 md:grid-cols-2">
         {features.map((f, i) => (
-          <Reveal key={f.title} delay={i * 0.08}>
-            <motion.div
-              whileHover={{ y: -6 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-              className="h-full space-y-3 rounded-2xl border border-slate-100 bg-white p-6 shadow-sm"
+          <Reveal key={f.title} delay={(i % 2) * 0.08}>
+            <div
+              className={`group flex gap-6 border-ink/12 py-10 md:px-8 ${
+                i % 2 === 1 ? 'md:border-r' : ''
+              } ${i < 2 ? 'border-b' : 'border-b md:border-b-0'}`}
             >
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-800">
-                <f.icon size={22} strokeWidth={2} />
+              <span className="mt-1 font-mono text-xs tracking-label text-moss">{f.kicker}</span>
+              <div>
+                <h3 className="font-serif text-2xl font-bold text-ink">{f.title}</h3>
+                <p className="mt-3 max-w-sm leading-relaxed text-ink/65">{f.desc}</p>
               </div>
-              <h3 className="text-lg font-bold text-slate-900">{f.title}</h3>
-              <p className="text-sm leading-relaxed text-slate-600">{f.desc}</p>
-            </motion.div>
+            </div>
           </Reveal>
         ))}
       </div>
@@ -200,9 +278,9 @@ const Features = () => (
   </section>
 );
 
-/* ------------------------------------------------------------------ */
+/* ================================================================== */
 /*  FAQ                                                               */
-/* ------------------------------------------------------------------ */
+/* ================================================================== */
 
 const faqs = [
   {
@@ -211,7 +289,7 @@ const faqs = [
   },
   {
     q: 'איך זה עוזר בויכוחים על הקווים?',
-    a: 'המצלמה מתעדת את המשחק מזווית גבוהה ויציבה. כשיש ספק אם הכדור היה בפנים או בחוץ — פשוט מריצים את ההקלטה אחורה ורואים איפה נחת הכדור. פחות ויכוחים, יותר משחק.',
+    a: 'המצלמה מתעדת את המשחק מזווית גבוהה ויציבה. כשיש ספק אם הכדור היה בפנים או בחוץ — מריצים את ההקלטה אחורה ורואים איפה נחת הכדור. פחות ויכוחים, יותר משחק.',
   },
   {
     q: 'תוך כמה זמן המשלוח מגיע?',
@@ -220,14 +298,14 @@ const faqs = [
 ];
 
 const FaqItem = ({ item, isOpen, onToggle }) => (
-  <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+  <div className="border-b border-ink/12">
     <button
       onClick={onToggle}
-      className="flex w-full items-center justify-between gap-4 px-6 py-4 text-right font-semibold text-slate-800 transition-colors hover:bg-slate-50"
+      className="flex w-full items-center justify-between gap-6 py-6 text-right transition-colors hover:text-moss"
     >
-      <span>{item.q}</span>
-      <motion.span animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.3 }}>
-        <ChevronDown size={18} className={isOpen ? 'text-emerald-700' : 'text-slate-400'} />
+      <span className="font-serif text-xl font-bold text-ink sm:text-2xl">{item.q}</span>
+      <motion.span animate={{ rotate: isOpen ? 45 : 0 }} transition={{ duration: 0.3 }}>
+        <Plus size={22} className={isOpen ? 'text-moss' : 'text-stone'} strokeWidth={1.5} />
       </motion.span>
     </button>
     <AnimatePresence initial={false}>
@@ -236,11 +314,9 @@ const FaqItem = ({ item, isOpen, onToggle }) => (
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: 'auto', opacity: 1 }}
           exit={{ height: 0, opacity: 0 }}
-          transition={{ duration: 0.3, ease: 'easeInOut' }}
+          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
         >
-          <p className="border-t border-slate-100 px-6 pb-4 pt-3 text-sm leading-relaxed text-slate-600">
-            {item.a}
-          </p>
+          <p className="max-w-2xl pb-7 text-lg leading-relaxed text-ink/65">{item.a}</p>
         </motion.div>
       )}
     </AnimatePresence>
@@ -250,30 +326,32 @@ const FaqItem = ({ item, isOpen, onToggle }) => (
 const Faq = () => {
   const [open, setOpen] = useState(0);
   return (
-    <section className="mx-auto max-w-3xl px-4 py-16">
-      <Reveal>
-        <h2 className="mb-8 text-center text-2xl font-bold text-slate-900 lg:text-3xl">
-          שאלות נפוצות
-        </h2>
-      </Reveal>
-      <div className="space-y-4">
-        {faqs.map((item, i) => (
-          <Reveal key={item.q} delay={i * 0.06}>
+    <section className="bg-bone2">
+      <div className="mx-auto max-w-3xl px-5 py-24 sm:px-8">
+        <Reveal>
+          <Eyebrow>שאלות נפוצות</Eyebrow>
+          <h2 className="mb-10 mt-5 font-serif text-4xl font-black text-ink sm:text-5xl">
+            כל מה שרציתם לדעת.
+          </h2>
+        </Reveal>
+        <div>
+          {faqs.map((item, i) => (
             <FaqItem
+              key={item.q}
               item={item}
               isOpen={open === i}
               onToggle={() => setOpen(open === i ? -1 : i)}
             />
-          </Reveal>
-        ))}
+          ))}
+        </div>
       </div>
     </section>
   );
 };
 
-/* ------------------------------------------------------------------ */
-/*  Terms & Conditions modal                                         */
-/* ------------------------------------------------------------------ */
+/* ================================================================== */
+/*  Terms modal                                                       */
+/* ================================================================== */
 
 const TermsModal = ({ open, onClose }) => (
   <AnimatePresence>
@@ -283,62 +361,57 @@ const TermsModal = ({ open, onClose }) => (
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
-        className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+        className="fixed inset-0 z-[80] flex items-center justify-center bg-ink/60 p-4 backdrop-blur-sm"
       >
         <motion.div
-          initial={{ y: 30, opacity: 0 }}
+          initial={{ y: 24, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 30, opacity: 0 }}
+          exit={{ y: 24, opacity: 0 }}
           onClick={(e) => e.stopPropagation()}
-          className="relative max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 text-slate-700 shadow-2xl sm:p-8"
           dir="rtl"
+          className="relative max-h-[85vh] w-full max-w-2xl overflow-y-auto bg-chalk p-7 text-ink/80 shadow-2xl sm:p-9"
         >
           <button
             onClick={onClose}
-            className="absolute left-4 top-4 rounded-full p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
+            className="absolute left-5 top-5 text-stone transition-colors hover:text-ink"
             aria-label="סגור"
           >
-            <X size={20} />
+            <X size={22} />
           </button>
-
-          <h3 className="mb-5 text-2xl font-bold text-slate-900">תקנון ותנאי שימוש</h3>
-
-          <div className="space-y-5 text-sm leading-relaxed">
-            <div>
-              <h4 className="mb-1.5 font-bold text-slate-900">1. הגבלת אחריות</h4>
+          <Eyebrow>COURTSNAP</Eyebrow>
+          <h3 className="mb-6 mt-3 font-serif text-3xl font-black text-ink">תקנון ותנאי שימוש</h3>
+          <div className="space-y-6 text-sm leading-relaxed">
+            <section>
+              <h4 className="mb-1.5 font-mono text-xs tracking-label text-moss">01 · הגבלת אחריות</h4>
               <p>
-                החברה/האתר אינם נושאים בכל אחריות לנזק ישיר או עקיף, כולל שבר, נפילה,
-                נזק למכשיר הסלולרי, לגוף או לרכוש צד שלישי שנגרם במהלך או כתוצאה
-                מהשימוש במוצר. השימוש במוצר, ברשת ובסביבת המגרש הינו באחריות המלאה של
-                המשתמש בלבד.
+                החברה/האתר אינם נושאים בכל אחריות לנזק ישיר או עקיף, כולל שבר, נפילה, נזק
+                למכשיר הסלולרי, לגוף או לרכוש צד שלישי שנגרם במהלך או כתוצאה מהשימוש במוצר.
+                השימוש במוצר, ברשת ובסביבת המגרש הינו באחריות המלאה של המשתמש בלבד.
               </p>
-            </div>
-
-            <div>
-              <h4 className="mb-1.5 font-bold text-slate-900">2. שימוש נכון במוצר</h4>
+            </section>
+            <section>
+              <h4 className="mb-1.5 font-mono text-xs tracking-label text-moss">02 · שימוש נכון</h4>
               <p>
                 על המשתמש לוודא כי המוצר מותקן כראוי ומאובטח לפני כל שימוש, ולפעול בזהירות
                 בהתאם לתנאי המגרש. אין להשאיר את המכשיר ללא השגחה ואין להשתמש במוצר באופן
                 החורג מייעודו.
               </p>
-            </div>
-
-            <div>
-              <h4 className="mb-1.5 font-bold text-slate-900">3. ביטול עסקה</h4>
+            </section>
+            <section>
+              <h4 className="mb-1.5 font-mono text-xs tracking-label text-moss">03 · ביטול עסקה</h4>
               <p>
-                בהתאם לחוק הגנת הצרכן, התשמ"א-1981, ניתן לבטל את העסקה תוך 14 ימים מיום
-                קבלת המוצר, ובלבד שהמוצר מוחזר באריזתו המקורית ולא נעשה בו שימוש. החזר
-                כספי יינתן בהתאם להוראות החוק.
+                בהתאם לחוק הגנת הצרכן, התשמ"א‑1981, ניתן לבטל את העסקה תוך 14 ימים מיום קבלת
+                המוצר, ובלבד שהמוצר מוחזר באריזתו המקורית ולא נעשה בו שימוש. החזר כספי יינתן
+                בהתאם להוראות החוק.
               </p>
-            </div>
-
-            <div>
-              <h4 className="mb-1.5 font-bold text-slate-900">4. משלוחים</h4>
+            </section>
+            <section>
+              <h4 className="mb-1.5 font-mono text-xs tracking-label text-moss">04 · משלוחים</h4>
               <p>
                 אספקת המוצר מתבצעת לנקודת איסוף/לוקר תוך 7–12 ימי עסקים ממועד ביצוע ההזמנה,
                 בכפוף לזמינות מלאי ולתנאי חברת השילוח.
               </p>
-            </div>
+            </section>
           </div>
         </motion.div>
       </motion.div>
@@ -346,52 +419,57 @@ const TermsModal = ({ open, onClose }) => (
   </AnimatePresence>
 );
 
-/* ------------------------------------------------------------------ */
+/* ================================================================== */
 /*  Footer                                                            */
-/* ------------------------------------------------------------------ */
+/* ================================================================== */
 
 const Footer = ({ onOpenTerms }) => (
-  <footer className="border-t border-slate-800 bg-slate-900 py-10 text-sm text-slate-400">
-    <div className="mx-auto max-w-4xl space-y-5 px-4 text-center">
-      <div className="flex items-center justify-center gap-2 text-lg font-bold tracking-wider text-white">
-        <span className="inline-block h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
-        COURTSNAP
-      </div>
-      <p className="flex items-center justify-center gap-1.5">
-        <Truck size={14} /> הכלי המושלם לתיעוד משחקי פאדל וטניס בישראל.
-      </p>
-
-      {/* Legal disclaimer */}
-      <p className="mx-auto max-w-2xl text-xs leading-relaxed text-slate-500">
-        החברה/האתר אינם נושאים בכל אחריות לנזק ישיר או עקיף, כולל שבר, נפילה, נזק
-        למכשיר הסלולרי, לגוף או לרכוש צד שלישי שנגרם במהלך או כתוצאה מהשימוש במוצר.
-        השימוש במוצר, ברשת ובסביבת המגרש הינו באחריות המלאה של המשתמש בלבד. ביטול
-        עסקה בהתאם לחוק הגנת הצרכן, התשמ"א-1981 — תוך 14 ימים מקבלת המוצר, באריזתו
-        המקורית וללא שימוש.
-      </p>
-
-      <div className="flex items-center justify-center gap-4 text-xs">
-        <button
-          onClick={onOpenTerms}
-          className="font-medium text-emerald-400 underline-offset-4 transition-colors hover:text-emerald-300 hover:underline"
-        >
-          תקנון ותנאי שימוש
-        </button>
+  <footer className="bg-court text-bone">
+    <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8">
+      <div className="flex flex-col gap-8 border-b border-bone/15 pb-10 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <div className="flex items-baseline gap-2">
+            <span className="font-mono text-sm tracking-[0.2em]">COURTSNAP</span>
+            <span className="h-1.5 w-1.5 rounded-full bg-ball" />
+          </div>
+          <p className="mt-3 max-w-sm font-serif text-2xl font-bold leading-snug text-bone">
+            עין הנץ שלך על המגרש.
+          </p>
+        </div>
+        <div className="flex items-center gap-6 font-mono text-xs tracking-wide">
+          <button
+            onClick={onOpenTerms}
+            className="text-ball underline-offset-4 transition-colors hover:underline"
+          >
+            תקנון ותנאי שימוש
+          </button>
+          <a href="#top" className="text-bone/60 transition-colors hover:text-bone">
+            חזרה למעלה ↑
+          </a>
+        </div>
       </div>
 
-      <div className="pt-2 text-xs text-slate-600">© 2026 COURTSNAP · כל הזכויות שמורות.</div>
+      <p className="mt-8 max-w-3xl text-xs leading-relaxed text-bone/50">
+        החברה/האתר אינם נושאים בכל אחריות לנזק ישיר או עקיף, כולל שבר, נפילה, נזק למכשיר
+        הסלולרי, לגוף או לרכוש צד שלישי שנגרם במהלך או כתוצאה מהשימוש במוצר. השימוש במוצר,
+        ברשת ובסביבת המגרש הינו באחריות המלאה של המשתמש בלבד. ביטול עסקה בהתאם לחוק הגנת
+        הצרכן, התשמ"א‑1981 — תוך 14 ימים מקבלת המוצר, באריזתו המקורית וללא שימוש.
+      </p>
+      <div className="mt-6 font-mono text-[0.62rem] tracking-wide text-bone/40">
+        © 2026 COURTSNAP · כל הזכויות שמורות
+      </div>
     </div>
   </footer>
 );
 
-/* ------------------------------------------------------------------ */
+/* ================================================================== */
 /*  Sticky mobile buy bar                                             */
-/* ------------------------------------------------------------------ */
+/* ================================================================== */
 
 const StickyBar = () => {
   const [show, setShow] = useState(false);
   useEffect(() => {
-    const onScroll = () => setShow(window.scrollY > 500);
+    const onScroll = () => setShow(window.scrollY > 560);
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
@@ -403,22 +481,22 @@ const StickyBar = () => {
           initial={{ y: 100 }}
           animate={{ y: 0 }}
           exit={{ y: 100 }}
-          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-          className="fixed inset-x-0 bottom-0 z-[60] border-t border-slate-200 bg-white/95 p-3 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] backdrop-blur-md lg:hidden"
+          transition={{ type: 'spring', stiffness: 320, damping: 32 }}
+          className="fixed inset-x-0 bottom-0 z-[70] border-t border-ink/10 bg-bone/95 px-4 py-3 backdrop-blur-md lg:hidden"
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <div className="flex-shrink-0 text-right">
-              <div className="text-xl font-black text-slate-900">₪89</div>
-              <div className="text-[11px] font-medium leading-tight text-emerald-700">
+              <div className="font-serif text-2xl font-black leading-none text-ink">₪89</div>
+              <div className="mt-1 font-mono text-[0.6rem] tracking-wide text-moss">
                 פחות מעלות שעת מגרש
               </div>
             </div>
             <motion.a
               href="#buy"
-              whileTap={{ scale: 0.97 }}
-              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-800 py-3.5 text-base font-semibold text-white shadow-lg shadow-emerald-900/10"
+              whileTap={{ scale: 0.98 }}
+              className="flex flex-1 items-center justify-center gap-2 bg-ink py-3.5 font-mono text-sm tracking-wide text-bone"
             >
-              הזמן עכשיו <ArrowLeft size={18} />
+              הזמן עכשיו <ArrowLeft size={16} />
             </motion.a>
           </div>
         </motion.div>
@@ -427,21 +505,18 @@ const StickyBar = () => {
   );
 };
 
-/* ------------------------------------------------------------------ */
+/* ================================================================== */
 /*  App                                                               */
-/* ------------------------------------------------------------------ */
+/* ================================================================== */
 
 export default function App() {
   const [termsOpen, setTermsOpen] = useState(false);
-
   return (
-    <div
-      dir="rtl"
-      className="min-h-screen bg-white font-sans text-slate-900 selection:bg-emerald-700 selection:text-white"
-    >
+    <div dir="rtl" className="min-h-screen bg-bone font-sans text-ink">
       <Header />
       <main className="pb-24 lg:pb-0">
         <Hero />
+        <HawkEyeBand />
         <Features />
         <Faq />
       </main>
