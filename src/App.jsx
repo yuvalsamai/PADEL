@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ChevronDown, Plus, X } from 'lucide-react';
-import MountViewer from './MountViewer.jsx';
+import { ArrowUpLeft, Plus, X, Menu } from 'lucide-react';
 
-const PRICE_ANCHOR = 'פחות ממחיר של שעת מגרש — ונשאר איתך לתמיד.';
+/* Hero background photo. Drop the supplied image at public/hero.jpg to swap it in;
+   a court-toned gradient shows until then. */
+const HERO_IMG = '/hero.jpg';
 
 /* ================================================================== */
-/*  Small primitives                                                  */
+/*  Primitives                                                        */
 /* ================================================================== */
 
 const Reveal = ({ children, delay = 0, className = '' }) => (
   <motion.div
-    initial={{ opacity: 0, y: 20 }}
+    initial={{ opacity: 0, y: 22 }}
     whileInView={{ opacity: 1, y: 0 }}
     viewport={{ once: true, margin: '-60px' }}
     transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay }}
@@ -22,258 +23,290 @@ const Reveal = ({ children, delay = 0, className = '' }) => (
 );
 
 const Eyebrow = ({ children, className = '' }) => (
-  <span className={`eyebrow text-moss ${className}`}>{children}</span>
+  <span className={`text-xs font-medium uppercase tracking-[0.18em] ${className}`}>{children}</span>
+);
+
+const ArrowChip = ({ className = '' }) => (
+  <span
+    className={`inline-flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-ball text-ink transition-transform group-hover:rotate-12 ${className}`}
+  >
+    <ArrowUpLeft size={20} strokeWidth={2.5} />
+  </span>
 );
 
 /* ================================================================== */
-/*  Header                                                            */
+/*  Nav                                                               */
 /* ================================================================== */
 
-const Header = () => (
-  <header className="sticky top-0 z-50 border-b border-ink/10 bg-bone/85 backdrop-blur-md">
-    <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-8">
-      <a href="#top" className="flex items-baseline gap-2">
-        <span className="font-mono text-sm font-medium tracking-[0.2em] text-ink">
-          COURTSNAP
-        </span>
-        <span className="h-1.5 w-1.5 rounded-full bg-ball ring-1 ring-ink/20" />
+const navLinks = [
+  { label: 'בית', href: '#top' },
+  { label: 'יתרונות', href: '#features' },
+  { label: 'עין הנץ', href: '#hawkeye' },
+  { label: 'שאלות', href: '#faq' },
+];
+
+const Nav = () => {
+  const [openMenu, setOpenMenu] = useState(false);
+  return (
+    <div className="flex items-center justify-between">
+      <a href="#top" className="font-display text-3xl font-black tracking-tight text-bone">
+        court<span className="text-ball">snap</span>
       </a>
-      <motion.a
-        href="#buy"
-        whileHover={{ y: -1 }}
-        whileTap={{ y: 0 }}
-        className="group inline-flex items-center gap-2 border border-ink px-4 py-2 font-mono text-xs tracking-wide text-ink transition-colors hover:bg-ink hover:text-bone"
+
+      {/* desktop pill */}
+      <nav className="hidden items-center gap-1 rounded-full border border-white/15 bg-white/10 p-1.5 backdrop-blur-md md:flex">
+        {navLinks.map((l, i) => (
+          <a
+            key={l.href}
+            href={l.href}
+            className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+              i === 0 ? 'bg-ball text-ink' : 'text-bone/90 hover:text-bone'
+            }`}
+          >
+            {l.label}
+          </a>
+        ))}
+        <a
+          href="#buy"
+          className="rounded-full bg-bone px-4 py-2 text-sm font-semibold text-ink transition-colors hover:bg-white"
+        >
+          הזמנה ₪89
+        </a>
+      </nav>
+
+      {/* mobile */}
+      <button
+        onClick={() => setOpenMenu((v) => !v)}
+        className="rounded-full border border-white/20 bg-white/10 p-2.5 text-bone backdrop-blur md:hidden"
+        aria-label="תפריט"
       >
-        הזמנה — ₪89
-        <ArrowLeft size={14} className="transition-transform group-hover:-translate-x-0.5" />
-      </motion.a>
+        {openMenu ? <X size={20} /> : <Menu size={20} />}
+      </button>
+
+      <AnimatePresence>
+        {openMenu && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            className="absolute inset-x-4 top-20 z-30 flex flex-col gap-1 rounded-3xl border border-white/15 bg-court/95 p-3 backdrop-blur-xl md:hidden"
+          >
+            {navLinks.map((l) => (
+              <a
+                key={l.href}
+                href={l.href}
+                onClick={() => setOpenMenu(false)}
+                className="rounded-2xl px-4 py-3 text-bone/90 hover:bg-white/10"
+              >
+                {l.label}
+              </a>
+            ))}
+            <a href="#buy" onClick={() => setOpenMenu(false)} className="rounded-2xl bg-ball px-4 py-3 text-center font-semibold text-ink">
+              הזמנה ₪89
+            </a>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
-  </header>
-);
-
-/* ================================================================== */
-/*  Hawk-Eye line-call signature                                      */
-/* ================================================================== */
-
-const LineCall = ({ compact = false }) => (
-  <div className={`relative ${compact ? 'h-40' : 'h-full min-h-[240px]'} w-full overflow-hidden`}>
-    {/* baseline (horizontal) */}
-    <motion.span
-      initial={{ scaleX: 0 }}
-      whileInView={{ scaleX: 1 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.9, ease: 'easeInOut' }}
-      style={{ transformOrigin: 'right' }}
-      className="absolute bottom-10 right-0 h-[2px] w-full bg-ink/70"
-    />
-    {/* sideline (vertical) */}
-    <motion.span
-      initial={{ scaleY: 0 }}
-      whileInView={{ scaleY: 1 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.9, ease: 'easeInOut', delay: 0.15 }}
-      style={{ transformOrigin: 'bottom' }}
-      className="absolute bottom-10 right-24 h-full w-[2px] bg-ink/70 sm:right-40"
-    />
-    {/* ball mark — lands just inside the line */}
-    <motion.span
-      initial={{ scale: 0, opacity: 0 }}
-      whileInView={{ scale: 1, opacity: 1 }}
-      viewport={{ once: true }}
-      transition={{ delay: 0.9, type: 'spring', stiffness: 260, damping: 16 }}
-      className="absolute bottom-[3.1rem] right-14 h-7 w-7 rounded-full bg-ball shadow-[0_6px_16px_rgba(0,0,0,0.18)] ring-1 ring-ink/30 sm:right-28"
-    />
-    {/* verdict stamp */}
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay: 1.15, duration: 0.5 }}
-      className="absolute right-6 top-6 flex items-center gap-3 sm:right-10"
-    >
-      <span className="font-mono text-[0.6rem] tracking-[0.3em] text-moss">HAWK-EYE</span>
-      <span className="font-serif text-3xl font-black leading-none text-ink sm:text-4xl">
-        בפנים<span className="text-ball">.</span>
-      </span>
-    </motion.div>
-  </div>
-);
+  );
+};
 
 /* ================================================================== */
 /*  Hero                                                              */
 /* ================================================================== */
 
 const Hero = () => (
-  <section id="top" className="relative overflow-hidden">
-    <div className="mx-auto grid max-w-6xl grid-cols-1 gap-14 px-5 pb-24 pt-16 sm:px-8 lg:grid-cols-12 lg:gap-8 lg:pt-24">
-      {/* Left — editorial copy */}
+  <section id="top" className="relative isolate overflow-hidden rounded-panel">
+    {/* background photo + court gradient fallback */}
+    <div
+      className="absolute inset-0 -z-10 bg-court"
+      style={{
+        backgroundImage: `linear-gradient(180deg, rgba(17,24,19,0.78) 0%, rgba(17,24,19,0.4) 42%, rgba(17,24,19,0.86) 100%), linear-gradient(270deg, rgba(17,24,19,0.1) 0%, rgba(17,24,19,0.5) 100%), url(${HERO_IMG})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
+    />
+
+    <div className="flex min-h-[92vh] flex-col justify-between gap-10 p-5 sm:p-8 lg:p-10">
+      <Nav />
+
+      {/* headline */}
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="lg:col-span-7"
+        className="max-w-3xl"
       >
-        <Eyebrow>תושבת צילום למגרש · פאדל &amp; טניס</Eyebrow>
-
-        <h1 className="mt-6 font-serif text-[2.6rem] font-black leading-[1.04] text-ink sm:text-6xl lg:text-[4.2rem]">
-          אין יותר
+        <Eyebrow className="text-bone/80">מערכת הצילום למגרש · פאדל &amp; טניס</Eyebrow>
+        <h1 className="mt-5 font-display text-5xl font-black leading-[0.98] tracking-tight text-bone sm:text-7xl lg:text-8xl">
+          צלם כל נקודה.
           <br />
-          "בפנים או בחוץ".
-          <br />
-          <span className="text-moss">עין הנץ שלך</span> בכל נקודה.
+          שחק חכם יותר.
         </h1>
-
-        <p className="mt-7 max-w-xl text-lg leading-relaxed text-ink/70">
-          תושבת שמתלבשת בשניות על רשת המגרש ומצלמת בזווית גבוהה ויציבה. מפיקים תוכן
-          שנראה מקצועי ל‑Reels ול‑TikTok, מנתחים ומשפרים טכניקה — וכשיש ספק על קו,
-          מריצים אחורה ורואים בדיוק איפה נחת הכדור.
+        <p className="mt-6 max-w-lg text-lg leading-relaxed text-bone/80">
+          תושבת שמתלבשת בשניות על רשת המגרש ומצלמת בזווית גבוהה ויציבה — לתוכן, לשיפור
+          הטכניקה ולהכרעת כל ויכוח על קו.
         </p>
+      </motion.div>
 
-        {/* Price + buy */}
-        <div className="mt-10 flex flex-col gap-5 border-t border-ink/15 pt-8 sm:flex-row sm:items-end sm:justify-between">
+      {/* bottom cards */}
+      <div className="grid grid-cols-1 items-end gap-4 sm:grid-cols-2">
+        {/* media / replay card */}
+        <motion.a
+          href="#hawkeye"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.15 }}
+          className="group relative flex h-40 items-end overflow-hidden rounded-3xl border border-white/15 p-4"
+          style={{
+            backgroundImage:
+              'linear-gradient(180deg, rgba(17,24,19,0.1), rgba(17,24,19,0.7)), radial-gradient(100% 100% at 50% 0%, #3a6f9c 0%, #1f4e6b 60%, #14352b 100%)',
+          }}
+        >
           <div>
-            <div className="flex items-baseline gap-3">
-              <span className="font-serif text-5xl font-black text-ink">₪89</span>
-              <span className="font-mono text-xs tracking-wide text-stone">
-                כולל משלוח ללוקר
-              </span>
+            <div className="font-display text-xl font-bold leading-tight text-bone">
+              עין הנץ
             </div>
-            <p className="mt-2 max-w-xs text-sm leading-snug text-moss">{PRICE_ANCHOR}</p>
+            <div className="text-sm text-bone/75">הוכחה על הקו</div>
           </div>
-
-          <motion.a
-            id="buy"
-            href="#checkout"
-            whileHover={{ y: -2 }}
-            whileTap={{ y: 0 }}
-            className="group inline-flex items-center justify-center gap-3 bg-ink px-8 py-4 font-mono text-sm tracking-wide text-bone shadow-[0_10px_30px_-10px_rgba(16,35,28,0.6)] transition-colors hover:bg-pine"
-          >
-            לרכישה מהירה
-            <ArrowLeft size={18} className="transition-transform group-hover:-translate-x-1" />
-          </motion.a>
-        </div>
-
-        <div className="mt-6 flex flex-wrap gap-x-8 gap-y-2 font-mono text-[0.7rem] tracking-wide text-stone">
-          <span>— מתאים לכל הטלפונים</span>
-          <span>— התקנה בשניות</span>
-          <span>— 160 גרם</span>
-        </div>
-      </motion.div>
-
-      {/* Right — product plinth with 3D + gallery placard */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.97 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
-        className="lg:col-span-5"
-      >
-        <div className="relative flex h-full flex-col justify-between bg-court p-6 text-bone">
-          <div className="flex items-center justify-between font-mono text-[0.62rem] tracking-[0.2em] text-bone/50">
-            <span>MOUNT No.01</span>
-            <span>360° VIEW</span>
+          <div className="absolute left-4 top-4 group">
+            <ArrowChip />
           </div>
+        </motion.a>
 
-          <MountViewer />
-
-          {/* gallery placard */}
-          <div className="mt-2 flex items-end justify-between border-t border-bone/15 pt-4">
+        {/* glass insight card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.25 }}
+          className="flex h-40 flex-col justify-between rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur-md sm:mr-auto sm:max-w-sm"
+        >
+          <p className="text-[15px] leading-snug text-bone">
+            זווית גבוהה ויציבה שמתעדת כל נקודה — מוכן ל‑Reels, לניתוח משחק ולהכרעת קווים.
+          </p>
+          <div className="flex items-center justify-between">
             <div>
-              <div className="font-serif text-xl font-bold text-bone">COURTSNAP Mount</div>
-              <div className="font-mono text-[0.62rem] tracking-wide text-bone/50">
-                פולימר מחוזק · אחיזת רשת
-              </div>
+              <div className="font-semibold text-bone">₪89</div>
+              <div className="text-xs text-bone/70">כולל משלוח ללוקר</div>
             </div>
-            <span className="font-mono text-[0.62rem] tracking-wide text-ball">160g</span>
+            <a href="#buy" className="group">
+              <ArrowChip />
+            </a>
           </div>
-        </div>
-      </motion.div>
+        </motion.div>
+      </div>
     </div>
   </section>
 );
 
 /* ================================================================== */
-/*  Hawk-Eye band — the signature moment                             */
-/* ================================================================== */
-
-const HawkEyeBand = () => (
-  <section className="bg-ink text-bone">
-    <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-10 px-5 py-20 sm:px-8 lg:grid-cols-2 lg:py-28">
-      <Reveal>
-        <Eyebrow className="!text-ball/80">התיק שסוגר את הויכוח</Eyebrow>
-        <h2 className="mt-5 font-serif text-4xl font-black leading-tight text-bone sm:text-5xl">
-          הכדור היה על הקו.
-          <br />
-          עכשיו יש הוכחה.
-        </h2>
-        <p className="mt-6 max-w-md text-lg leading-relaxed text-bone/70">
-          במקום לריב על סנטימטרים, פשוט מריצים את ההקלטה אחורה. הזווית הגבוהה
-          והיציבה של COURTSNAP הופכת כל נקודה שנויה במחלוקת להכרעה של שנייה.
-        </p>
-      </Reveal>
-
-      <Reveal delay={0.15}>
-        <div className="relative aspect-[4/3] w-full bg-court/60 p-6">
-          <LineCall />
-        </div>
-      </Reveal>
-    </div>
-  </section>
-);
-
-/* ================================================================== */
-/*  Features — editorial ledger                                       */
+/*  Features                                                          */
 /* ================================================================== */
 
 const features = [
   {
-    kicker: 'CONTENT',
+    tag: 'תוכן',
     title: 'תוכן שנראה מקצועי',
     desc: 'זווית גבוהה ויציבה שמפיקה סרטונים מוכנים ל‑Reels, ל‑TikTok ולסטוריז — בלי צלם ובלי חצובה על הגדר.',
   },
   {
-    kicker: 'HAWK-EYE',
+    tag: 'עין הנץ',
     title: 'סוף לויכוחים על הקווים',
     desc: 'הכדור בפנים או בחוץ? מריצים אחורה את ההקלטה ורואים בדיוק איפה נחת. הכרעה, לא ויכוח.',
   },
   {
-    kicker: 'TECHNIQUE',
-    title: 'ניתוח ושיפור טכניקה',
-    desc: 'צופים במשחק מהצד, מזהים טעויות בתנועה ובחבטה, ומשפרים את המשחק מנקודה לנקודה.',
+    tag: 'טכניקה',
+    title: 'ניתוח ושיפור משחק',
+    desc: 'צופים במשחק מהצד, מזהים טעויות בתנועה ובחבטה, ומשתפרים מנקודה לנקודה.',
   },
   {
-    kicker: 'BUILD',
+    tag: 'מבנה',
     title: 'התקנה מהירה ויציבות',
     desc: 'אחיזה קשיחה שמתלבשת על הרשת בשניות ושומרת על זווית צילום יציבה גם בזמן ראלי אינטנסיבי.',
   },
 ];
 
 const Features = () => (
-  <section className="bg-bone">
-    <div className="mx-auto max-w-6xl px-5 py-24 sm:px-8">
+  <section id="features" className="bg-bone px-5 py-20 sm:px-8 sm:py-24">
+    <div className="mx-auto max-w-6xl">
       <Reveal className="max-w-2xl">
-        <Eyebrow>למה זה נכנס לתיק המחבט</Eyebrow>
-        <h2 className="mt-5 font-serif text-4xl font-black leading-tight text-ink sm:text-5xl">
-          כלי אחד. שלוש סיבות להשתמש בו בכל משחק.
+        <Eyebrow className="text-moss">למה זה נכנס לתיק המחבט</Eyebrow>
+        <h2 className="mt-4 font-display text-4xl font-black leading-tight tracking-tight text-ink sm:text-5xl">
+          כלי אחד. כל משחק נשמר, נבדק ומשתפר.
         </h2>
       </Reveal>
 
-      <div className="mt-16 grid grid-cols-1 md:grid-cols-2">
+      <div className="mt-14 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {features.map((f, i) => (
-          <Reveal key={f.title} delay={(i % 2) * 0.08}>
-            <div
-              className={`group flex gap-6 border-ink/12 py-10 md:px-8 ${
-                i % 2 === 1 ? 'md:border-r' : ''
-              } ${i < 2 ? 'border-b' : 'border-b md:border-b-0'}`}
-            >
-              <span className="mt-1 font-mono text-xs tracking-label text-moss">{f.kicker}</span>
+          <Reveal key={f.title} delay={(i % 4) * 0.07}>
+            <div className="group flex h-full flex-col justify-between rounded-3xl bg-chalk p-6 shadow-[0_1px_0_rgba(0,0,0,0.04)] ring-1 ring-ink/5 transition-all duration-300 hover:-translate-y-1 hover:ring-ink/15">
+              <div className="mb-10 flex items-center justify-between">
+                <span className="rounded-full bg-ball/70 px-3 py-1 text-xs font-semibold text-ink">
+                  {f.tag}
+                </span>
+                <ArrowUpLeft
+                  size={18}
+                  className="text-stone transition-colors group-hover:text-ink"
+                  strokeWidth={2.5}
+                />
+              </div>
               <div>
-                <h3 className="font-serif text-2xl font-bold text-ink">{f.title}</h3>
-                <p className="mt-3 max-w-sm leading-relaxed text-ink/65">{f.desc}</p>
+                <h3 className="font-display text-xl font-bold text-ink">{f.title}</h3>
+                <p className="mt-3 text-sm leading-relaxed text-ink/60">{f.desc}</p>
               </div>
             </div>
           </Reveal>
         ))}
       </div>
+    </div>
+  </section>
+);
+
+/* ================================================================== */
+/*  Hawk-Eye band                                                     */
+/* ================================================================== */
+
+const HawkEye = () => (
+  <section id="hawkeye" className="bg-court px-5 py-20 sm:px-8 sm:py-28">
+    <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-12 lg:grid-cols-2">
+      <Reveal>
+        <h2 className="font-display text-4xl font-black leading-[1.05] tracking-tight text-bone sm:text-6xl">
+          הכדור היה על הקו.
+          <br />
+          <span className="text-ball">עכשיו יש הוכחה.</span>
+        </h2>
+        <p className="mt-6 max-w-md text-lg leading-relaxed text-bone/75">
+          במקום לריב על סנטימטרים, פשוט מריצים את ההקלטה אחורה. הזווית הגבוהה והיציבה
+          של COURTSNAP הופכת כל נקודה שנויה במחלוקת להכרעה של שנייה.
+        </p>
+        <a
+          href="#buy"
+          className="group mt-9 inline-flex items-center gap-3 rounded-full bg-ball py-2 pl-2 pr-6 font-semibold text-ink transition-colors hover:bg-white"
+        >
+          לרכישה מהירה
+          <ArrowChip className="!bg-ink !text-ball" />
+        </a>
+      </Reveal>
+
+      {/* minimalist court-corner proof graphic (static, clean) */}
+      <Reveal delay={0.12}>
+        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-3xl bg-pine/50 ring-1 ring-white/10">
+          <div className="absolute inset-6">
+            {/* baseline + sideline */}
+            <div className="absolute bottom-8 right-0 left-0 h-[3px] rounded bg-bone/80" />
+            <div className="absolute bottom-8 right-24 top-0 w-[3px] rounded bg-bone/80" />
+            {/* ball just inside the line */}
+            <div className="absolute bottom-[2.4rem] right-14 h-8 w-8 rounded-full bg-ball shadow-lg ring-2 ring-ink/20" />
+            {/* verdict tag */}
+            <div className="absolute right-6 top-4 flex items-center gap-2">
+              <span className="rounded-full bg-ball px-3 py-1 text-sm font-bold text-ink">
+                בפנים
+              </span>
+              <span className="text-xs uppercase tracking-[0.2em] text-bone/50">Hawk-Eye</span>
+            </div>
+          </div>
+        </div>
+      </Reveal>
     </div>
   </section>
 );
@@ -298,14 +331,18 @@ const faqs = [
 ];
 
 const FaqItem = ({ item, isOpen, onToggle }) => (
-  <div className="border-b border-ink/12">
+  <div className="overflow-hidden rounded-3xl bg-chalk ring-1 ring-ink/5">
     <button
       onClick={onToggle}
-      className="flex w-full items-center justify-between gap-6 py-6 text-right transition-colors hover:text-moss"
+      className="flex w-full items-center justify-between gap-6 px-6 py-5 text-right"
     >
-      <span className="font-serif text-xl font-bold text-ink sm:text-2xl">{item.q}</span>
-      <motion.span animate={{ rotate: isOpen ? 45 : 0 }} transition={{ duration: 0.3 }}>
-        <Plus size={22} className={isOpen ? 'text-moss' : 'text-stone'} strokeWidth={1.5} />
+      <span className="font-display text-lg font-bold text-ink sm:text-xl">{item.q}</span>
+      <motion.span
+        animate={{ rotate: isOpen ? 45 : 0 }}
+        transition={{ duration: 0.3 }}
+        className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-ball/70"
+      >
+        <Plus size={18} className="text-ink" strokeWidth={2.5} />
       </motion.span>
     </button>
     <AnimatePresence initial={false}>
@@ -314,9 +351,9 @@ const FaqItem = ({ item, isOpen, onToggle }) => (
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: 'auto', opacity: 1 }}
           exit={{ height: 0, opacity: 0 }}
-          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
         >
-          <p className="max-w-2xl pb-7 text-lg leading-relaxed text-ink/65">{item.a}</p>
+          <p className="px-6 pb-6 text-[15px] leading-relaxed text-ink/60">{item.a}</p>
         </motion.div>
       )}
     </AnimatePresence>
@@ -326,15 +363,15 @@ const FaqItem = ({ item, isOpen, onToggle }) => (
 const Faq = () => {
   const [open, setOpen] = useState(0);
   return (
-    <section className="bg-bone2">
-      <div className="mx-auto max-w-3xl px-5 py-24 sm:px-8">
+    <section id="faq" className="bg-bone2 px-5 py-20 sm:px-8 sm:py-24">
+      <div className="mx-auto max-w-3xl">
         <Reveal>
-          <Eyebrow>שאלות נפוצות</Eyebrow>
-          <h2 className="mb-10 mt-5 font-serif text-4xl font-black text-ink sm:text-5xl">
+          <Eyebrow className="text-moss">שאלות נפוצות</Eyebrow>
+          <h2 className="mb-10 mt-4 font-display text-4xl font-black tracking-tight text-ink sm:text-5xl">
             כל מה שרציתם לדעת.
           </h2>
         </Reveal>
-        <div>
+        <div className="space-y-3">
           {faqs.map((item, i) => (
             <FaqItem
               key={item.q}
@@ -353,6 +390,25 @@ const Faq = () => {
 /*  Terms modal                                                       */
 /* ================================================================== */
 
+const terms = [
+  {
+    h: 'הגבלת אחריות',
+    p: 'החברה/האתר אינם נושאים בכל אחריות לנזק ישיר או עקיף, כולל שבר, נפילה, נזק למכשיר הסלולרי, לגוף או לרכוש צד שלישי שנגרם במהלך או כתוצאה מהשימוש במוצר. השימוש במוצר, ברשת ובסביבת המגרש הינו באחריות המלאה של המשתמש בלבד.',
+  },
+  {
+    h: 'שימוש נכון',
+    p: 'על המשתמש לוודא כי המוצר מותקן כראוי ומאובטח לפני כל שימוש, ולפעול בזהירות בהתאם לתנאי המגרש. אין להשאיר את המכשיר ללא השגחה ואין להשתמש במוצר באופן החורג מייעודו.',
+  },
+  {
+    h: 'ביטול עסקה',
+    p: 'בהתאם לחוק הגנת הצרכן, התשמ"א‑1981, ניתן לבטל את העסקה תוך 14 ימים מיום קבלת המוצר, ובלבד שהמוצר מוחזר באריזתו המקורית ולא נעשה בו שימוש. החזר כספי יינתן בהתאם להוראות החוק.',
+  },
+  {
+    h: 'משלוחים',
+    p: 'אספקת המוצר מתבצעת לנקודת איסוף/לוקר תוך 7–12 ימי עסקים ממועד ביצוע ההזמנה, בכפוף לזמינות מלאי ולתנאי חברת השילוח.',
+  },
+];
+
 const TermsModal = ({ open, onClose }) => (
   <AnimatePresence>
     {open && (
@@ -369,49 +425,25 @@ const TermsModal = ({ open, onClose }) => (
           exit={{ y: 24, opacity: 0 }}
           onClick={(e) => e.stopPropagation()}
           dir="rtl"
-          className="relative max-h-[85vh] w-full max-w-2xl overflow-y-auto bg-chalk p-7 text-ink/80 shadow-2xl sm:p-9"
+          className="relative max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-panel bg-chalk p-7 text-ink/80 shadow-2xl sm:p-9"
         >
           <button
             onClick={onClose}
-            className="absolute left-5 top-5 text-stone transition-colors hover:text-ink"
+            className="absolute left-5 top-5 flex h-9 w-9 items-center justify-center rounded-full bg-bone2 text-ink transition-colors hover:bg-ball"
             aria-label="סגור"
           >
-            <X size={22} />
+            <X size={18} />
           </button>
-          <Eyebrow>COURTSNAP</Eyebrow>
-          <h3 className="mb-6 mt-3 font-serif text-3xl font-black text-ink">תקנון ותנאי שימוש</h3>
-          <div className="space-y-6 text-sm leading-relaxed">
-            <section>
-              <h4 className="mb-1.5 font-mono text-xs tracking-label text-moss">01 · הגבלת אחריות</h4>
-              <p>
-                החברה/האתר אינם נושאים בכל אחריות לנזק ישיר או עקיף, כולל שבר, נפילה, נזק
-                למכשיר הסלולרי, לגוף או לרכוש צד שלישי שנגרם במהלך או כתוצאה מהשימוש במוצר.
-                השימוש במוצר, ברשת ובסביבת המגרש הינו באחריות המלאה של המשתמש בלבד.
-              </p>
-            </section>
-            <section>
-              <h4 className="mb-1.5 font-mono text-xs tracking-label text-moss">02 · שימוש נכון</h4>
-              <p>
-                על המשתמש לוודא כי המוצר מותקן כראוי ומאובטח לפני כל שימוש, ולפעול בזהירות
-                בהתאם לתנאי המגרש. אין להשאיר את המכשיר ללא השגחה ואין להשתמש במוצר באופן
-                החורג מייעודו.
-              </p>
-            </section>
-            <section>
-              <h4 className="mb-1.5 font-mono text-xs tracking-label text-moss">03 · ביטול עסקה</h4>
-              <p>
-                בהתאם לחוק הגנת הצרכן, התשמ"א‑1981, ניתן לבטל את העסקה תוך 14 ימים מיום קבלת
-                המוצר, ובלבד שהמוצר מוחזר באריזתו המקורית ולא נעשה בו שימוש. החזר כספי יינתן
-                בהתאם להוראות החוק.
-              </p>
-            </section>
-            <section>
-              <h4 className="mb-1.5 font-mono text-xs tracking-label text-moss">04 · משלוחים</h4>
-              <p>
-                אספקת המוצר מתבצעת לנקודת איסוף/לוקר תוך 7–12 ימי עסקים ממועד ביצוע ההזמנה,
-                בכפוף לזמינות מלאי ולתנאי חברת השילוח.
-              </p>
-            </section>
+          <h3 className="mb-6 font-display text-3xl font-black text-ink">תקנון ותנאי שימוש</h3>
+          <div className="space-y-5 text-sm leading-relaxed">
+            {terms.map((t, i) => (
+              <section key={t.h}>
+                <h4 className="mb-1.5 font-display font-bold text-ink">
+                  {String(i + 1).padStart(2, '0')} · {t.h}
+                </h4>
+                <p>{t.p}</p>
+              </section>
+            ))}
           </div>
         </motion.div>
       </motion.div>
@@ -424,22 +456,21 @@ const TermsModal = ({ open, onClose }) => (
 /* ================================================================== */
 
 const Footer = ({ onOpenTerms }) => (
-  <footer className="bg-court text-bone">
-    <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8">
-      <div className="flex flex-col gap-8 border-b border-bone/15 pb-10 sm:flex-row sm:items-end sm:justify-between">
+  <footer className="bg-ink px-5 py-16 sm:px-8">
+    <div className="mx-auto max-w-6xl">
+      <div className="flex flex-col gap-8 border-b border-white/10 pb-10 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <div className="flex items-baseline gap-2">
-            <span className="font-mono text-sm tracking-[0.2em]">COURTSNAP</span>
-            <span className="h-1.5 w-1.5 rounded-full bg-ball" />
+          <div className="font-display text-3xl font-black tracking-tight text-bone">
+            court<span className="text-ball">snap</span>
           </div>
-          <p className="mt-3 max-w-sm font-serif text-2xl font-bold leading-snug text-bone">
-            עין הנץ שלך על המגרש.
+          <p className="mt-3 max-w-sm text-lg text-bone/70">
+            עין הנץ שלך על המגרש. צלם, נתח והכרע.
           </p>
         </div>
-        <div className="flex items-center gap-6 font-mono text-xs tracking-wide">
+        <div className="flex items-center gap-6 text-sm">
           <button
             onClick={onOpenTerms}
-            className="text-ball underline-offset-4 transition-colors hover:underline"
+            className="font-medium text-ball underline-offset-4 transition-colors hover:underline"
           >
             תקנון ותנאי שימוש
           </button>
@@ -449,15 +480,13 @@ const Footer = ({ onOpenTerms }) => (
         </div>
       </div>
 
-      <p className="mt-8 max-w-3xl text-xs leading-relaxed text-bone/50">
+      <p className="mt-8 max-w-3xl text-xs leading-relaxed text-bone/45">
         החברה/האתר אינם נושאים בכל אחריות לנזק ישיר או עקיף, כולל שבר, נפילה, נזק למכשיר
         הסלולרי, לגוף או לרכוש צד שלישי שנגרם במהלך או כתוצאה מהשימוש במוצר. השימוש במוצר,
         ברשת ובסביבת המגרש הינו באחריות המלאה של המשתמש בלבד. ביטול עסקה בהתאם לחוק הגנת
         הצרכן, התשמ"א‑1981 — תוך 14 ימים מקבלת המוצר, באריזתו המקורית וללא שימוש.
       </p>
-      <div className="mt-6 font-mono text-[0.62rem] tracking-wide text-bone/40">
-        © 2026 COURTSNAP · כל הזכויות שמורות
-      </div>
+      <div className="mt-6 text-xs text-bone/40">© 2026 COURTSNAP · כל הזכויות שמורות</div>
     </div>
   </footer>
 );
@@ -469,7 +498,7 @@ const Footer = ({ onOpenTerms }) => (
 const StickyBar = () => {
   const [show, setShow] = useState(false);
   useEffect(() => {
-    const onScroll = () => setShow(window.scrollY > 560);
+    const onScroll = () => setShow(window.scrollY > 620);
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
@@ -482,21 +511,19 @@ const StickyBar = () => {
           animate={{ y: 0 }}
           exit={{ y: 100 }}
           transition={{ type: 'spring', stiffness: 320, damping: 32 }}
-          className="fixed inset-x-0 bottom-0 z-[70] border-t border-ink/10 bg-bone/95 px-4 py-3 backdrop-blur-md lg:hidden"
+          className="fixed inset-x-3 bottom-3 z-[70] rounded-full border border-white/10 bg-ink/95 px-3 py-2.5 backdrop-blur-md lg:hidden"
         >
-          <div className="flex items-center gap-4">
-            <div className="flex-shrink-0 text-right">
-              <div className="font-serif text-2xl font-black leading-none text-ink">₪89</div>
-              <div className="mt-1 font-mono text-[0.6rem] tracking-wide text-moss">
-                פחות מעלות שעת מגרש
-              </div>
+          <div className="flex items-center gap-3">
+            <div className="flex-shrink-0 pr-2 text-right">
+              <div className="font-display text-lg font-black leading-none text-bone">₪89</div>
+              <div className="mt-0.5 text-[0.6rem] text-ball">פחות מעלות שעת מגרש</div>
             </div>
             <motion.a
               href="#buy"
               whileTap={{ scale: 0.98 }}
-              className="flex flex-1 items-center justify-center gap-2 bg-ink py-3.5 font-mono text-sm tracking-wide text-bone"
+              className="flex flex-1 items-center justify-center gap-2 rounded-full bg-ball py-3 text-sm font-bold text-ink"
             >
-              הזמן עכשיו <ArrowLeft size={16} />
+              הזמן עכשיו <ArrowUpLeft size={16} strokeWidth={2.5} />
             </motion.a>
           </div>
         </motion.div>
@@ -512,15 +539,14 @@ const StickyBar = () => {
 export default function App() {
   const [termsOpen, setTermsOpen] = useState(false);
   return (
-    <div dir="rtl" className="min-h-screen bg-bone font-sans text-ink">
-      <Header />
-      <main className="pb-24 lg:pb-0">
+    <div dir="rtl" className="min-h-screen bg-olive p-2.5 font-sans text-ink sm:p-4">
+      <div className="overflow-hidden rounded-panel bg-bone">
         <Hero />
-        <HawkEyeBand />
         <Features />
+        <HawkEye />
         <Faq />
-      </main>
-      <Footer onOpenTerms={() => setTermsOpen(true)} />
+        <Footer onOpenTerms={() => setTermsOpen(true)} />
+      </div>
       <StickyBar />
       <TermsModal open={termsOpen} onClose={() => setTermsOpen(false)} />
     </div>

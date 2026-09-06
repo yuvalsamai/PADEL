@@ -4,23 +4,24 @@ export default {
   theme: {
     extend: {
       colors: {
-        ink: '#10231C',
-        court: '#14352B',
-        pine: '#1C4A3A',
-        moss: '#2E6A54',
-        bone: '#F4F0E6',
-        bone2: '#EAE4D5',
-        chalk: '#FBF9F3',
-        ball: '#DDEB3D',
+        ink: '#111813',
+        court: '#1B2A1E',
+        pine: '#25412C',
+        moss: '#4B6B4E',
+        olive: '#787B4B',
+        oliveDark: '#5E613A',
+        bone: '#F4F1E9',
+        bone2: '#EAE6DA',
+        chalk: '#FCFBF7',
+        ball: '#DFF24C',
         stone: '#6B7269',
       },
       fontFamily: {
-        serif: ['"Frank Ruhl Libre"', 'Georgia', 'serif'],
+        display: ['"Rubik"', 'system-ui', 'sans-serif'],
         sans: ['"Heebo"', 'system-ui', 'sans-serif'],
-        mono: ['"IBM Plex Mono"', 'ui-monospace', 'monospace'],
       },
-      letterSpacing: {
-        label: '0.22em',
+      borderRadius: {
+        panel: '28px',
       },
     },
   },
