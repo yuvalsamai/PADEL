@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowUpLeft, Plus, X, Menu } from 'lucide-react';
+import Logo from './Logo';
 
 /* Hero background photo. Drop the supplied image at public/hero.jpg to swap it in;
    a court-toned gradient shows until then. */
@@ -41,6 +42,7 @@ const ArrowChip = ({ className = '' }) => (
 const navLinks = [
   { label: 'בית', href: '#top' },
   { label: 'יתרונות', href: '#features' },
+  { label: 'המוצר', href: '#product' },
   { label: 'עין הנץ', href: '#hawkeye' },
   { label: 'שאלות', href: '#faq' },
 ];
@@ -49,8 +51,8 @@ const Nav = () => {
   const [openMenu, setOpenMenu] = useState(false);
   return (
     <div className="flex items-center justify-between">
-      <a href="#top" className="font-display text-3xl font-black tracking-tight text-bone">
-        court<span className="text-ball">check</span>
+      <a href="#top" aria-label="CourtCheck">
+        <Logo markClass="h-9 w-auto text-bone" textClass="text-bone" />
       </a>
 
       {/* desktop pill */}
@@ -263,6 +265,45 @@ const Features = () => (
 );
 
 /* ================================================================== */
+/*  Product showcase — real photos of the mount on the net           */
+/*  Drop the two images at public/product-1.jpg & public/product-2.jpg */
+/* ================================================================== */
+
+const Showcase = () => (
+  <section id="product" className="bg-ink px-5 py-20 sm:px-8 sm:py-24">
+    <div className="mx-auto max-w-6xl">
+      <Reveal className="max-w-2xl">
+        <Eyebrow className="text-ball">המוצר בפעולה</Eyebrow>
+        <h2 className="mt-4 font-display text-4xl font-black leading-tight tracking-tight text-bone sm:text-5xl">
+          מתלבש על הרשת. מצלם מלמעלה.
+        </h2>
+        <p className="mt-5 max-w-lg text-lg leading-relaxed text-bone/70">
+          אחיזה קשיחה שננעלת על עמוד הרשת תוך שניות ומחזיקה את הטלפון בזווית גבוהה
+          ויציבה — בדיוק מהמקום שממנו רואים כל נקודה.
+        </p>
+      </Reveal>
+
+      <div className="mt-14 grid grid-cols-1 gap-4 sm:grid-cols-5">
+        {/* wide shot */}
+        <Reveal className="sm:col-span-3">
+          <div
+            className="aspect-[16/10] w-full overflow-hidden rounded-3xl bg-pine ring-1 ring-white/10"
+            style={{ backgroundImage: 'url(/product-1.jpg)', backgroundSize: 'cover', backgroundPosition: 'center' }}
+          />
+        </Reveal>
+        {/* tall detail shot */}
+        <Reveal delay={0.1} className="sm:col-span-2">
+          <div
+            className="aspect-[16/10] w-full overflow-hidden rounded-3xl bg-pine ring-1 ring-white/10 sm:aspect-auto sm:h-full"
+            style={{ backgroundImage: 'url(/product-2.jpg)', backgroundSize: 'cover', backgroundPosition: 'center' }}
+          />
+        </Reveal>
+      </div>
+    </div>
+  </section>
+);
+
+/* ================================================================== */
 /*  Hawk-Eye band                                                     */
 /* ================================================================== */
 
@@ -460,9 +501,8 @@ const Footer = ({ onOpenTerms }) => (
     <div className="mx-auto max-w-6xl">
       <div className="flex flex-col gap-8 border-b border-white/10 pb-10 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <div className="font-display text-3xl font-black tracking-tight text-bone">
-            court<span className="text-ball">check</span>
-          </div>
+          <Logo markClass="h-10 w-auto text-bone" textClass="text-bone" />
+
           <p className="mt-3 max-w-sm text-lg text-bone/70">
             עין הנץ שלך על המגרש. צלם, נתח והכרע.
           </p>
@@ -543,6 +583,7 @@ export default function App() {
       <div className="overflow-hidden rounded-panel bg-bone">
         <Hero />
         <Features />
+        <Showcase />
         <HawkEye />
         <Faq />
         <Footer onOpenTerms={() => setTermsOpen(true)} />

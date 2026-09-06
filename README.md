@@ -16,6 +16,10 @@ Built with **React + Vite**, **Tailwind CSS**, **Framer Motion**, and **Lucide R
 5. FAQ accordion
 6. Sticky mobile quick-buy bar
 
+## Brand assets
+- **Logo**: rendered as inline SVG in `src/Logo.jsx` (court mark + lime check + wordmark); also used as the browser favicon at `public/favicon.svg`.
+- **Product photos**: the showcase section expects two images — drop them at `public/product-1.jpg` (wide shot) and `public/product-2.jpg` (tall detail shot). Until added, a dark placeholder shows.
+
 ## Getting started
 ```bash
 npm install
