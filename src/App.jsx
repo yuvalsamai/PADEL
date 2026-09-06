@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowUpLeft, Plus, X, Menu } from 'lucide-react';
-import Logo from './Logo';
 
 /* Hero background photo. Drop the supplied image at public/hero.jpg to swap it in;
    a court-toned gradient shows until then. */
@@ -51,8 +50,8 @@ const Nav = () => {
   const [openMenu, setOpenMenu] = useState(false);
   return (
     <div className="flex items-center justify-between">
-      <a href="#top" aria-label="CourtCheck">
-        <Logo markClass="h-9 w-auto text-bone" textClass="text-bone" />
+      <a href="#top" aria-label="CourtCheck" className="inline-flex items-center rounded-2xl bg-bone px-3 py-2">
+        <img src="/LOGO.png" alt="CourtCheck" className="h-8 w-auto sm:h-9" />
       </a>
 
       {/* desktop pill */}
@@ -265,8 +264,8 @@ const Features = () => (
 );
 
 /* ================================================================== */
-/*  Product showcase — real photos of the mount on the net           */
-/*  Drop the two images at public/product-1.jpg & public/product-2.jpg */
+/*  Product showcase — real photo of the mount on the net            */
+/*  Drop the image at public/STUND.png                                */
 /* ================================================================== */
 
 const Showcase = () => (
@@ -283,22 +282,15 @@ const Showcase = () => (
         </p>
       </Reveal>
 
-      <div className="mt-14 grid grid-cols-1 gap-4 sm:grid-cols-5">
-        {/* wide shot */}
-        <Reveal className="sm:col-span-3">
-          <div
-            className="aspect-[16/10] w-full overflow-hidden rounded-3xl bg-pine ring-1 ring-white/10"
-            style={{ backgroundImage: 'url(/product-1.jpg)', backgroundSize: 'cover', backgroundPosition: 'center' }}
+      <Reveal className="mt-14">
+        <div className="overflow-hidden rounded-3xl bg-pine ring-1 ring-white/10">
+          <img
+            src="/STUND.png"
+            alt="תושבת CourtCheck ננעלת על עמוד הרשת ומחזיקה את הטלפון"
+            className="aspect-[16/9] w-full object-cover"
           />
-        </Reveal>
-        {/* tall detail shot */}
-        <Reveal delay={0.1} className="sm:col-span-2">
-          <div
-            className="aspect-[16/10] w-full overflow-hidden rounded-3xl bg-pine ring-1 ring-white/10 sm:aspect-auto sm:h-full"
-            style={{ backgroundImage: 'url(/product-2.jpg)', backgroundSize: 'cover', backgroundPosition: 'center' }}
-          />
-        </Reveal>
-      </div>
+        </div>
+      </Reveal>
     </div>
   </section>
 );
@@ -501,7 +493,9 @@ const Footer = ({ onOpenTerms }) => (
     <div className="mx-auto max-w-6xl">
       <div className="flex flex-col gap-8 border-b border-white/10 pb-10 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <Logo markClass="h-10 w-auto text-bone" textClass="text-bone" />
+          <span className="inline-flex items-center rounded-2xl bg-bone px-4 py-3">
+            <img src="/LOGO.png" alt="CourtCheck" className="h-11 w-auto" />
+          </span>
 
           <p className="mt-3 max-w-sm text-lg text-bone/70">
             עין הנץ שלך על המגרש. צלם, נתח והכרע.
