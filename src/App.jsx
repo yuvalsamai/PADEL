@@ -43,6 +43,7 @@ const navLinks = [
   { label: 'יתרונות', href: '#features' },
   { label: 'המוצר', href: '#product' },
   { label: 'עין הנץ', href: '#hawkeye' },
+  { label: 'ביקורות', href: '#reviews' },
   { label: 'שאלות', href: '#faq' },
 ];
 
@@ -345,6 +346,76 @@ const HawkEye = () => (
 );
 
 /* ================================================================== */
+/*  Reviews / testimonials                                            */
+/* ================================================================== */
+
+const reviews = [
+  {
+    name: 'דניאל כהן',
+    role: 'שחקן פאדל, תל אביב',
+    initials: 'ד״כ',
+    text: 'סוף סוף אין יותר ויכוחים על הקווים. מריצים אחורה ורואים בדיוק איפה נחת הכדור. שווה כל שקל.',
+  },
+  {
+    name: 'מאיה לוי',
+    role: 'מאמנת טניס',
+    initials: 'מ״ל',
+    text: 'אני מצלמת את כל האימונים מלמעלה ומראה לשחקנים בדיוק מה לתקן. ההתקנה על הרשת לוקחת שתי שניות.',
+  },
+  {
+    name: 'איתי ברק',
+    role: 'חובב פאדל',
+    initials: 'א״ב',
+    text: 'הסרטונים יוצאים ברמה של שידור. כל הקבוצה שלנו כבר קנתה. יציב לגמרי גם בראלי אגרסיבי.',
+  },
+];
+
+const Stars = () => (
+  <div className="flex gap-0.5" aria-hidden="true">
+    {Array.from({ length: 5 }).map((_, i) => (
+      <span key={i} className="text-ball">★</span>
+    ))}
+  </div>
+);
+
+const Reviews = () => (
+  <section id="reviews" className="bg-bone px-5 py-20 sm:px-8 sm:py-24">
+    <div className="mx-auto max-w-6xl">
+      <Reveal className="max-w-2xl">
+        <Eyebrow className="text-moss">מה אומרים על המגרש</Eyebrow>
+        <h2 className="mt-4 font-display text-4xl font-black leading-tight tracking-tight text-ink sm:text-5xl">
+          שחקנים כבר לא משחקים בלי זה.
+        </h2>
+      </Reveal>
+
+      <div className="mt-14 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        {reviews.map((r, i) => (
+          <Reveal key={r.name} delay={(i % 3) * 0.08}>
+            <figure className="flex h-full flex-col justify-between rounded-3xl bg-chalk p-6 ring-1 ring-ink/5">
+              <div>
+                <Stars />
+                <blockquote className="mt-4 text-[15px] leading-relaxed text-ink/70">
+                  “{r.text}”
+                </blockquote>
+              </div>
+              <figcaption className="mt-6 flex items-center gap-3">
+                <span className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-ball text-sm font-black text-ink">
+                  {r.initials}
+                </span>
+                <span>
+                  <span className="block font-display font-bold text-ink">{r.name}</span>
+                  <span className="block text-xs text-ink/50">{r.role}</span>
+                </span>
+              </figcaption>
+            </figure>
+          </Reveal>
+        ))}
+      </div>
+    </div>
+  </section>
+);
+
+/* ================================================================== */
 /*  FAQ                                                               */
 /* ================================================================== */
 
@@ -579,6 +650,7 @@ export default function App() {
         <Features />
         <Showcase />
         <HawkEye />
+        <Reviews />
         <Faq />
         <Footer onOpenTerms={() => setTermsOpen(true)} />
       </div>
