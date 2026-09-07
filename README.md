@@ -17,7 +17,7 @@ Built with **React + Vite**, **Tailwind CSS**, **Framer Motion**, and **Lucide R
 6. Sticky mobile quick-buy bar
 
 ## Brand assets
-- **Logo**: `public/LOGO.png`, shown in the header and footer inside a white chip. The browser favicon is `public/favicon.svg`.
+- **Logo**: `public/LOGO-removebg-preview.png` (transparent), shown in the header and footer. It is the only logo used across the site. The browser favicon is `public/favicon.svg`.
 - **Product photo**: the showcase section uses `public/STUND.png` (the mount on the net). Until the file is committed, a dark placeholder shows.
 
 ## Getting started
