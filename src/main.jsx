@@ -4,17 +4,22 @@ import App from './App.jsx'
 import './index.css'
 
 const Admin = lazy(() => import('./admin/Admin.jsx'))
+const PayPage = lazy(() => import('./PayPage.jsx'))
 
-// Secret admin route: any path ending in /YUVAL (case-insensitive, optional
-// trailing slash) renders the admin panel instead of the landing page.
+// Path-based routing (case-insensitive, optional trailing slash):
+//   /YUVAL → admin panel   ·   /pay → full-screen checkout   ·   else landing
 const path = window.location.pathname.replace(/\/+$/, '').toLowerCase()
-const isAdmin = path.endsWith('/yuval')
+const route = path.endsWith('/yuval') ? 'admin' : path.endsWith('/pay') ? 'pay' : 'landing'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    {isAdmin ? (
+    {route === 'admin' ? (
       <Suspense fallback={null}>
         <Admin />
+      </Suspense>
+    ) : route === 'pay' ? (
+      <Suspense fallback={null}>
+        <PayPage />
       </Suspense>
     ) : (
       <App />
