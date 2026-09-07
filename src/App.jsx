@@ -606,6 +606,38 @@ const TermsModal = ({ open, onClose }) => (
 );
 
 /* ================================================================== */
+/*  Buy / checkout                                                    */
+/* ================================================================== */
+
+const Buy = () => (
+  <section id="buy" className="bg-court px-5 py-20 sm:px-8 sm:py-24">
+    <div className="mx-auto max-w-3xl">
+      <Reveal className="text-center">
+        <Eyebrow className="text-ball">רכישה</Eyebrow>
+        <h2 className="mt-4 font-display text-4xl font-black leading-tight tracking-tight text-bone sm:text-5xl">
+          מזמינים את COURTCHECK
+        </h2>
+        <p className="mx-auto mt-5 max-w-lg text-lg leading-relaxed text-bone/70">
+          משלימים את התשלום בטופס המאובטח ומקבלים את הערכה עד הבית.
+        </p>
+      </Reveal>
+
+      <Reveal className="mt-12">
+        <div className="overflow-hidden rounded-3xl bg-bone ring-1 ring-white/10">
+          <iframe
+            src="https://stage.hyp.co.il/sp/?key=a78d3ee6-a5dc-4434-bd14-c2f00b6d7812&id=13231"
+            title="תשלום מאובטח - CourtCheck"
+            className="h-[720px] w-full border-0"
+            loading="lazy"
+            allow="payment"
+          />
+        </div>
+      </Reveal>
+    </div>
+  </section>
+);
+
+/* ================================================================== */
 /*  Footer                                                            */
 /* ================================================================== */
 
@@ -703,6 +735,7 @@ export default function App() {
         <HawkEye />
         <Reviews />
         <Faq />
+        <Buy />
         <Footer onOpenTerms={() => setTermsOpen(true)} />
       </div>
       <StickyBar />
