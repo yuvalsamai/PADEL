@@ -118,6 +118,32 @@ const Nav = () => {
 /*  Hero                                                              */
 /* ================================================================== */
 
+/* Product image with a continuous 3D turn + float (single-photo pseudo-3D). */
+const ProductSpin = () => (
+  <div
+    className="relative flex items-center justify-center py-6 lg:py-0"
+    style={{ perspective: '1400px' }}
+  >
+    {/* ambient glow */}
+    <div className="pointer-events-none absolute h-2/3 w-2/3 rounded-full bg-ball/25 blur-3xl" />
+    <motion.img
+      src="/product.png"
+      alt="תושבת CourtCheck עם אייפון על המגרש"
+      draggable={false}
+      className="relative w-[min(72%,300px)] select-none drop-shadow-2xl lg:w-[min(95%,420px)]"
+      style={{ transformStyle: 'preserve-3d' }}
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1, rotateY: [-28, 28, -28], y: [-12, 12, -12] }}
+      transition={{
+        opacity: { duration: 0.8 },
+        scale: { duration: 0.8 },
+        rotateY: { duration: 9, repeat: Infinity, ease: 'easeInOut' },
+        y: { duration: 6, repeat: Infinity, ease: 'easeInOut' },
+      }}
+    />
+  </div>
+);
+
 const Hero = () => (
   <section id="top" className="relative isolate overflow-hidden rounded-panel">
     {/* background photo + court gradient fallback */}
@@ -130,50 +156,54 @@ const Hero = () => (
       }}
     />
 
-    <div className="flex min-h-[92vh] flex-col justify-between gap-10 p-5 sm:p-8 lg:p-10">
+    <div className="flex min-h-[92vh] flex-col gap-10 p-5 sm:p-8 lg:p-10">
       <Nav />
 
-      {/* headline */}
-      <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="max-w-3xl"
-      >
-        <Eyebrow className="text-bone/80">מערכת הצילום למגרש · פאדל &amp; טניס</Eyebrow>
-        <h1 className="mt-5 font-display text-5xl font-black leading-[0.98] tracking-tight text-bone sm:text-7xl lg:text-8xl">
-          צלם כל נקודה.
-          <br />
-          שחק חכם יותר.
-        </h1>
-        <p className="mt-6 max-w-lg text-lg leading-relaxed text-bone/80">
-          תושבת שמתלבשת בשניות על רשת המגרש ומצלמת בזווית גבוהה ויציבה — לתוכן, לשיפור
-          הטכניקה ולהכרעת כל ויכוח על קו.
-        </p>
-      </motion.div>
+      <div className="grid flex-1 items-center gap-8 lg:grid-cols-2">
+        {/* text column — right in RTL */}
+        <div className="flex flex-col justify-center gap-8">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="max-w-3xl"
+          >
+            <Eyebrow className="text-bone/80">מערכת הצילום למגרש · פאדל &amp; טניס</Eyebrow>
+            <h1 className="mt-5 font-display text-5xl font-black leading-[0.98] tracking-tight text-bone sm:text-7xl lg:text-7xl">
+              צלם כל נקודה.
+              <br />
+              שחק חכם יותר.
+            </h1>
+            <p className="mt-6 max-w-lg text-lg leading-relaxed text-bone/80">
+              תושבת שמתלבשת בשניות על רשת המגרש ומצלמת בזווית גבוהה ויציבה — לתוכן, לשיפור
+              הטכניקה ולהכרעת כל ויכוח על קו.
+            </p>
+          </motion.div>
 
-      {/* bottom card */}
-      <div className="flex">
-        {/* glass insight card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.25 }}
-          className="flex h-40 w-full flex-col justify-between rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur-md sm:max-w-sm"
-        >
-          <p className="text-[15px] leading-snug text-bone">
-            זווית גבוהה ויציבה שמתעדת כל נקודה — מוכן ל‑Reels, לניתוח משחק ולהכרעת קווים.
-          </p>
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="font-semibold text-bone">₪89</div>
-              <div className="text-xs text-bone/70">כולל משלוח ללוקר</div>
+          {/* glass insight card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.25 }}
+            className="flex h-40 w-full flex-col justify-between rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur-md sm:max-w-sm"
+          >
+            <p className="text-[15px] leading-snug text-bone">
+              זווית גבוהה ויציבה שמתעדת כל נקודה — מוכן ל‑Reels, לניתוח משחק ולהכרעת קווים.
+            </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-semibold text-bone">₪89</div>
+                <div className="text-xs text-bone/70">כולל משלוח ללוקר</div>
+              </div>
+              <a href="/pay" className="group">
+                <ArrowChip />
+              </a>
             </div>
-            <a href="/pay" className="group">
-              <ArrowChip />
-            </a>
-          </div>
-        </motion.div>
+          </motion.div>
+        </div>
+
+        {/* product column — left in RTL */}
+        <ProductSpin />
       </div>
     </div>
   </section>
