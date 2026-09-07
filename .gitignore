@@ -7,3 +7,8 @@ dist-ssr
 
 # local tooling
 _shot.mjs
+
+# local env
+.env
+.env.local
+.env.*.local
