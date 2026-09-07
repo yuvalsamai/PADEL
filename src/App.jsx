@@ -52,8 +52,8 @@ const Nav = () => {
   const [openMenu, setOpenMenu] = useState(false);
   return (
     <div className="flex items-center justify-between">
-      <a href="#top" aria-label="CourtCheck" className="inline-flex items-center rounded-2xl bg-bone px-3 py-2">
-        <img src="/LOGO-removebg-preview.png" alt="CourtCheck" className="h-8 w-auto sm:h-9" />
+      <a href="#top" aria-label="CourtCheck" className="inline-flex items-center">
+        <img src="/LOGO-removebg-preview.png" alt="CourtCheck" className="h-16 w-auto drop-shadow-lg sm:h-20 lg:h-24" />
       </a>
 
       {/* desktop pill */}
@@ -124,7 +124,7 @@ const Hero = () => (
     <div
       className="absolute inset-0 -z-10 bg-court"
       style={{
-        backgroundImage: `linear-gradient(180deg, rgba(17,24,19,0.78) 0%, rgba(17,24,19,0.4) 42%, rgba(17,24,19,0.86) 100%), linear-gradient(270deg, rgba(17,24,19,0.1) 0%, rgba(17,24,19,0.5) 100%), url(${HERO_IMG})`,
+        backgroundImage: `linear-gradient(180deg, rgba(17,24,19,0.35) 0%, rgba(17,24,19,0.08) 42%, rgba(17,24,19,0.6) 100%), linear-gradient(270deg, rgba(17,24,19,0) 0%, rgba(17,24,19,0.25) 100%), url(${HERO_IMG})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
       }}
