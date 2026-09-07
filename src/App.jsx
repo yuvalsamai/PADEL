@@ -70,7 +70,7 @@ const Nav = () => {
           </a>
         ))}
         <a
-          href="#buy"
+          href="/pay"
           className="rounded-full bg-bone px-4 py-2 text-sm font-semibold text-ink transition-colors hover:bg-white"
         >
           הזמנה ₪89
@@ -104,7 +104,7 @@ const Nav = () => {
                 {l.label}
               </a>
             ))}
-            <a href="#buy" onClick={() => setOpenMenu(false)} className="rounded-2xl bg-ball px-4 py-3 text-center font-semibold text-ink">
+            <a href="/pay" onClick={() => setOpenMenu(false)} className="rounded-2xl bg-ball px-4 py-3 text-center font-semibold text-ink">
               הזמנה ₪89
             </a>
           </motion.div>
@@ -152,37 +152,14 @@ const Hero = () => (
         </p>
       </motion.div>
 
-      {/* bottom cards */}
-      <div className="grid grid-cols-1 items-end gap-4 sm:grid-cols-2">
-        {/* media / replay card */}
-        <motion.a
-          href="#hawkeye"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.15 }}
-          className="group relative flex h-40 items-end overflow-hidden rounded-3xl border border-white/15 p-4"
-          style={{
-            backgroundImage:
-              'linear-gradient(180deg, rgba(13,13,13,0.1), rgba(13,13,13,0.8)), radial-gradient(100% 100% at 50% 0%, #2A2A2A 0%, #1A1A1A 55%, #0D0D0D 100%)',
-          }}
-        >
-          <div>
-            <div className="font-display text-xl font-bold leading-tight text-bone">
-              עין הנץ
-            </div>
-            <div className="text-sm text-bone/75">הוכחה על הקו</div>
-          </div>
-          <div className="absolute left-4 top-4 group">
-            <ArrowChip />
-          </div>
-        </motion.a>
-
+      {/* bottom card */}
+      <div className="flex">
         {/* glass insight card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.25 }}
-          className="flex h-40 flex-col justify-between rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur-md sm:mr-auto sm:max-w-sm"
+          className="flex h-40 w-full flex-col justify-between rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur-md sm:max-w-sm"
         >
           <p className="text-[15px] leading-snug text-bone">
             זווית גבוהה ויציבה שמתעדת כל נקודה — מוכן ל‑Reels, לניתוח משחק ולהכרעת קווים.
@@ -192,7 +169,7 @@ const Hero = () => (
               <div className="font-semibold text-bone">₪89</div>
               <div className="text-xs text-bone/70">כולל משלוח ללוקר</div>
             </div>
-            <a href="#buy" className="group">
+            <a href="/pay" className="group">
               <ArrowChip />
             </a>
           </div>
@@ -364,7 +341,7 @@ const HawkEye = () => (
           של COURTCHECK הופכת כל נקודה שנויה במחלוקת להכרעה של שנייה.
         </p>
         <a
-          href="#buy"
+          href="/pay"
           className="group mt-9 inline-flex items-center gap-3 rounded-full bg-ball py-2 pl-2 pr-6 font-semibold text-ink transition-colors hover:bg-white"
         >
           לרכישה מהירה
@@ -606,38 +583,6 @@ const TermsModal = ({ open, onClose }) => (
 );
 
 /* ================================================================== */
-/*  Buy / checkout                                                    */
-/* ================================================================== */
-
-const Buy = () => (
-  <section id="buy" className="bg-court px-5 py-20 sm:px-8 sm:py-24">
-    <div className="mx-auto max-w-3xl">
-      <Reveal className="text-center">
-        <Eyebrow className="text-ball">רכישה</Eyebrow>
-        <h2 className="mt-4 font-display text-4xl font-black leading-tight tracking-tight text-bone sm:text-5xl">
-          מזמינים את COURTCHECK
-        </h2>
-        <p className="mx-auto mt-5 max-w-lg text-lg leading-relaxed text-bone/70">
-          משלימים את התשלום בטופס המאובטח ומקבלים את הערכה עד הבית.
-        </p>
-      </Reveal>
-
-      <Reveal className="mt-12">
-        <div className="overflow-hidden rounded-3xl bg-bone ring-1 ring-white/10">
-          <iframe
-            src="https://stage.hyp.co.il/sp/?key=a78d3ee6-a5dc-4434-bd14-c2f00b6d7812&id=13231"
-            title="תשלום מאובטח - CourtCheck"
-            className="h-[720px] w-full border-0"
-            loading="lazy"
-            allow="payment"
-          />
-        </div>
-      </Reveal>
-    </div>
-  </section>
-);
-
-/* ================================================================== */
 /*  Footer                                                            */
 /* ================================================================== */
 
@@ -706,7 +651,7 @@ const StickyBar = () => {
               <div className="mt-0.5 text-[0.6rem] text-ball">פחות מעלות שעת מגרש</div>
             </div>
             <motion.a
-              href="#buy"
+              href="/pay"
               whileTap={{ scale: 0.98 }}
               className="flex flex-1 items-center justify-center gap-2 rounded-full bg-ball py-3 text-sm font-bold text-ink"
             >
@@ -735,7 +680,6 @@ export default function App() {
         <HawkEye />
         <Reviews />
         <Faq />
-        <Buy />
         <Footer onOpenTerms={() => setTermsOpen(true)} />
       </div>
       <StickyBar />
