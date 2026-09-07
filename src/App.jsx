@@ -53,7 +53,7 @@ const Nav = () => {
   return (
     <div className="flex items-center justify-between">
       <a href="#top" aria-label="CourtCheck" className="inline-flex items-center rounded-2xl bg-bone px-3 py-2">
-        <img src="/LOGO.png" alt="CourtCheck" className="h-8 w-auto sm:h-9" />
+        <img src="/LOGO-removebg-preview.png" alt="CourtCheck" className="h-8 w-auto sm:h-9" />
       </a>
 
       {/* desktop pill */}
@@ -615,7 +615,7 @@ const Footer = ({ onOpenTerms }) => (
       <div className="flex flex-col gap-8 border-b border-white/10 pb-10 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <span className="inline-flex items-center rounded-2xl bg-bone px-4 py-3">
-            <img src="/LOGO.png" alt="CourtCheck" className="h-11 w-auto" />
+            <img src="/LOGO-removebg-preview.png" alt="CourtCheck" className="h-11 w-auto" />
           </span>
 
           <p className="mt-3 max-w-sm text-lg text-bone/70">
