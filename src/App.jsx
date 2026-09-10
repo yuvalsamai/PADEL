@@ -51,7 +51,7 @@ const navLinks = [
 const Nav = () => {
   const [openMenu, setOpenMenu] = useState(false);
   return (
-    <div className="flex items-center justify-between gap-3 rounded-full border border-white/40 bg-bone/60 py-2 pl-2 pr-3 shadow-lg shadow-black/10 backdrop-blur-xl sm:pr-4">
+    <div className="flex w-full items-center justify-between gap-3 border-b border-white/30 bg-bone/60 px-5 py-3 shadow-lg shadow-black/10 backdrop-blur-xl sm:px-8 lg:px-10">
       <a href="#top" aria-label="CourtCheck" className="inline-flex items-center">
         <img src="/LOGO-removebg-preview.png" alt="CourtCheck" className="h-12 w-auto sm:h-14 lg:h-16" />
       </a>
@@ -156,10 +156,10 @@ const Hero = () => (
       }}
     />
 
-    <div className="flex min-h-[92vh] flex-col gap-10 p-5 sm:p-8 lg:p-10">
+    <div className="flex min-h-[92vh] flex-col">
       <Nav />
 
-      <div className="grid flex-1 items-center gap-8 lg:grid-cols-2">
+      <div className="grid flex-1 items-center gap-8 p-5 sm:p-8 lg:grid-cols-2 lg:p-10">
         {/* text column — right in RTL */}
         <div className="flex flex-col justify-center gap-8">
           <motion.div
