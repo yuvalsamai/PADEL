@@ -6,14 +6,16 @@ import './index.css'
 const Admin = lazy(() => import('./admin/Admin.jsx'))
 const PayPage = lazy(() => import('./PayPage.jsx'))
 const NotFound = lazy(() => import('./NotFound.jsx'))
+const ThankYou = lazy(() => import('./ThankYou.jsx'))
 
 // Path-based routing (case-insensitive, optional trailing slash):
-//   / → landing · /YUVAL → admin · /pay → full-screen checkout · else 404
+//   / → landing · /YUVAL → admin · /pay → checkout · /thank-you → confirmation · else 404
 const path = window.location.pathname.replace(/\/+$/, '').toLowerCase()
 const route =
   path === '' ? 'landing'
   : path.endsWith('/yuval') ? 'admin'
   : path.endsWith('/pay') ? 'pay'
+  : path.endsWith('/thank-you') ? 'thankyou'
   : 'notfound'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -25,6 +27,10 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     ) : route === 'pay' ? (
       <Suspense fallback={null}>
         <PayPage />
+      </Suspense>
+    ) : route === 'thankyou' ? (
+      <Suspense fallback={null}>
+        <ThankYou />
       </Suspense>
     ) : route === 'notfound' ? (
       <Suspense fallback={null}>
