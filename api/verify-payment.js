@@ -6,6 +6,37 @@ import { createClient } from '@supabase/supabase-js';
 const HYP_BASE = 'https://pay.hyp.co.il/p/';
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://uwmydcfhedcquktxqsis.supabase.co';
 
+// Sends a new-order alert to a Telegram group. No-op if not configured; never throws.
+async function notifyTelegram({ name, email, amount, order, tranId, orderId }) {
+  const { TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID } = process.env;
+  if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) return;
+
+  const lines = [
+    '🎾 *הזמנה חדשה - CourtCheck*',
+    '',
+    `👤 שם: ${name || '—'}`,
+    `✉️ אימייל: ${email || '—'}`,
+    `💰 סכום: ₪${amount ?? '—'}`,
+    `🧾 מס׳ הזמנה: ${order || '—'}`,
+    `🔖 עסקת Hyp: ${tranId || '—'}`,
+    orderId ? `🗂️ מזהה במערכת: ${orderId}` : null,
+  ].filter(Boolean);
+
+  try {
+    await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: TELEGRAM_CHAT_ID,
+        text: lines.join('\n'),
+        parse_mode: 'Markdown',
+      }),
+    });
+  } catch {
+    /* ignore notification failures */
+  }
+}
+
 export default async function handler(req, res) {
   const { HYP_MASOF, HYP_APIKEY, HYP_PASSP, SUPABASE_SERVICE_ROLE_KEY } = process.env;
   if (!HYP_MASOF || !HYP_APIKEY || !HYP_PASSP || !SUPABASE_SERVICE_ROLE_KEY) {
@@ -83,6 +114,9 @@ export default async function handler(req, res) {
         status: 'pending',
       });
     }
+
+    // Fire a Telegram notification (best-effort — never blocks the buyer's success).
+    await notifyTelegram({ name, email, amount, order, tranId, orderId: newOrder?.id });
 
     return res.status(200).json({ ok: true, order });
   } catch (e) {
