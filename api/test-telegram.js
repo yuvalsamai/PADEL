@@ -24,7 +24,13 @@ export default async function handler(req, res) {
     });
     const data = await tgRes.json();
     // Telegram's own ok/description tells us exactly what to fix (e.g. "chat not found").
-    return res.status(tgRes.ok ? 200 : 502).json({ delivered: data.ok === true, telegram: data });
+    // chatIdUsed echoes the value the deployed function actually read from the env,
+    // so we can tell whether a config change was picked up. (A chat id is not secret.)
+    return res.status(tgRes.ok ? 200 : 502).json({
+      delivered: data.ok === true,
+      chatIdUsed: TELEGRAM_CHAT_ID,
+      telegram: data,
+    });
   } catch (e) {
     return res.status(502).json({ ok: false, error: String(e) });
   }
