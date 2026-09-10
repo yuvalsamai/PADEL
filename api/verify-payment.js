@@ -66,7 +66,7 @@ export default async function handler(req, res) {
       customerId = cust?.id ?? null;
     }
 
-    await supabase.from('orders').insert({
+    const { data: newOrder } = await supabase.from('orders').insert({
       tran_id: tranId,
       customer_id: customerId,
       customer_name: name,
@@ -74,7 +74,15 @@ export default async function handler(req, res) {
       quantity: 1,
       amount,
       status: 'paid',
-    });
+    }).select('id').single();
+
+    // Create a shipment to track (courier / tracking number filled in later via admin).
+    if (newOrder?.id) {
+      await supabase.from('shipments').insert({
+        order_id: newOrder.id,
+        status: 'pending',
+      });
+    }
 
     return res.status(200).json({ ok: true, order });
   } catch (e) {

@@ -106,47 +106,62 @@ const Login = () => {
 /*  Data table                                                        */
 /* ================================================================== */
 
-const Table = ({ columns, rows, onDelete }) => (
-  <div className="overflow-x-auto rounded-2xl ring-1 ring-white/10">
-    <table className="w-full min-w-[640px] text-right text-sm">
-      <thead className="bg-pine text-bone/60">
-        <tr>
-          {columns.map((c) => (
-            <th key={c.key} className="whitespace-nowrap px-4 py-3 font-medium">{c.label}</th>
-          ))}
-          {onDelete && <th className="px-4 py-3" />}
-        </tr>
-      </thead>
-      <tbody className="divide-y divide-white/5">
-        {rows.length === 0 ? (
+const Table = ({ columns, rows, onEdit, onDelete }) => {
+  const hasActions = onEdit || onDelete;
+  return (
+    <div className="overflow-x-auto rounded-2xl ring-1 ring-white/10">
+      <table className="w-full min-w-[640px] text-right text-sm">
+        <thead className="bg-pine text-bone/60">
           <tr>
-            <td colSpan={columns.length + (onDelete ? 1 : 0)} className="px-4 py-10 text-center text-bone/50">אין נתונים להצגה</td>
+            {columns.map((c) => (
+              <th key={c.key} className="whitespace-nowrap px-4 py-3 font-medium">{c.label}</th>
+            ))}
+            {hasActions && <th className="px-4 py-3" />}
           </tr>
-        ) : (
-          rows.map((row) => (
-            <tr key={row.id} className="text-bone/90">
-              {columns.map((c) => (
-                <td key={c.key} className="whitespace-nowrap px-4 py-3">
-                  {c.render ? c.render(row) : (row[c.key] ?? '—')}
-                </td>
-              ))}
-              {onDelete && (
-                <td className="whitespace-nowrap px-4 py-3 text-left">
-                  <button
-                    onClick={() => onDelete(row)}
-                    className="rounded-lg px-2 py-1 text-xs text-rose-400 hover:bg-rose-400/10"
-                  >
-                    מחיקה
-                  </button>
-                </td>
-              )}
+        </thead>
+        <tbody className="divide-y divide-white/5">
+          {rows.length === 0 ? (
+            <tr>
+              <td colSpan={columns.length + (hasActions ? 1 : 0)} className="px-4 py-10 text-center text-bone/50">אין נתונים להצגה</td>
             </tr>
-          ))
-        )}
-      </tbody>
-    </table>
-  </div>
-);
+          ) : (
+            rows.map((row) => (
+              <tr key={row.id} className="text-bone/90">
+                {columns.map((c) => (
+                  <td key={c.key} className="whitespace-nowrap px-4 py-3">
+                    {c.render ? c.render(row) : (row[c.key] ?? '—')}
+                  </td>
+                ))}
+                {hasActions && (
+                  <td className="whitespace-nowrap px-4 py-3 text-left">
+                    <div className="flex items-center justify-end gap-1">
+                      {onEdit && (
+                        <button
+                          onClick={() => onEdit(row)}
+                          className="rounded-lg px-2 py-1 text-xs text-bone/70 hover:bg-white/10 hover:text-bone"
+                        >
+                          עריכה
+                        </button>
+                      )}
+                      {onDelete && (
+                        <button
+                          onClick={() => onDelete(row)}
+                          className="rounded-lg px-2 py-1 text-xs text-rose-400 hover:bg-rose-400/10"
+                        >
+                          מחיקה
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                )}
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+};
 
 /* ================================================================== */
 /*  Add-record modal                                                  */
@@ -179,9 +194,15 @@ const FORMS = {
   ],
 };
 
-const RecordModal = ({ table, onClose, onSaved }) => {
+const RecordModal = ({ table, record, onClose, onSaved }) => {
   const fields = FORMS[table];
-  const [form, setForm] = useState({});
+  const isEdit = Boolean(record);
+  const [form, setForm] = useState(() => {
+    if (!record) return {};
+    const init = {};
+    for (const f of fields) if (record[f.key] != null) init[f.key] = String(record[f.key]);
+    return init;
+  });
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
 
@@ -194,11 +215,13 @@ const RecordModal = ({ table, onClose, onSaved }) => {
     const payload = {};
     for (const f of fields) {
       let v = form[f.key];
-      if (v === undefined || v === '') continue;
-      if (f.type === 'number') v = Number(v);
-      payload[f.key] = v;
+      if (f.type === 'number') v = v === undefined || v === '' ? null : Number(v);
+      else if (v === undefined || v === '') v = isEdit ? null : undefined;
+      if (v !== undefined) payload[f.key] = v;
     }
-    const { error } = await supabase.from(table).insert(payload);
+    const { error } = isEdit
+      ? await supabase.from(table).update(payload).eq('id', record.id)
+      : await supabase.from(table).insert(payload);
     setBusy(false);
     if (error) {
       setErr(error.message);
@@ -214,7 +237,7 @@ const RecordModal = ({ table, onClose, onSaved }) => {
         onSubmit={submit}
         className="w-full max-w-md rounded-3xl bg-court p-7 ring-1 ring-white/10"
       >
-        <h3 className="font-display text-xl font-black text-bone">רשומה חדשה</h3>
+        <h3 className="font-display text-xl font-black text-bone">{isEdit ? 'עריכת רשומה' : 'רשומה חדשה'}</h3>
         <div className="mt-5 space-y-4">
           {fields.map((f) =>
             f.type === 'select' ? (
@@ -279,6 +302,7 @@ const Dashboard = ({ session }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [adding, setAdding] = useState(false);
+  const [editing, setEditing] = useState(null);
 
   const load = async () => {
     setLoading(true);
@@ -410,7 +434,7 @@ const Dashboard = ({ session }) => {
           {loading ? (
             <p className="py-10 text-center text-bone/50">טוען…</p>
           ) : (
-            <Table columns={columns[tab]} rows={data[tab]} onDelete={handleDelete} />
+            <Table columns={columns[tab]} rows={data[tab]} onEdit={setEditing} onDelete={handleDelete} />
           )}
         </div>
       </main>
@@ -421,6 +445,18 @@ const Dashboard = ({ session }) => {
           onClose={() => setAdding(false)}
           onSaved={() => {
             setAdding(false);
+            load();
+          }}
+        />
+      )}
+
+      {editing && (
+        <RecordModal
+          table={tab}
+          record={editing}
+          onClose={() => setEditing(null)}
+          onSaved={() => {
+            setEditing(null);
             load();
           }}
         />
