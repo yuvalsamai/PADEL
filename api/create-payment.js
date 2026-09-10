@@ -25,6 +25,7 @@ export default async function handler(req, res) {
     Order: order,
     Coin: '1',
     PageLang: 'HEB',
+    tmp: '13',
     sendemail: 'True',
   });
 
