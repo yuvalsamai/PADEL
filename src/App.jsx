@@ -51,19 +51,19 @@ const navLinks = [
 const Nav = () => {
   const [openMenu, setOpenMenu] = useState(false);
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between gap-3 rounded-full border border-white/40 bg-bone/60 py-2 pl-2 pr-3 shadow-lg shadow-black/10 backdrop-blur-xl sm:pr-4">
       <a href="#top" aria-label="CourtCheck" className="inline-flex items-center">
-        <img src="/LOGO-removebg-preview.png" alt="CourtCheck" className="h-16 w-auto drop-shadow-lg sm:h-20 lg:h-24" />
+        <img src="/LOGO-removebg-preview.png" alt="CourtCheck" className="h-12 w-auto sm:h-14 lg:h-16" />
       </a>
 
       {/* desktop pill */}
-      <nav className="hidden items-center gap-1 rounded-full border border-white/15 bg-white/10 p-1.5 backdrop-blur-md md:flex">
+      <nav className="hidden items-center gap-1 md:flex">
         {navLinks.map((l, i) => (
           <a
             key={l.href}
             href={l.href}
             className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-              i === 0 ? 'bg-ball text-ink' : 'text-bone/90 hover:text-bone'
+              i === 0 ? 'bg-ball text-ink' : 'text-ink/70 hover:text-ink'
             }`}
           >
             {l.label}
@@ -71,7 +71,7 @@ const Nav = () => {
         ))}
         <a
           href="/pay"
-          className="rounded-full bg-bone px-4 py-2 text-sm font-semibold text-ink transition-colors hover:bg-white"
+          className="rounded-full bg-ink px-4 py-2 text-sm font-semibold text-bone transition-colors hover:bg-court"
         >
           הזמנה ₪89
         </a>
@@ -80,7 +80,7 @@ const Nav = () => {
       {/* mobile */}
       <button
         onClick={() => setOpenMenu((v) => !v)}
-        className="rounded-full border border-white/20 bg-white/10 p-2.5 text-bone backdrop-blur md:hidden"
+        className="rounded-full border border-ink/15 bg-ink/5 p-2.5 text-ink md:hidden"
         aria-label="תפריט"
       >
         {openMenu ? <X size={20} /> : <Menu size={20} />}
