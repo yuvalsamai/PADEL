@@ -1,9 +1,24 @@
-import React from 'react';
-
-// Hyp secure payment form. Swap the stage URL for production before launch.
-const PAY_URL = 'https://stage.hyp.co.il/sp/?key=a78d3ee6-a5dc-4434-bd14-c2f00b6d7812&id=13231';
+import React, { useEffect, useState } from 'react';
 
 export default function PayPage() {
+  const [url, setUrl] = useState('');
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/create-payment')
+      .then((r) => r.json())
+      .then((d) => {
+        if (cancelled) return;
+        if (d.url) setUrl(d.url);
+        else setError(d.error || 'לא ניתן ליצור דף תשלום כרגע');
+      })
+      .catch(() => !cancelled && setError('שגיאת רשת ביצירת דף התשלום'));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <div className="flex h-screen flex-col bg-ink">
       <header className="flex items-center justify-between border-b border-white/10 bg-court px-5 py-3">
@@ -18,12 +33,23 @@ export default function PayPage() {
         </a>
       </header>
 
-      <iframe
-        src={PAY_URL}
-        title="תשלום מאובטח - CourtCheck"
-        className="w-full flex-1 border-0 bg-white"
-        allow="payment"
-      />
+      {error ? (
+        <div dir="rtl" className="flex flex-1 flex-col items-center justify-center gap-4 px-5 text-center">
+          <p className="text-lg text-bone/80">{error}</p>
+          <a href="/" className="rounded-full bg-ball px-6 py-3 font-semibold text-ink hover:bg-white">
+            חזרה לדף הבית
+          </a>
+        </div>
+      ) : url ? (
+        <iframe
+          src={url}
+          title="תשלום מאובטח - CourtCheck"
+          className="w-full flex-1 border-0 bg-white"
+          allow="payment"
+        />
+      ) : (
+        <div className="flex flex-1 items-center justify-center text-bone/50">טוען דף תשלום מאובטח…</div>
+      )}
     </div>
   );
 }
