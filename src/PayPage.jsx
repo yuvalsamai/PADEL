@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 
 /* Collects the customer details we want on record (full name, phone, email,
-   address) and forwards them to the backend, which signs a Hyp Pay page.
-   Credit-card details are entered only on Hyp's secure page (the iframe) —
-   they never touch our servers. */
+   full shipping address + postal code) and forwards them to the backend, which
+   signs a Hyp Pay page. Credit-card details are entered only on Hyp's secure
+   page (the iframe) — they never touch our servers. */
 
 const FIELDS = [
   { key: 'fullName', label: 'שם מלא', type: 'text', autoComplete: 'name', placeholder: 'ישראל ישראלי' },
   { key: 'cell', label: 'טלפון', type: 'tel', autoComplete: 'tel', placeholder: '050-0000000' },
   { key: 'email', label: 'אימייל', type: 'email', autoComplete: 'email', placeholder: 'you@example.com' },
-  { key: 'street', label: 'כתובת למשלוח', type: 'text', autoComplete: 'street-address', placeholder: 'רחוב, מספר, עיר' },
+  { key: 'street', label: 'רחוב ומספר בית', type: 'text', autoComplete: 'street-address', placeholder: 'הרצל 25, דירה 4' },
+  { key: 'city', label: 'עיר', type: 'text', autoComplete: 'address-level2', placeholder: 'תל אביב' },
+  { key: 'zip', label: 'מיקוד', type: 'text', autoComplete: 'postal-code', inputMode: 'numeric', placeholder: '6100000' },
 ];
 
 // Optional amount override for testing, e.g. /pay?amount=7 — falls back to ₪89.
@@ -21,7 +23,7 @@ function getAmount() {
 }
 
 export default function PayPage() {
-  const [form, setForm] = useState({ fullName: '', cell: '', email: '', street: '' });
+  const [form, setForm] = useState({ fullName: '', cell: '', email: '', street: '', city: '', zip: '' });
   const [amount] = useState(getAmount);
   const [url, setUrl] = useState('');
   const [error, setError] = useState('');
@@ -51,6 +53,8 @@ export default function PayPage() {
           cell: form.cell.trim(),
           email: form.email.trim(),
           street: form.street.trim(),
+          city: form.city.trim(),
+          zip: form.zip.trim(),
         }),
       });
       const d = await res.json();
@@ -64,7 +68,7 @@ export default function PayPage() {
   };
 
   return (
-    <div className="flex h-screen flex-col bg-ink">
+    <div className="flex h-screen flex-col bg-bone">
       <header className="flex items-center justify-between border-b border-white/10 bg-court px-5 py-3">
         <a href="/" aria-label="CourtCheck" className="inline-flex items-center">
           <img src="/LOGO-removebg-preview.png" alt="CourtCheck" className="h-9 w-auto" />
@@ -86,42 +90,43 @@ export default function PayPage() {
         />
       ) : (
         <div dir="rtl" className="flex flex-1 items-start justify-center overflow-y-auto px-5 py-8">
-          <form onSubmit={handleSubmit} className="w-full max-w-md">
-            <h1 className="font-display text-3xl font-black text-bone">פרטי ההזמנה</h1>
-            <p className="mt-2 text-sm text-bone/70">
+          <form onSubmit={handleSubmit} className="w-full max-w-md rounded-3xl bg-chalk p-6 shadow-lg ring-1 ring-ink/5 sm:p-8">
+            <h1 className="font-display text-3xl font-black text-ink">פרטי ההזמנה</h1>
+            <p className="mt-2 text-sm text-ink/60">
               מלאו את הפרטים ותועברו לדף תשלום מאובטח להזנת פרטי האשראי.
             </p>
 
             <div className="mt-7 space-y-4">
               {FIELDS.map((f) => (
                 <label key={f.key} className="block">
-                  <span className="mb-1.5 block text-sm font-medium text-bone/90">{f.label}</span>
+                  <span className="mb-1.5 block text-sm font-semibold text-ink/80">{f.label}</span>
                   <input
                     type={f.type}
                     required
+                    inputMode={f.inputMode}
                     value={form[f.key]}
                     onChange={update(f.key)}
                     autoComplete={f.autoComplete}
                     placeholder={f.placeholder}
-                    className="w-full rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-bone placeholder-bone/30 outline-none transition-colors focus:border-ball focus:bg-white/10"
+                    className="w-full rounded-xl border border-ink/15 bg-white px-4 py-3 text-ink placeholder-ink/30 outline-none transition-colors focus:border-moss focus:ring-2 focus:ring-moss/20"
                   />
                 </label>
               ))}
             </div>
 
             {error && (
-              <p className="mt-4 rounded-xl bg-red-500/15 px-4 py-3 text-sm text-red-200">{error}</p>
+              <p className="mt-4 rounded-xl bg-red-100 px-4 py-3 text-sm text-red-700">{error}</p>
             )}
 
             <button
               type="submit"
               disabled={loading}
-              className="mt-6 w-full rounded-full bg-ball py-3.5 font-semibold text-ink transition-colors hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
+              className="mt-6 w-full rounded-full bg-ink py-3.5 font-semibold text-bone transition-colors hover:bg-court disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading ? 'מעבר לתשלום…' : `המשך לתשלום מאובטח ₪${amount}`}
             </button>
 
-            <p className="mt-4 text-center text-xs text-bone/50">
+            <p className="mt-4 text-center text-xs text-ink/50">
               🔒 פרטי האשראי מוזנים בדף מאובטח של Hyp ואינם נשמרים אצלנו.
             </p>
           </form>

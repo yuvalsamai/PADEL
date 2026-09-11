@@ -97,6 +97,7 @@ export default async function handler(req, res) {
     ['cell', 'cell'],
     ['street', 'street'],
     ['city', 'city'],
+    ['zip', 'zip'],
     ['userId', 'UserId'],
   ]) {
     if (src[k]) params.set(hypKey, String(src[k]));
@@ -111,15 +112,18 @@ export default async function handler(req, res) {
       return res.status(502).json({ error: 'Unexpected Hyp response', body });
     }
 
-    // Persist the checkout details (phone + address) before handing off to Hyp.
+    // Persist the checkout details (phone + full address) before handing off to Hyp.
     const fullName = [src.clientName, src.clientLName].filter(Boolean).join(' ').trim();
+    // Combine street + city + postal code into one shipping address for the admin.
+    const cityZip = [src.city, src.zip].filter(Boolean).join(' ').trim();
+    const fullAddress = [src.street, cityZip].filter(Boolean).join(', ').trim();
     await recordPending({
       order,
       amount,
       name: fullName || null,
       email: src.email ? String(src.email) : null,
       cell: src.cell ? String(src.cell) : null,
-      address: src.street ? String(src.street) : null,
+      address: fullAddress || null,
     });
 
     // Append the response verbatim (order preserved) to the payment-page base.
