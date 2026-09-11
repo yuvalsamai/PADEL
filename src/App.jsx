@@ -185,11 +185,8 @@ const Hero = () => (
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.25 }}
-            className="flex h-40 w-full flex-col justify-between rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur-md sm:max-w-sm"
+            className="flex w-full flex-col justify-between gap-6 rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur-md sm:max-w-sm"
           >
-            <p className="text-[15px] leading-snug text-bone">
-              זווית גבוהה ויציבה שמתעדת כל נקודה — מוכן ל‑Reels, לניתוח משחק ולהכרעת קווים.
-            </p>
             <div className="flex items-center justify-between">
               <div>
                 <div className="font-semibold text-bone">₪89</div>
