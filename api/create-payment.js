@@ -35,6 +35,8 @@ export default async function handler(req, res) {
     ['clientLName', 'ClientLName'],
     ['email', 'email'],
     ['cell', 'cell'],
+    ['street', 'street'],
+    ['city', 'city'],
     ['userId', 'UserId'],
   ]) {
     if (src[k]) params.set(hypKey, String(src[k]));
