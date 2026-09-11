@@ -12,8 +12,17 @@ const FIELDS = [
   { key: 'street', label: 'כתובת למשלוח', type: 'text', autoComplete: 'street-address', placeholder: 'רחוב, מספר, עיר' },
 ];
 
+// Optional amount override for testing, e.g. /pay?amount=7 — falls back to ₪89.
+// Guards against junk/negative values so it can't be abused into a zero charge.
+function getAmount() {
+  const raw = new URLSearchParams(window.location.search).get('amount');
+  const n = Number(raw);
+  return raw && Number.isFinite(n) && n > 0 ? String(n) : '89';
+}
+
 export default function PayPage() {
   const [form, setForm] = useState({ fullName: '', cell: '', email: '', street: '' });
+  const [amount] = useState(getAmount);
   const [url, setUrl] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -36,6 +45,7 @@ export default function PayPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          amount,
           clientName,
           clientLName,
           cell: form.cell.trim(),
@@ -108,7 +118,7 @@ export default function PayPage() {
               disabled={loading}
               className="mt-6 w-full rounded-full bg-ball py-3.5 font-semibold text-ink transition-colors hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {loading ? 'מעבר לתשלום…' : 'המשך לתשלום מאובטח ₪89'}
+              {loading ? 'מעבר לתשלום…' : `המשך לתשלום מאובטח ₪${amount}`}
             </button>
 
             <p className="mt-4 text-center text-xs text-bone/50">
