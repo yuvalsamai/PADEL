@@ -20,10 +20,16 @@ create table if not exists public.orders (
   product       text,
   quantity      integer default 1,
   amount        numeric(10,2),
+  order_ref     text,   -- Hyp "Order" number: links the checkout record to the completion redirect
+  tran_id       text,   -- Hyp transaction id, set on a verified completion (idempotency key)
   status        text not null default 'pending'
                 check (status in ('pending','paid','shipped','delivered','cancelled')),
   created_at    timestamptz not null default now()
 );
+
+-- If the orders table already exists from an earlier version, add the columns:
+alter table public.orders add column if not exists order_ref text;
+alter table public.orders add column if not exists tran_id   text;
 
 create table if not exists public.shipments (
   id              bigint generated always as identity primary key,

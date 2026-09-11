@@ -7,7 +7,7 @@ const HYP_BASE = 'https://pay.hyp.co.il/p/';
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://uwmydcfhedcquktxqsis.supabase.co';
 
 // Sends a new-order alert to a Telegram group. No-op if not configured; never throws.
-async function notifyTelegram({ name, email, amount, order, tranId, orderId }) {
+async function notifyTelegram({ name, email, phone, address, amount, order, tranId, orderId }) {
   const { TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID } = process.env;
   if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) return;
 
@@ -15,7 +15,9 @@ async function notifyTelegram({ name, email, amount, order, tranId, orderId }) {
     '🎾 *הזמנה חדשה - CourtCheck*',
     '',
     `👤 שם: ${name || '—'}`,
+    `📱 טלפון: ${phone || '—'}`,
     `✉️ אימייל: ${email || '—'}`,
+    `🏠 כתובת: ${address || '—'}`,
     `💰 סכום: ₪${amount ?? '—'}`,
     `🧾 מס׳ הזמנה: ${order || '—'}`,
     `🔖 עסקת Hyp: ${tranId || '—'}`,
@@ -90,33 +92,77 @@ export default async function handler(req, res) {
       if (existing) return res.status(200).json({ ok: true, duplicate: true });
     }
 
-    let customerId = null;
-    if (name || email) {
-      const { data: cust } = await supabase
-        .from('customers').insert({ name: name || 'לקוח', email }).select('id').single();
-      customerId = cust?.id ?? null;
+    // Prefer the pending order created at checkout (it carries phone + address,
+    // which Hyp's completion redirect does not return). Fall back to a fresh
+    // insert if none is found (e.g. the checkout DB write had failed).
+    let orderRow = null;
+    if (order) {
+      const { data: pending } = await supabase
+        .from('orders')
+        .select('id, customer_id, customer_name')
+        .eq('order_ref', order)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      orderRow = pending || null;
     }
 
-    const { data: newOrder } = await supabase.from('orders').insert({
-      tran_id: tranId,
-      customer_id: customerId,
-      customer_name: name,
-      product: 'תושבת CourtCheck',
-      quantity: 1,
-      amount,
-      status: 'paid',
-    }).select('id').single();
+    let customerId = orderRow?.customer_id ?? null;
+    let orderId = orderRow?.id ?? null;
 
-    // Create a shipment to track (courier / tracking number filled in later via admin).
-    if (newOrder?.id) {
-      await supabase.from('shipments').insert({
-        order_id: newOrder.id,
-        status: 'pending',
-      });
+    if (orderRow) {
+      // Finish the existing pending order — keep its phone/address, mark paid.
+      await supabase
+        .from('orders')
+        .update({
+          tran_id: tranId,
+          amount,
+          status: 'paid',
+          customer_name: orderRow.customer_name || name,
+        })
+        .eq('id', orderRow.id);
+    } else {
+      // Fallback path: no pending order — create customer + order + shipment now.
+      if (name || email) {
+        const { data: cust } = await supabase
+          .from('customers').insert({ name: name || 'לקוח', email }).select('id').single();
+        customerId = cust?.id ?? null;
+      }
+
+      const { data: newOrder } = await supabase.from('orders').insert({
+        order_ref: order,
+        tran_id: tranId,
+        customer_id: customerId,
+        customer_name: name,
+        product: 'תושבת CourtCheck',
+        quantity: 1,
+        amount,
+        status: 'paid',
+      }).select('id').single();
+      orderId = newOrder?.id ?? null;
+
+      if (orderId) {
+        await supabase.from('shipments').insert({ order_id: orderId, status: 'pending' });
+      }
+    }
+
+    // Pull phone + address (stored at checkout) to enrich the Telegram alert.
+    let phone = null;
+    let address = null;
+    if (customerId) {
+      const { data: cust } = await supabase
+        .from('customers').select('phone').eq('id', customerId).maybeSingle();
+      phone = cust?.phone ?? null;
+    }
+    if (orderId) {
+      const { data: ship } = await supabase
+        .from('shipments').select('address').eq('order_id', orderId).limit(1).maybeSingle();
+      address = ship?.address ?? null;
     }
 
     // Fire a Telegram notification (best-effort — never blocks the buyer's success).
-    await notifyTelegram({ name, email, amount, order, tranId, orderId: newOrder?.id });
+    await notifyTelegram({ name, email, phone, address, amount, order, tranId, orderId });
 
     return res.status(200).json({ ok: true, order });
   } catch (e) {
