@@ -27,6 +27,11 @@ export default async function handler(req, res) {
     PageLang: 'HEB',
     tmp: '4',
     sendemail: 'True',
+    // Tell Hyp the incoming Hebrew values are UTF-8 (UTF8) and to return the
+    // completion redirect in UTF-8 too (UTF8out) — otherwise Hebrew names/address
+    // come back garbled ("gibberish") on the receipt and the completion params.
+    UTF8: 'True',
+    UTF8out: 'True',
   });
 
   // Optional customer fields
