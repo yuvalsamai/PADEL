@@ -189,8 +189,11 @@ const Hero = () => (
           >
             <div className="flex items-center justify-between">
               <div>
-                <div className="font-semibold text-bone">₪89</div>
-                <div className="text-xs text-bone/70">כולל משלוח ללוקר</div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-sm text-bone/50 line-through">₪119.90</span>
+                  <span className="font-display text-xl font-black text-ball">₪89</span>
+                </div>
+                <div className="text-xs font-medium text-bone/80">מחיר מבצע · משלוח חינם</div>
               </div>
               <a href="/pay" className="group">
                 <ArrowChip />
@@ -692,8 +695,11 @@ const StickyBar = () => {
         >
           <div className="flex items-center gap-3">
             <div className="flex-shrink-0 pr-2 text-right">
-              <div className="font-display text-lg font-black leading-none text-bone">₪89</div>
-              <div className="mt-0.5 text-[0.6rem] text-ball">פחות מעלות שעת מגרש</div>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-xs text-bone/50 line-through">₪119.90</span>
+                <span className="font-display text-lg font-black leading-none text-bone">₪89</span>
+              </div>
+              <div className="mt-0.5 text-[0.6rem] text-ball">מחיר מבצע · משלוח חינם</div>
             </div>
             <motion.a
               href="/pay"
