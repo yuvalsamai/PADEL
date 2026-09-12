@@ -34,7 +34,27 @@ function ordersCount() {
 }
 
 const OrdersCounter = () => {
-  const count = ordersCount();
+  const baseline = ordersCount();
+  const [live, setLive] = useState(0); // real paid orders from the DB
+
+  useEffect(() => {
+    let cancelled = false;
+    const fetchCount = () => {
+      fetch('/api/orders-count')
+        .then((r) => r.json())
+        .then((d) => !cancelled && typeof d.count === 'number' && setLive(d.count))
+        .catch(() => {});
+    };
+    fetchCount();
+    // Poll so a fresh purchase bumps the number without a page reload.
+    const id = setInterval(fetchCount, 30000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, []);
+
+  const count = baseline + live;
   return (
     <section className="bg-ink px-5 py-14 sm:py-16">
       <div className="mx-auto flex max-w-3xl flex-col items-center gap-4 text-center">
