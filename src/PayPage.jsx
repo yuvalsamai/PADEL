@@ -31,9 +31,13 @@ function getCheckout() {
 export default function PayPage() {
   const [form, setForm] = useState({ fullName: '', cell: '', email: '', street: '', city: '', zip: '' });
   const [{ amount, token }] = useState(getCheckout);
+  const [qty, setQty] = useState(1);
   const [url, setUrl] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const unit = Number(amount) || 0;
+  const total = unit * qty;
 
   const update = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
 
@@ -55,6 +59,7 @@ export default function PayPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           amount,
+          quantity: qty,
           testToken: token,
           clientName,
           clientLName,
@@ -122,6 +127,35 @@ export default function PayPage() {
               ))}
             </div>
 
+            {/* Quantity + total */}
+            <div className="mt-5 flex items-center justify-between rounded-xl border border-ink/10 bg-white px-4 py-3">
+              <span className="text-sm font-semibold text-ink/80">כמות</span>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setQty((q) => Math.max(1, q - 1))}
+                  aria-label="הפחת כמות"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg bg-ink/5 text-lg font-bold text-ink hover:bg-ink/10"
+                >
+                  −
+                </button>
+                <span className="w-6 text-center text-lg font-bold text-ink">{qty}</span>
+                <button
+                  type="button"
+                  onClick={() => setQty((q) => Math.min(10, q + 1))}
+                  aria-label="הוסף כמות"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg bg-ink/5 text-lg font-bold text-ink hover:bg-ink/10"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-2 flex items-center justify-between px-1 text-sm">
+              <span className="text-ink/60">סה״כ לתשלום</span>
+              <span className="font-display text-xl font-black text-ink">₪{total}</span>
+            </div>
+
             {error && (
               <p className="mt-4 rounded-xl bg-red-100 px-4 py-3 text-sm text-red-700">{error}</p>
             )}
@@ -129,13 +163,21 @@ export default function PayPage() {
             <button
               type="submit"
               disabled={loading}
-              className="mt-6 w-full rounded-full bg-ink py-3.5 font-semibold text-bone transition-colors hover:bg-court disabled:cursor-not-allowed disabled:opacity-60"
+              className="mt-4 w-full rounded-full bg-ink py-3.5 font-semibold text-bone transition-colors hover:bg-court disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {loading ? 'מעבר לתשלום…' : `המשך לתשלום מאובטח ₪${amount}`}
+              {loading ? 'מעבר לתשלום…' : `המשך לתשלום מאובטח · ₪${total}`}
             </button>
 
+            {/* Trust badges */}
+            <div className="mt-5 grid grid-cols-2 gap-2 text-center text-xs font-medium text-ink/60">
+              <span>🔒 תשלום מאובטח · Hyp</span>
+              <span>🚚 משלוח חינם</span>
+              <span>💳 כל כרטיסי האשראי</span>
+              <span>↩️ החזר תוך 14 יום</span>
+            </div>
+
             <p className="mt-4 text-center text-xs text-ink/50">
-              🔒 פרטי האשראי מוזנים בדף מאובטח של Hyp ואינם נשמרים אצלנו.
+              פרטי האשראי מוזנים בדף מאובטח של Hyp ואינם נשמרים אצלנו.
             </p>
           </form>
         </div>

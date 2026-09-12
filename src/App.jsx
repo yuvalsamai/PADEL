@@ -5,7 +5,10 @@ import { AccessibilityStatementModal } from './Accessibility.jsx';
 
 /* Hero background photo. Drop the supplied image at public/hero.jpg to swap it in;
    a court-toned gradient shows until then. */
-const HERO_IMG = '/hero.jpg';
+const HERO_IMG = '/hero.webp';
+/* Optional hero video — drop a file at public/hero-video.mp4 to show it in the
+   product column; falls back to the spinning product photo if absent. */
+const HERO_VIDEO = '/hero-video.mp4';
 
 /* ================================================================== */
 /*  Orders counter (social proof)                                     */
@@ -34,6 +37,44 @@ function ordersCount() {
   return total;
 }
 
+// Animates from 0 up to `target` once, when it first scrolls into view.
+const useCountUp = (target, duration = 1400) => {
+  const [display, setDisplay] = useState(0);
+  const ref = React.useRef(null);
+  const started = React.useRef(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const run = () => {
+      if (started.current) return;
+      started.current = true;
+      const start = performance.now();
+      const from = 0;
+      const tick = (now) => {
+        const p = Math.min(1, (now - start) / duration);
+        const eased = 1 - Math.pow(1 - p, 3); // easeOutCubic
+        setDisplay(Math.round(from + (target - from) * eased));
+        if (p < 1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    };
+    const io = new IntersectionObserver(
+      (entries) => entries.forEach((e) => e.isIntersecting && run()),
+      { threshold: 0.4 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [target, duration]);
+
+  // If the target changes after the animation (e.g. live update), snap to it.
+  useEffect(() => {
+    if (started.current) setDisplay(target);
+  }, [target]);
+
+  return [display, ref];
+};
+
 const OrdersCounter = () => {
   const baseline = ordersCount();
   const [live, setLive] = useState(0); // real paid orders from the DB
@@ -56,9 +97,10 @@ const OrdersCounter = () => {
   }, []);
 
   const count = baseline + live;
+  const [display, ref] = useCountUp(count);
   return (
     <section className="bg-ink px-5 py-14 sm:py-16">
-      <div className="mx-auto flex max-w-3xl flex-col items-center gap-4 text-center">
+      <div ref={ref} className="mx-auto flex max-w-3xl flex-col items-center gap-4 text-center">
         <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5">
           <span className="relative flex h-2.5 w-2.5">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-ball opacity-75" />
@@ -67,13 +109,34 @@ const OrdersCounter = () => {
           <span className="text-xs font-medium uppercase tracking-[0.18em] text-bone/70">בזמן אמת</span>
         </span>
         <div className="font-display text-6xl font-black leading-none text-ball sm:text-7xl">
-          {count.toLocaleString('he-IL')}
+          {display.toLocaleString('he-IL')}
         </div>
         <div className="font-display text-2xl font-bold text-bone sm:text-3xl">הזמנות שבוצעו</div>
       </div>
     </section>
   );
 };
+
+/* Trust badges — reused on the landing page and (compact) on checkout. */
+export const TRUST_ITEMS = [
+  { icon: '🔒', label: 'תשלום מאובטח · Hyp' },
+  { icon: '🚚', label: 'משלוח חינם לנקודת איסוף' },
+  { icon: '↩️', label: 'החזר תוך 14 יום' },
+  { icon: '💳', label: 'כל כרטיסי האשראי' },
+];
+
+const TrustStrip = () => (
+  <section className="border-y border-ink/5 bg-bone2 px-5 py-6">
+    <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-center gap-x-8 gap-y-3 text-center">
+      {TRUST_ITEMS.map((t) => (
+        <div key={t.label} className="flex items-center gap-2 text-sm font-medium text-ink/70">
+          <span className="text-lg" aria-hidden="true">{t.icon}</span>
+          {t.label}
+        </div>
+      ))}
+    </div>
+  </section>
+);
 
 /* ================================================================== */
 /*  Primitives                                                        */
@@ -196,7 +259,7 @@ const ProductSpin = () => (
     {/* ambient glow */}
     <div className="pointer-events-none absolute h-2/3 w-2/3 rounded-full bg-ball/25 blur-3xl" />
     <motion.img
-      src="/product.png"
+      src="/product.webp"
       alt="תושבת CourtCheck עם אייפון על המגרש"
       draggable={false}
       className="relative w-[min(72%,300px)] select-none drop-shadow-2xl lg:w-[min(95%,420px)]"
@@ -212,6 +275,27 @@ const ProductSpin = () => (
     />
   </div>
 );
+
+/* Shows the hero video when public/hero-video.mp4 exists; otherwise the
+   spinning product photo. Falls back automatically if the video can't load. */
+const HeroMedia = () => {
+  const [videoOk, setVideoOk] = useState(true);
+  if (!videoOk) return <ProductSpin />;
+  return (
+    <div className="relative flex items-center justify-center py-6 lg:py-0">
+      <div className="pointer-events-none absolute h-2/3 w-2/3 rounded-full bg-ball/25 blur-3xl" />
+      <video
+        src={HERO_VIDEO}
+        autoPlay
+        muted
+        loop
+        playsInline
+        onError={() => setVideoOk(false)}
+        className="relative w-[min(88%,420px)] rounded-3xl object-cover shadow-2xl ring-1 ring-white/10"
+      />
+    </div>
+  );
+};
 
 const Hero = () => (
   <section id="top" className="relative isolate overflow-hidden rounded-panel">
@@ -272,7 +356,7 @@ const Hero = () => (
         </div>
 
         {/* product column — left in RTL */}
-        <ProductSpin />
+        <HeroMedia />
       </div>
     </div>
   </section>
@@ -341,7 +425,9 @@ const Features = () => (
       <Reveal className="mt-6">
         <div className="overflow-hidden rounded-3xl ring-1 ring-ink/5">
           <img
-            src="/feature.png"
+            src="/feature.webp"
+            loading="lazy"
+            decoding="async"
             alt="תושבת CourtCheck ננעלת על עמוד הרשת ומצלמת משחק פאדל"
             className="aspect-[16/9] w-full object-cover"
           />
@@ -422,7 +508,9 @@ const Showcase = () => (
       <Reveal className="mt-14">
         <div className="overflow-hidden rounded-3xl bg-pine ring-1 ring-white/10">
           <img
-            src="/STUND.png"
+            src="/STUND.webp"
+            loading="lazy"
+            decoding="async"
             alt="תושבת CourtCheck ננעלת על עמוד הרשת ומחזיקה את הטלפון"
             className="aspect-[16/9] w-full object-cover"
           />
@@ -802,6 +890,7 @@ export default function App() {
       <div className="overflow-hidden rounded-panel bg-bone">
         <Hero />
         <OrdersCounter />
+        <TrustStrip />
         <Features />
         <Steps />
         <Showcase />

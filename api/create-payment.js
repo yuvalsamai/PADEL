@@ -11,7 +11,7 @@ const SUPABASE_URL = process.env.SUPABASE_URL || 'https://uwmydcfhedcquktxqsis.s
 // Best-effort: store the checkout details as a pending order keyed by order_ref.
 // verify-payment finishes it (status → paid) on a confirmed completion redirect.
 // Never throws — the buyer must reach the payment page even if the DB write fails.
-async function recordPending({ order, amount, name, email, cell, address }) {
+async function recordPending({ order, amount, quantity, name, email, cell, address }) {
   const { SUPABASE_SERVICE_ROLE_KEY } = process.env;
   if (!SUPABASE_SERVICE_ROLE_KEY) return;
 
@@ -37,7 +37,7 @@ async function recordPending({ order, amount, name, email, cell, address }) {
         customer_id: customerId,
         customer_name: name,
         product: 'תושבת CourtCheck',
-        quantity: 1,
+        quantity: quantity || 1,
         amount: Number(amount) || null,
         status: 'pending',
       })
@@ -74,7 +74,11 @@ export default async function handler(req, res) {
   const requested = src.amount != null ? String(src.amount) : PRODUCT_PRICE;
   const n = Number(requested);
   const testAllowed = Boolean(testToken) && src.testToken === testToken && Number.isFinite(n) && n > 0;
-  const amount = testAllowed ? requested : PRODUCT_PRICE;
+  const unitPrice = testAllowed ? Number(requested) : Number(PRODUCT_PRICE);
+
+  // Quantity is clamped to 1..10 server-side; total is derived, never trusted.
+  const qty = Math.min(10, Math.max(1, Math.floor(Number(src.quantity)) || 1));
+  const amount = String(unitPrice * qty);
 
   const order = String(src.order || `CC-${Date.now()}`);
 
@@ -131,6 +135,7 @@ export default async function handler(req, res) {
     await recordPending({
       order,
       amount,
+      quantity: qty,
       name: fullName || null,
       email: src.email ? String(src.email) : null,
       cell: src.cell ? String(src.cell) : null,
