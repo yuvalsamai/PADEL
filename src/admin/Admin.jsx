@@ -421,15 +421,58 @@ function regionForCity(city) {
   return CITY_REGION[key] || '';
 }
 
+// Accurate English names for common cities (Hebrew has no vowels, so a
+// letter-by-letter transliteration of city names looks wrong — use a table).
+const CITY_EN = {
+  'תל אביב': 'Tel Aviv', 'תל אביב-יפו': 'Tel Aviv-Yafo', 'רמת גן': 'Ramat Gan', 'גבעתיים': 'Givatayim',
+  'בני ברק': 'Bnei Brak', 'חולון': 'Holon', 'בת ים': 'Bat Yam', 'הרצליה': 'Herzliya',
+  'ירושלים': 'Jerusalem', 'בית שמש': 'Beit Shemesh', 'מעלה אדומים': 'Maale Adumim',
+  'חיפה': 'Haifa', 'קריית אתא': 'Kiryat Ata', 'קריית ביאליק': 'Kiryat Bialik', 'קריית מוצקין': 'Kiryat Motzkin',
+  'קריית ים': 'Kiryat Yam', 'טירת כרמל': 'Tirat Carmel', 'נשר': 'Nesher',
+  'ראשון לציון': 'Rishon LeZion', 'פתח תקווה': 'Petah Tikva', 'נתניה': 'Netanya', 'רחובות': 'Rehovot',
+  'רעננה': 'Raanana', 'כפר סבא': 'Kfar Saba', 'הוד השרון': 'Hod HaSharon', 'רמלה': 'Ramla', 'לוד': 'Lod',
+  'מודיעין': 'Modiin', 'נס ציונה': 'Ness Ziona', 'יבנה': 'Yavne', 'ראש העין': 'Rosh HaAyin',
+  'קריית אונו': 'Kiryat Ono', 'אור יהודה': 'Or Yehuda',
+  'באר שבע': 'Beer Sheva', 'אשדוד': 'Ashdod', 'אשקלון': 'Ashkelon', 'אילת': 'Eilat', 'דימונה': 'Dimona',
+  'קריית גת': 'Kiryat Gat', 'נתיבות': 'Netivot', 'שדרות': 'Sderot', 'אופקים': 'Ofakim',
+  'נצרת': 'Nazareth', 'עפולה': 'Afula', 'טבריה': 'Tiberias', 'כרמיאל': 'Karmiel', 'צפת': 'Safed',
+  'קריית שמונה': 'Kiryat Shmona', 'נהריה': 'Nahariya', 'עכו': 'Acre', 'מגדל העמק': 'Migdal HaEmek', 'בית שאן': 'Beit Shean',
+};
+
+// Best-effort letter-by-letter Hebrew → Latin transliteration (for street/name).
+const HE_MAP = {
+  'א': '', 'ב': 'b', 'ג': 'g', 'ד': 'd', 'ה': 'h', 'ו': 'v', 'ז': 'z', 'ח': 'ch', 'ט': 't',
+  'י': 'y', 'כ': 'k', 'ך': 'k', 'ל': 'l', 'מ': 'm', 'ם': 'm', 'נ': 'n', 'ן': 'n', 'ס': 's',
+  'ע': '', 'פ': 'p', 'ף': 'f', 'צ': 'tz', 'ץ': 'tz', 'ק': 'k', 'ר': 'r', 'ש': 'sh', 'ת': 't',
+  'ן': 'n',
+};
+
+function heToLatin(str) {
+  if (!str) return '';
+  const s = String(str);
+  // If there's no Hebrew, keep it as-is (already Latin).
+  if (!/[֐-׿]/.test(s)) return s;
+  let out = '';
+  for (const ch of s) {
+    if (HE_MAP[ch] !== undefined) out += HE_MAP[ch];
+    else if (/[֑-ׇ]/.test(ch)) continue; // niqqud/marks
+    else out += ch; // spaces, digits, punctuation
+  }
+  // Capitalize each word for a name/street look.
+  return out.replace(/\s+/g, ' ').trim().replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+const cityEn = (city) => (city && CITY_EN[String(city).trim()]) || heToLatin(city);
+
 // English shipping block for the dropshipping supplier.
 function supplierBlock({ order, shipment, phone, email }) {
   const s = shipment || {};
-  const address = s.street || s.address || '';
+  const address = heToLatin(s.street || s.address || '');
   return [
-    `Customer Name: ${order.customer_name || ''}`,
+    `Customer Name: ${heToLatin(order.customer_name || '')}`,
     'Country: Israel',
     `Address: ${address}`,
-    `City: ${s.city || ''}`,
+    `City: ${cityEn(s.city)}`,
     `Region / State: ${s.region || regionForCity(s.city)}`,
     `Post Code: ${s.zip || ''}`,
     `Phone Number: ${intlPhone(phone)}`,
