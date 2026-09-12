@@ -351,10 +351,150 @@ const RecordModal = ({ table, record, onClose, onSaved }) => {
 
 const TABS = [
   { key: 'orders', label: 'הזמנות' },
-  { key: 'shipments', label: 'משלוחים' },
   { key: 'customers', label: 'לקוחות' },
   { key: 'analytics', label: 'אנליטיקס' },
 ];
+
+/* ================================================================== */
+/*  Orders + shipments (unified view)                                 */
+/* ================================================================== */
+
+// Payment status derives from the order status. Only paid/error are editable.
+const PAY_LABEL = { pending: 'ממתין', paid: 'שולם', shipped: 'שולם', delivered: 'שולם', cancelled: 'שגיאה' };
+const PAY_STYLE = { paid: 'bg-ball/15 text-ball', shipped: 'bg-ball/15 text-ball', delivered: 'bg-ball/15 text-ball', pending: 'bg-amber-400/15 text-amber-300', cancelled: 'bg-rose-400/15 text-rose-300' };
+const PAY_OPTIONS = [{ v: 'paid', l: 'שולם' }, { v: 'cancelled', l: 'שגיאה' }];
+
+// Shipment status uses the buyer-facing Hebrew labels over the existing enum.
+const SHIP_LABEL = { pending: 'בהכנה למשלוח', shipped: 'נשלח', delivered: 'נמסר', cancelled: 'נאבד' };
+const SHIP_OPTIONS = [
+  { v: 'pending', l: 'בהכנה למשלוח' },
+  { v: 'shipped', l: 'נשלח' },
+  { v: 'delivered', l: 'נמסר' },
+  { v: 'cancelled', l: 'נאבד' },
+];
+
+const OrdersView = ({ orders, shipments, onChanged, onDelete }) => {
+  const rows = useMemo(() => {
+    // One shipment per order (latest wins if duplicates exist).
+    const shipByOrder = new Map();
+    for (const s of shipments) if (!shipByOrder.has(s.order_id)) shipByOrder.set(s.order_id, s);
+
+    // Chronological order number (oldest = 1), stable regardless of display order.
+    const asc = [...orders].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    const seqById = new Map();
+    asc.forEach((o, i) => seqById.set(o.id, i + 1));
+
+    // Display newest first.
+    return [...orders]
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+      .map((o) => ({ order: o, shipment: shipByOrder.get(o.id) || null, seq: seqById.get(o.id) }));
+  }, [orders, shipments]);
+
+  const setPayment = async (order, value) => {
+    const { error } = await supabase.from('orders').update({ status: value }).eq('id', order.id);
+    if (!error) onChanged();
+    else window.alert(error.message);
+  };
+
+  // Update (or create) the shipment row tied to an order.
+  const setShipment = async (order, shipment, patch) => {
+    let error;
+    if (shipment) ({ error } = await supabase.from('shipments').update(patch).eq('id', shipment.id));
+    else ({ error } = await supabase.from('shipments').insert({ order_id: order.id, status: 'pending', ...patch }));
+    if (!error) onChanged();
+    else window.alert(error.message);
+  };
+
+  return (
+    <div className="overflow-x-auto rounded-2xl ring-1 ring-white/10">
+      <table className="w-full min-w-[900px] text-right text-sm">
+        <thead className="bg-pine text-bone/60">
+          <tr>
+            {['מס׳ הזמנה', 'שם לקוח', 'כתובת', 'כמות', 'סכום', 'סטטוס תשלום', 'סטטוס משלוח', 'מספר מעקב', 'תאריך הזמנה'].map((h) => (
+              <th key={h} className="whitespace-nowrap px-4 py-3 font-medium">{h}</th>
+            ))}
+            <th className="px-4 py-3" />
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-white/5">
+          {rows.length === 0 ? (
+            <tr><td colSpan={10} className="px-4 py-10 text-center text-bone/50">אין הזמנות להצגה</td></tr>
+          ) : (
+            rows.map(({ order, shipment, seq }) => (
+              <tr key={order.id} className="text-bone/90">
+                <td className="whitespace-nowrap px-4 py-3 font-semibold">#{seq}</td>
+                <td className="whitespace-nowrap px-4 py-3">{order.customer_name || '—'}</td>
+                <td className="max-w-[220px] truncate px-4 py-3" title={shipment?.address || ''}>{shipment?.address || '—'}</td>
+                <td className="whitespace-nowrap px-4 py-3">{order.quantity ?? 1}</td>
+                <td className="whitespace-nowrap px-4 py-3">{order.amount != null ? `₪${order.amount}` : '—'}</td>
+
+                {/* Payment status */}
+                <td className="whitespace-nowrap px-4 py-3">
+                  <select
+                    value={['paid', 'cancelled'].includes(order.status) ? order.status : 'paid'}
+                    onChange={(e) => setPayment(order, e.target.value)}
+                    className={`rounded-lg px-2 py-1 text-xs font-semibold outline-none ${PAY_STYLE[order.status] || 'bg-white/10 text-bone/70'}`}
+                    title={PAY_LABEL[order.status] || order.status}
+                  >
+                    {PAY_OPTIONS.map((o) => <option key={o.v} value={o.v}>{o.l}</option>)}
+                  </select>
+                </td>
+
+                {/* Shipment status */}
+                <td className="whitespace-nowrap px-4 py-3">
+                  <select
+                    value={shipment?.status || 'pending'}
+                    onChange={(e) => setShipment(order, shipment, { status: e.target.value })}
+                    className="rounded-lg bg-white/10 px-2 py-1 text-xs font-semibold text-bone outline-none"
+                  >
+                    {SHIP_OPTIONS.map((o) => <option key={o.v} value={o.v}>{o.l}</option>)}
+                  </select>
+                </td>
+
+                {/* Tracking number (editable; links to 17track when set) */}
+                <td className="whitespace-nowrap px-4 py-3" dir="ltr">
+                  <div className="flex items-center gap-2">
+                    <input
+                      defaultValue={shipment?.tracking_number || ''}
+                      placeholder="—"
+                      onBlur={(e) => {
+                        const v = e.target.value.trim();
+                        if (v !== (shipment?.tracking_number || '')) setShipment(order, shipment, { tracking_number: v || null });
+                      }}
+                      className="w-32 rounded-lg border border-white/10 bg-pine px-2 py-1 text-xs text-bone outline-none focus:border-ball"
+                    />
+                    {shipment?.tracking_number && (
+                      <a
+                        href={`https://www.17track.net/en/track?nums=${encodeURIComponent(shipment.tracking_number)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-ball hover:text-white"
+                        title="עקוב ב-17track"
+                      >
+                        ↗
+                      </a>
+                    )}
+                  </div>
+                </td>
+
+                <td className="whitespace-nowrap px-4 py-3 text-bone/70">{fmtDate(order.created_at)}</td>
+
+                <td className="whitespace-nowrap px-4 py-3 text-left">
+                  <button
+                    onClick={() => onDelete(order)}
+                    className="rounded-lg px-2 py-1 text-xs text-rose-400 hover:bg-rose-400/10"
+                  >
+                    מחיקה
+                  </button>
+                </td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+};
 
 /* ================================================================== */
 /*  Analytics (first-party tracking)                                  */
@@ -666,6 +806,8 @@ const Dashboard = ({ session }) => {
             <p className="py-10 text-center text-bone/50">טוען…</p>
           ) : tab === 'analytics' ? (
             <Analytics events={data.analytics} orders={data.orders} />
+          ) : tab === 'orders' ? (
+            <OrdersView orders={data.orders} shipments={data.shipments} onChanged={load} onDelete={handleDelete} />
           ) : (
             <Table columns={columns[tab]} rows={data[tab]} onEdit={setEditing} onDelete={handleDelete} />
           )}
