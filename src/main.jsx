@@ -4,6 +4,9 @@ import App from './App.jsx'
 import './index.css'
 import { trackPageview } from './lib/analytics.js'
 import AccessibilityWidget from './Accessibility.jsx'
+import CookieBanner from './CookieBanner.jsx'
+
+const Privacy = lazy(() => import('./Privacy.jsx'))
 
 const Admin = lazy(() => import('./admin/Admin.jsx'))
 const PayPage = lazy(() => import('./PayPage.jsx'))
@@ -18,6 +21,7 @@ const route =
   : path.endsWith('/yuval') ? 'admin'
   : path.endsWith('/pay') ? 'pay'
   : path.endsWith('/thank-you') ? 'thankyou'
+  : path.endsWith('/privacy') ? 'privacy'
   : 'notfound'
 
 // Record a first-party pageview for every public page (skip the admin panel).
@@ -37,6 +41,10 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <Suspense fallback={null}>
         <ThankYou />
       </Suspense>
+    ) : route === 'privacy' ? (
+      <Suspense fallback={null}>
+        <Privacy />
+      </Suspense>
     ) : route === 'notfound' ? (
       <Suspense fallback={null}>
         <NotFound />
@@ -45,5 +53,6 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <App />
     )}
     {route !== 'admin' && <AccessibilityWidget />}
+    {route !== 'admin' && <CookieBanner />}
   </React.StrictMode>,
 )

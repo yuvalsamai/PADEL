@@ -817,6 +817,12 @@ const Footer = ({ onOpenTerms, onOpenA11y }) => (
           >
             הצהרת נגישות
           </button>
+          <a
+            href="/privacy"
+            className="font-medium text-ball underline-offset-4 transition-colors hover:underline"
+          >
+            מדיניות פרטיות
+          </a>
           <a href="#top" className="text-bone/60 transition-colors hover:text-bone">
             חזרה למעלה ↑
           </a>

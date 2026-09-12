@@ -12,3 +12,6 @@ _shot.mjs
 .env
 .env.local
 .env.*.local
+
+# DB backups (may contain PII — never commit)
+backup/
