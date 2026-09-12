@@ -373,11 +373,16 @@ const SHIP_OPTIONS = [
   { v: 'cancelled', l: 'נאבד' },
 ];
 
-const OrdersView = ({ orders, shipments, onChanged, onDelete }) => {
-  const rows = useMemo(() => {
+const OrdersView = ({ orders, shipments, customers, onChanged, onDelete }) => {
+  const [query, setQuery] = useState('');
+
+  const allRows = useMemo(() => {
     // One shipment per order (latest wins if duplicates exist).
     const shipByOrder = new Map();
     for (const s of shipments) if (!shipByOrder.has(s.order_id)) shipByOrder.set(s.order_id, s);
+    // Phone lookup by customer id (phone lives on the customer record).
+    const phoneByCustomer = new Map();
+    for (const c of customers || []) phoneByCustomer.set(c.id, c.phone || '');
 
     // Chronological order number (oldest = 1), stable regardless of display order.
     const asc = [...orders].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
@@ -387,8 +392,25 @@ const OrdersView = ({ orders, shipments, onChanged, onDelete }) => {
     // Display newest first.
     return [...orders]
       .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-      .map((o) => ({ order: o, shipment: shipByOrder.get(o.id) || null, seq: seqById.get(o.id) }));
-  }, [orders, shipments]);
+      .map((o) => ({
+        order: o,
+        shipment: shipByOrder.get(o.id) || null,
+        seq: seqById.get(o.id),
+        phone: phoneByCustomer.get(o.customer_id) || '',
+      }));
+  }, [orders, shipments, customers]);
+
+  const rows = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return allRows;
+    // Match by customer name or phone (ignore spaces/dashes in phone numbers).
+    const qDigits = q.replace(/\D/g, '');
+    return allRows.filter(({ order, phone }) => {
+      const nameHit = (order.customer_name || '').toLowerCase().includes(q);
+      const phoneHit = qDigits && phone.replace(/\D/g, '').includes(qDigits);
+      return nameHit || phoneHit;
+    });
+  }, [allRows, query]);
 
   const setPayment = async (order, value) => {
     const { error } = await supabase.from('orders').update({ status: value }).eq('id', order.id);
@@ -406,7 +428,20 @@ const OrdersView = ({ orders, shipments, onChanged, onDelete }) => {
   };
 
   return (
-    <div className="overflow-x-auto rounded-2xl ring-1 ring-white/10">
+    <div className="space-y-3">
+      <div className="flex items-center gap-3">
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="חיפוש לפי שם או טלפון…"
+          className="w-full max-w-xs rounded-xl border border-white/10 bg-pine px-4 py-2.5 text-sm text-bone placeholder-bone/40 outline-none focus:border-ball"
+        />
+        {query && (
+          <span className="text-xs text-bone/50">{rows.length} תוצאות</span>
+        )}
+      </div>
+
+      <div className="overflow-x-auto rounded-2xl ring-1 ring-white/10">
       <table className="w-full min-w-[900px] text-right text-sm">
         <thead className="bg-pine text-bone/60">
           <tr>
@@ -492,6 +527,7 @@ const OrdersView = ({ orders, shipments, onChanged, onDelete }) => {
           )}
         </tbody>
       </table>
+      </div>
     </div>
   );
 };
@@ -807,7 +843,7 @@ const Dashboard = ({ session }) => {
           ) : tab === 'analytics' ? (
             <Analytics events={data.analytics} orders={data.orders} />
           ) : tab === 'orders' ? (
-            <OrdersView orders={data.orders} shipments={data.shipments} onChanged={load} onDelete={handleDelete} />
+            <OrdersView orders={data.orders} shipments={data.shipments} customers={data.customers} onChanged={load} onDelete={handleDelete} />
           ) : (
             <Table columns={columns[tab]} rows={data[tab]} onEdit={setEditing} onDelete={handleDelete} />
           )}
