@@ -401,6 +401,26 @@ function intlPhone(phone) {
   return p;
 }
 
+// Derive an Israeli district (in English) from the city, so the supplier's
+// Region/State field is filled without asking the customer for a "מחוז".
+const CITY_REGION = {
+  'תל אביב': 'Tel Aviv', 'תל אביב-יפו': 'Tel Aviv', 'רמת גן': 'Tel Aviv', 'גבעתיים': 'Tel Aviv',
+  'בני ברק': 'Tel Aviv', 'חולון': 'Tel Aviv', 'בת ים': 'Tel Aviv', 'הרצליה': 'Tel Aviv',
+  'ירושלים': 'Jerusalem', 'בית שמש': 'Jerusalem', 'מעלה אדומים': 'Jerusalem',
+  'חיפה': 'Haifa', 'קריית אתא': 'Haifa', 'קריית ביאליק': 'Haifa', 'קריית מוצקין': 'Haifa', 'קריית ים': 'Haifa', 'טירת כרמל': 'Haifa', 'נשר': 'Haifa',
+  'ראשון לציון': 'Center', 'פתח תקווה': 'Center', 'נתניה': 'Center', 'רחובות': 'Center', 'רעננה': 'Center',
+  'כפר סבא': 'Center', 'הוד השרון': 'Center', 'רמלה': 'Center', 'לוד': 'Center', 'מודיעין': 'Center',
+  'נס ציונה': 'Center', 'יבנה': 'Center', 'ראש העין': 'Center', 'קריית אונו': 'Center', 'אור יהודה': 'Center',
+  'באר שבע': 'South', 'אשדוד': 'South', 'אשקלון': 'South', 'אילת': 'South', 'דימונה': 'South', 'קריית גת': 'South', 'נתיבות': 'South', 'שדרות': 'South', 'אופקים': 'South',
+  'נצרת': 'North', 'עפולה': 'North', 'טבריה': 'North', 'כרמיאל': 'North', 'צפת': 'North', 'קריית שמונה': 'North', 'נהריה': 'North', 'עכו': 'North', 'מגדל העמק': 'North', 'בית שאן': 'North',
+};
+
+function regionForCity(city) {
+  if (!city) return '';
+  const key = String(city).trim();
+  return CITY_REGION[key] || '';
+}
+
 // English shipping block for the dropshipping supplier.
 function supplierBlock({ order, shipment, phone, email }) {
   const s = shipment || {};
@@ -410,7 +430,7 @@ function supplierBlock({ order, shipment, phone, email }) {
     'Country: Israel',
     `Address: ${address}`,
     `City: ${s.city || ''}`,
-    `Region / State: ${s.region || ''}`,
+    `Region / State: ${s.region || regionForCity(s.city)}`,
     `Post Code: ${s.zip || ''}`,
     `Phone Number: ${intlPhone(phone)}`,
     `E-mail: ${email || ''}`,
