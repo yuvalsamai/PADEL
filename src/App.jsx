@@ -7,6 +7,48 @@ import { ArrowUpLeft, Plus, X, Menu } from 'lucide-react';
 const HERO_IMG = '/hero.jpg';
 
 /* ================================================================== */
+/*  Orders counter (social proof)                                     */
+/*  Starts at 127 and grows every day by a deterministic 2–8, so all  */
+/*  visitors see the same number and it climbs on its own — no DB.     */
+/* ================================================================== */
+const COUNTER_START = 127;
+const COUNTER_START_DATE = new Date('2026-09-12T00:00:00');
+
+function ordersCount() {
+  const dayMs = 86400000;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const start = new Date(COUNTER_START_DATE);
+  start.setHours(0, 0, 0, 0);
+  let days = Math.floor((today - start) / dayMs);
+  if (days < 0) days = 0;
+
+  let total = COUNTER_START;
+  for (let d = 1; d <= days; d++) {
+    // Deterministic pseudo-random 2..8 from the day index.
+    const x = Math.sin(d * 999.13) * 10000;
+    const frac = x - Math.floor(x);
+    total += 2 + Math.floor(frac * 7);
+  }
+  return total;
+}
+
+const OrdersCounter = () => {
+  const count = ordersCount();
+  return (
+    <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 backdrop-blur-md">
+      <span className="relative flex h-2.5 w-2.5">
+        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-ball opacity-75" />
+        <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-ball" />
+      </span>
+      <span className="text-sm text-bone">
+        <span className="font-black text-ball">{count.toLocaleString('he-IL')}</span> הזמנות בוצעו כבר
+      </span>
+    </div>
+  );
+};
+
+/* ================================================================== */
 /*  Primitives                                                        */
 /* ================================================================== */
 
@@ -178,6 +220,9 @@ const Hero = () => (
               תושבת שמתלבשת בשניות על רשת המגרש ומצלמת בזווית גבוהה ויציבה — לתוכן, לשיפור
               הטכניקה ולהכרעת כל ויכוח על קו.
             </p>
+            <div className="mt-6">
+              <OrdersCounter />
+            </div>
           </motion.div>
 
           {/* glass insight card */}
