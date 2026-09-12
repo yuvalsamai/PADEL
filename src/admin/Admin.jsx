@@ -463,16 +463,25 @@ const OrdersView = ({ orders, shipments, customers, onChanged, onDelete }) => {
                 <td className="whitespace-nowrap px-4 py-3">{order.quantity ?? 1}</td>
                 <td className="whitespace-nowrap px-4 py-3">{order.amount != null ? `₪${order.amount}` : '—'}</td>
 
-                {/* Payment status */}
+                {/* Payment status — green = שולם, red = שגיאה (by selected value) */}
                 <td className="whitespace-nowrap px-4 py-3">
-                  <select
-                    value={['paid', 'cancelled'].includes(order.status) ? order.status : 'paid'}
-                    onChange={(e) => setPayment(order, e.target.value)}
-                    className={`rounded-lg px-2 py-1 text-xs font-semibold outline-none ${PAY_STYLE[order.status] || 'bg-white/10 text-bone/70'}`}
-                    title={PAY_LABEL[order.status] || order.status}
-                  >
-                    {PAY_OPTIONS.map((o) => <option key={o.v} value={o.v}>{o.l}</option>)}
-                  </select>
+                  {(() => {
+                    const payVal = order.status === 'cancelled' ? 'cancelled' : 'paid';
+                    const cls = payVal === 'paid'
+                      ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                      : 'bg-rose-500/20 text-rose-300 border-rose-500/40';
+                    return (
+                      <select
+                        value={payVal}
+                        onChange={(e) => setPayment(order, e.target.value)}
+                        className={`rounded-lg border px-2 py-1.5 text-xs font-semibold outline-none ${cls}`}
+                      >
+                        {PAY_OPTIONS.map((o) => (
+                          <option key={o.v} value={o.v} style={{ color: '#0D0D0D', background: '#fff' }}>{o.l}</option>
+                        ))}
+                      </select>
+                    );
+                  })()}
                 </td>
 
                 {/* Shipment status */}
@@ -480,9 +489,11 @@ const OrdersView = ({ orders, shipments, customers, onChanged, onDelete }) => {
                   <select
                     value={shipment?.status || 'pending'}
                     onChange={(e) => setShipment(order, shipment, { status: e.target.value })}
-                    className="rounded-lg bg-white/10 px-2 py-1 text-xs font-semibold text-bone outline-none"
+                    className="rounded-lg border border-white/20 bg-white/10 px-2 py-1.5 text-xs font-semibold text-bone outline-none"
                   >
-                    {SHIP_OPTIONS.map((o) => <option key={o.v} value={o.v}>{o.l}</option>)}
+                    {SHIP_OPTIONS.map((o) => (
+                      <option key={o.v} value={o.v} style={{ color: '#0D0D0D', background: '#fff' }}>{o.l}</option>
+                    ))}
                   </select>
                 </td>
 
