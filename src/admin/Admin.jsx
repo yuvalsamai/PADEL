@@ -239,7 +239,6 @@ const FORMS = {
   ],
   orders: [
     { key: 'customer_name', label: 'שם לקוח' },
-    { key: 'product', label: 'מוצר' },
     { key: 'quantity', label: 'כמות', type: 'number' },
     { key: 'amount', label: 'סכום (₪)', type: 'number' },
     { key: 'status', label: 'סטטוס', type: 'select', options: STATUS_OPTIONS.orders },
@@ -278,6 +277,8 @@ const RecordModal = ({ table, record, onClose, onSaved }) => {
       else if (v === undefined || v === '') v = isEdit ? null : undefined;
       if (v !== undefined) payload[f.key] = v;
     }
+    // Single-product store: stamp the product name automatically on new orders.
+    if (table === 'orders' && !isEdit) payload.product = 'תושבת CourtCheck';
     const { error } = isEdit
       ? await supabase.from(table).update(payload).eq('id', record.id)
       : await supabase.from(table).insert(payload);
