@@ -349,7 +349,26 @@ const Dashboard = ({ session }) => {
         { key: 'id', label: 'מס׳' },
         { key: 'order_id', label: 'הזמנה' },
         { key: 'courier', label: 'שליח' },
-        { key: 'tracking_number', label: 'מעקב', render: (r) => r.tracking_number || '—' },
+        {
+          key: 'tracking_number',
+          label: 'מעקב',
+          // A tracking number links straight to 17track for live status.
+          render: (r) =>
+            r.tracking_number ? (
+              <a
+                href={`https://www.17track.net/en/track?nums=${encodeURIComponent(r.tracking_number)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                dir="ltr"
+                className="font-medium text-ball underline underline-offset-2 hover:text-white"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {r.tracking_number} ↗
+              </a>
+            ) : (
+              '—'
+            ),
+        },
         { key: 'address', label: 'כתובת' },
         { key: 'status', label: 'סטטוס', render: (r) => <Badge value={r.status} /> },
         { key: 'created_at', label: 'נוצר', render: (r) => fmtDate(r.created_at) },
