@@ -86,10 +86,12 @@ export default async function handler(req, res) {
   });
 
   try {
+    const details = { order, amount, name, email };
+
     if (tranId) {
       const { data: existing } = await supabase
-        .from('orders').select('id').eq('tran_id', tranId).maybeSingle();
-      if (existing) return res.status(200).json({ ok: true, duplicate: true });
+        .from('orders').select('id, quantity').eq('tran_id', tranId).maybeSingle();
+      if (existing) return res.status(200).json({ ok: true, duplicate: true, details: { ...details, quantity: existing.quantity } });
     }
 
     // Prefer the pending order created at checkout (it carries phone + address,
@@ -160,6 +162,13 @@ export default async function handler(req, res) {
         .from('shipments').select('address').eq('order_id', orderId).limit(1).maybeSingle();
       address = ship?.address ?? null;
     }
+    // Quantity for the order summary shown on the thank-you page.
+    let quantity = null;
+    if (orderId) {
+      const { data: ord } = await supabase
+        .from('orders').select('quantity').eq('id', orderId).maybeSingle();
+      quantity = ord?.quantity ?? null;
+    }
 
     // Record the conversion for the analytics dashboard (best-effort).
     try {
@@ -176,7 +185,7 @@ export default async function handler(req, res) {
     // Fire a Telegram notification (best-effort — never blocks the buyer's success).
     await notifyTelegram({ name, email, phone, address, amount, order, tranId, orderId });
 
-    return res.status(200).json({ ok: true, order });
+    return res.status(200).json({ ok: true, details: { ...details, quantity, address } });
   } catch (e) {
     // Payment is valid even if the DB write fails — surface success to the buyer,
     // but report the error for server logs.

@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 export default function ThankYou() {
   // 'checking' | 'ok' | 'failed'
   const [state, setState] = useState('checking');
+  const [details, setDetails] = useState(null);
 
   useEffect(() => {
     const search = window.location.search; // Hyp completion params (order preserved)
@@ -11,9 +12,20 @@ export default function ThankYou() {
       setState('ok');
       return;
     }
+    // Fallback display from the Hyp completion params themselves.
+    const p = new URLSearchParams(search);
+    const fromUrl = {
+      order: p.get('Order'),
+      amount: Number(p.get('Amount')) || null,
+      name: p.get('Fild1'),
+      email: p.get('Fild2'),
+    };
     fetch(`/api/verify-payment${search}`)
       .then((r) => r.json())
-      .then((d) => setState(d.ok ? 'ok' : 'failed'))
+      .then((d) => {
+        setState(d.ok ? 'ok' : 'failed');
+        if (d.ok) setDetails({ ...fromUrl, ...(d.details || {}) });
+      })
       .catch(() => setState('failed'));
   }, []);
 
@@ -56,7 +68,52 @@ export default function ThankYou() {
                   : 'התשלום התקבל בהצלחה. הזמנתך נקלטה במערכת ותישלח אליך בהקדם — נעדכן אותך במספר מעקב.'}
               </p>
 
-              <a
+              {!failed && details && (
+                <div dir="rtl" className="mt-8 w-full max-w-sm rounded-2xl border border-white/10 bg-white/5 p-5 text-right">
+                  <h2 className="mb-3 font-display text-lg font-bold text-bone">סיכום ההזמנה</h2>
+                  <dl className="space-y-2 text-sm">
+                    {details.order && (
+                      <div className="flex justify-between gap-4">
+                        <dt className="text-bone/60">מס׳ הזמנה</dt>
+                        <dd className="font-medium text-bone" dir="ltr">{details.order}</dd>
+                      </div>
+                    )}
+                    {details.name && (
+                      <div className="flex justify-between gap-4">
+                        <dt className="text-bone/60">שם</dt>
+                        <dd className="font-medium text-bone">{details.name}</dd>
+                      </div>
+                    )}
+                    <div className="flex justify-between gap-4">
+                      <dt className="text-bone/60">מוצר</dt>
+                      <dd className="font-medium text-bone">תושבת CourtCheck</dd>
+                    </div>
+                    {details.quantity != null && (
+                      <div className="flex justify-between gap-4">
+                        <dt className="text-bone/60">כמות</dt>
+                        <dd className="font-medium text-bone">{details.quantity}</dd>
+                      </div>
+                    )}
+                    {details.address && (
+                      <div className="flex justify-between gap-4">
+                        <dt className="text-bone/60">כתובת למשלוח</dt>
+                        <dd className="max-w-[60%] font-medium text-bone">{details.address}</dd>
+                      </div>
+                    )}
+                    {details.amount != null && (
+                      <div className="mt-1 flex justify-between gap-4 border-t border-white/10 pt-2">
+                        <dt className="text-bone/70">סה״כ שולם</dt>
+                        <dd className="font-display text-lg font-black text-ball">₪{details.amount}</dd>
+                      </div>
+                    )}
+                  </dl>
+                  {details.email && (
+                    <p className="mt-4 text-xs text-bone/50">אישור נשלח לכתובת {details.email}</p>
+                  )}
+                </div>
+              )}
+
+              <
                 href="/"
                 className="mt-9 inline-flex items-center gap-2 rounded-full bg-ball px-7 py-3 font-semibold text-ink transition-colors hover:bg-white"
               >
