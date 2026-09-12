@@ -51,20 +51,37 @@ alter table public.customers  enable row level security;
 alter table public.orders     enable row level security;
 alter table public.shipments  enable row level security;
 
+-- HARDENED: access is limited to a single admin email, not every authenticated
+-- user. This way, even if public sign-ups are ever enabled, a random account
+-- still cannot read customer PII (names, emails, phones, addresses).
+--
+-- 👉 Replace 'admin@example.com' below with the exact email you created under
+--    Authentication → Users, then run this block. To change the admin later,
+--    just edit the email and re-run.
 do $$
-declare t text;
+declare
+  t text;
+  admin_email text := 'admin@example.com';  -- ← CHANGE ME
 begin
   foreach t in array array['customers','orders','shipments'] loop
+    -- Drop any previous policies (the old permissive one included).
     execute format('drop policy if exists "admin_all" on public.%I;', t);
+    execute format('drop policy if exists "admin_only" on public.%I;', t);
     execute format(
-      'create policy "admin_all" on public.%I
+      'create policy "admin_only" on public.%I
          for all to authenticated
-         using (true) with check (true);', t);
+         using ((auth.jwt() ->> ''email'') = %L)
+         with check ((auth.jwt() ->> ''email'') = %L);',
+      t, admin_email, admin_email);
   end loop;
 end $$;
 
 -- ---- Create the admin user ----------------------------------------------
 -- Do NOT create users in SQL. In the Supabase Dashboard go to
 -- Authentication → Users → Add user, and create the admin with an email
--- (this is the "username") and a strong password. That account is the only
--- one able to sign in and read the tables above.
+-- (this is the "username") and a strong password. That email must match the
+-- admin_email set above. That account is the only one able to sign in and read
+-- the tables above.
+--
+-- Also recommended: Authentication → Providers/Settings → disable
+-- "Allow new users to sign up", so no one else can create an account at all.
