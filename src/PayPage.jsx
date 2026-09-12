@@ -37,7 +37,10 @@ export default function PayPage() {
   const [loading, setLoading] = useState(false);
 
   const unit = Number(amount) || 0;
-  const total = unit * qty;
+  // Quantity discount: 1→0%, then 2×qty+1 (2→5%, 3→7% … 10→21%).
+  const discountPct = qty < 2 ? 0 : 2 * qty + 1;
+  const fullTotal = unit * qty;
+  const total = Math.round(fullTotal * (1 - discountPct / 100));
 
   const update = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
 
@@ -151,9 +154,21 @@ export default function PayPage() {
               </div>
             </div>
 
+            {discountPct > 0 ? (
+              <div className="mt-2 flex items-center justify-between rounded-xl bg-moss/10 px-4 py-2 text-sm font-semibold text-moss">
+                <span>🎉 הנחת כמות</span>
+                <span>-{discountPct}%</span>
+              </div>
+            ) : (
+              <p className="mt-2 px-1 text-xs text-ink/50">קנו יותר וחסכו — עד 21% הנחה על 10 יחידות</p>
+            )}
+
             <div className="mt-2 flex items-center justify-between px-1 text-sm">
               <span className="text-ink/60">סה״כ לתשלום</span>
-              <span className="font-display text-xl font-black text-ink">₪{total}</span>
+              <span className="flex items-baseline gap-2">
+                {discountPct > 0 && <span className="text-sm text-ink/40 line-through">₪{fullTotal}</span>}
+                <span className="font-display text-xl font-black text-ink">₪{total}</span>
+              </span>
             </div>
 
             {error && (

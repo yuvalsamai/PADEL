@@ -78,7 +78,9 @@ export default async function handler(req, res) {
 
   // Quantity is clamped to 1..10 server-side; total is derived, never trusted.
   const qty = Math.min(10, Math.max(1, Math.floor(Number(src.quantity)) || 1));
-  const amount = String(unitPrice * qty);
+  // Quantity discount: 1→0%, then 2×qty+1 (2→5%, 3→7% … 10→21%).
+  const discountPct = qty < 2 ? 0 : 2 * qty + 1;
+  const amount = String(Math.round(unitPrice * qty * (1 - discountPct / 100)));
 
   const order = String(src.order || `CC-${Date.now()}`);
 
