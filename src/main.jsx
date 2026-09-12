@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 import './index.css'
 import { trackPageview } from './lib/analytics.js'
+import AccessibilityWidget from './Accessibility.jsx'
 
 const Admin = lazy(() => import('./admin/Admin.jsx'))
 const PayPage = lazy(() => import('./PayPage.jsx'))
@@ -43,5 +44,6 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     ) : (
       <App />
     )}
+    {route !== 'admin' && <AccessibilityWidget />}
   </React.StrictMode>,
 )

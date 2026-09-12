@@ -31,3 +31,39 @@ body {
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
 }
+
+/* ==========================================================================
+   Accessibility widget states (toggled on <html> by the widget)
+   ========================================================================== */
+
+/* Readable font — swap the display/body fonts for a plain sans-serif */
+html.acc-readable, html.acc-readable * {
+  font-family: Arial, Helvetica, sans-serif !important;
+  letter-spacing: 0.4px;
+}
+
+/* Highlight all links */
+html.acc-links a {
+  text-decoration: underline !important;
+  text-underline-offset: 3px;
+  outline: 2px solid #A6D720;
+  outline-offset: 2px;
+}
+
+/* Bigger cursor */
+html.acc-bigcursor, html.acc-bigcursor * {
+  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 24 24'><path fill='black' stroke='white' stroke-width='1' d='M5 2l14 8-6 1.5L16 18l-3 1.5-3-6L5 16z'/></svg>") 4 4, auto !important;
+}
+
+/* Stop animations */
+html.acc-no-animations *,
+html.acc-no-animations *::before,
+html.acc-no-animations *::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+
+/* Keep the accessibility widget itself unfiltered/legible even when the page
+   has a grayscale/contrast filter applied to <body>. */
+#a11y-widget { filter: none !important; }

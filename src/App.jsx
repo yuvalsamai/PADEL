@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowUpLeft, Plus, X, Menu } from 'lucide-react';
+import { AccessibilityStatementModal } from './Accessibility.jsx';
 
 /* Hero background photo. Drop the supplied image at public/hero.jpg to swap it in;
    a court-toned gradient shows until then. */
@@ -702,7 +703,7 @@ const TermsModal = ({ open, onClose }) => (
 /*  Footer                                                            */
 /* ================================================================== */
 
-const Footer = ({ onOpenTerms }) => (
+const Footer = ({ onOpenTerms, onOpenA11y }) => (
   <footer className="bg-ink px-5 py-16 sm:px-8">
     <div className="mx-auto max-w-6xl">
       <div className="flex flex-col gap-8 border-b border-white/10 pb-10 sm:flex-row sm:items-end sm:justify-between">
@@ -715,12 +716,18 @@ const Footer = ({ onOpenTerms }) => (
             עין הנץ שלך על המגרש. צלם, נתח והכרע.
           </p>
         </div>
-        <div className="flex items-center gap-6 text-sm">
+        <div className="flex flex-wrap items-center gap-6 text-sm">
           <button
             onClick={onOpenTerms}
             className="font-medium text-ball underline-offset-4 transition-colors hover:underline"
           >
             תקנון ותנאי שימוש
+          </button>
+          <button
+            onClick={onOpenA11y}
+            className="font-medium text-ball underline-offset-4 transition-colors hover:underline"
+          >
+            הצהרת נגישות
           </button>
           <a href="#top" className="text-bone/60 transition-colors hover:text-bone">
             חזרה למעלה ↑
@@ -789,6 +796,7 @@ const StickyBar = () => {
 
 export default function App() {
   const [termsOpen, setTermsOpen] = useState(false);
+  const [a11yOpen, setA11yOpen] = useState(false);
   return (
     <div dir="rtl" className="min-h-screen bg-olive p-2.5 font-sans text-ink sm:p-4">
       <div className="overflow-hidden rounded-panel bg-bone">
@@ -800,10 +808,11 @@ export default function App() {
         <HawkEye />
         <Reviews />
         <Faq />
-        <Footer onOpenTerms={() => setTermsOpen(true)} />
+        <Footer onOpenTerms={() => setTermsOpen(true)} onOpenA11y={() => setA11yOpen(true)} />
       </div>
       <StickyBar />
       <TermsModal open={termsOpen} onClose={() => setTermsOpen(false)} />
+      <AccessibilityStatementModal open={a11yOpen} onClose={() => setA11yOpen(false)} />
     </div>
   );
 }
