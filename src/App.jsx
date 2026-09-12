@@ -11,7 +11,7 @@ const HERO_IMG = '/hero.jpg';
 /*  Starts at 127 and grows every day by a deterministic 2–8, so all  */
 /*  visitors see the same number and it climbs on its own — no DB.     */
 /* ================================================================== */
-const COUNTER_START = 127;
+const COUNTER_START = 63;
 const COUNTER_START_DATE = new Date('2026-09-12T00:00:00');
 
 function ordersCount() {
@@ -36,15 +36,21 @@ function ordersCount() {
 const OrdersCounter = () => {
   const count = ordersCount();
   return (
-    <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 backdrop-blur-md">
-      <span className="relative flex h-2.5 w-2.5">
-        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-ball opacity-75" />
-        <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-ball" />
-      </span>
-      <span className="text-sm text-bone">
-        <span className="font-black text-ball">{count.toLocaleString('he-IL')}</span> הזמנות בוצעו כבר
-      </span>
-    </div>
+    <section className="bg-ink px-5 py-14 sm:py-16">
+      <div className="mx-auto flex max-w-3xl flex-col items-center gap-4 text-center">
+        <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5">
+          <span className="relative flex h-2.5 w-2.5">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-ball opacity-75" />
+            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-ball" />
+          </span>
+          <span className="text-xs font-medium uppercase tracking-[0.18em] text-bone/70">בזמן אמת</span>
+        </span>
+        <div className="font-display text-6xl font-black leading-none text-ball sm:text-7xl">
+          {count.toLocaleString('he-IL')}
+        </div>
+        <div className="font-display text-2xl font-bold text-bone sm:text-3xl">הזמנות שבוצעו</div>
+      </div>
+    </section>
   );
 };
 
@@ -220,9 +226,6 @@ const Hero = () => (
               תושבת שמתלבשת בשניות על רשת המגרש ומצלמת בזווית גבוהה ויציבה — לתוכן, לשיפור
               הטכניקה ולהכרעת כל ויכוח על קו.
             </p>
-            <div className="mt-6">
-              <OrdersCounter />
-            </div>
           </motion.div>
 
           {/* glass insight card */}
@@ -770,6 +773,7 @@ export default function App() {
     <div dir="rtl" className="min-h-screen bg-olive p-2.5 font-sans text-ink sm:p-4">
       <div className="overflow-hidden rounded-panel bg-bone">
         <Hero />
+        <OrdersCounter />
         <Features />
         <Steps />
         <Showcase />
