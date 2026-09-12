@@ -46,19 +46,70 @@ const Badge = ({ value }) => (
 /*  Login                                                             */
 /* ================================================================== */
 
+// Lock the login form after too many wrong attempts. This is a client-side
+// deterrent (Supabase also rate-limits auth server-side); state is kept in
+// localStorage so a refresh can't reset the counter.
+const MAX_ATTEMPTS = 3;
+const LOCK_MINUTES = 15;
+const FAILS_KEY = 'cc_admin_fails';
+const LOCK_KEY = 'cc_admin_lock_until';
+
+const readNum = (k) => {
+  try { return Number(localStorage.getItem(k)) || 0; } catch { return 0; }
+};
+const writeNum = (k, v) => {
+  try { localStorage.setItem(k, String(v)); } catch { /* ignore */ }
+};
+const clearLock = () => {
+  try { localStorage.removeItem(FAILS_KEY); localStorage.removeItem(LOCK_KEY); } catch { /* ignore */ }
+};
+
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
+  const [lockUntil, setLockUntil] = useState(() => readNum(LOCK_KEY));
+  const [now, setNow] = useState(Date.now());
+
+  const locked = lockUntil > now;
+
+  // Tick every second while locked so the countdown updates and unlocks itself.
+  useEffect(() => {
+    if (!locked) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [locked]);
+
+  const remaining = Math.max(0, Math.ceil((lockUntil - now) / 1000));
+  const mm = String(Math.floor(remaining / 60)).padStart(2, '0');
+  const ss = String(remaining % 60).padStart(2, '0');
 
   const submit = async (e) => {
     e.preventDefault();
+    if (locked) return;
     setErr('');
     setBusy(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setBusy(false);
-    if (error) setErr('פרטי התחברות שגויים');
+
+    if (error) {
+      const fails = readNum(FAILS_KEY) + 1;
+      writeNum(FAILS_KEY, fails);
+      if (fails >= MAX_ATTEMPTS) {
+        const until = Date.now() + LOCK_MINUTES * 60 * 1000;
+        writeNum(LOCK_KEY, until);
+        setLockUntil(until);
+        setNow(Date.now());
+        setErr(`יותר מדי ניסיונות. הכניסה נחסמה ל-${LOCK_MINUTES} דקות.`);
+      } else {
+        setErr(`פרטי התחברות שגויים · נותרו ${MAX_ATTEMPTS - fails} ניסיונות`);
+      }
+      return;
+    }
+
+    // Success — reset the counter.
+    clearLock();
   };
 
   return (
@@ -75,6 +126,7 @@ const Login = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            disabled={locked}
             dir="ltr"
           />
           <Field
@@ -84,18 +136,25 @@ const Login = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            disabled={locked}
             dir="ltr"
           />
         </div>
 
         {err && <p className="mt-4 text-sm text-rose-400">{err}</p>}
 
+        {locked && (
+          <p className="mt-4 rounded-xl bg-rose-400/10 px-4 py-3 text-center text-sm text-rose-300">
+            הכניסה נחסמה עקב ניסיונות כושלים. נסה שוב בעוד <span dir="ltr">{mm}:{ss}</span>
+          </p>
+        )}
+
         <button
           type="submit"
-          disabled={busy}
-          className="mt-6 w-full rounded-xl bg-ball py-3 font-semibold text-ink transition hover:bg-white disabled:opacity-60"
+          disabled={busy || locked}
+          className="mt-6 w-full rounded-xl bg-ball py-3 font-semibold text-ink transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {busy ? 'מתחבר…' : 'התחברות'}
+          {locked ? 'חסום זמנית' : busy ? 'מתחבר…' : 'התחברות'}
         </button>
       </form>
     </div>
