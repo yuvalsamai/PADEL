@@ -169,11 +169,9 @@ export default function PayPage() {
             </button>
 
             {/* Trust badges */}
-            <div className="mt-5 grid grid-cols-2 gap-2 text-center text-xs font-medium text-ink/60">
+            <div className="mt-5 flex items-center justify-center gap-6 text-center text-xs font-medium text-ink/60">
               <span>🔒 תשלום מאובטח · Hyp</span>
               <span>🚚 משלוח חינם</span>
-              <span>💳 כל כרטיסי האשראי</span>
-              <span>↩️ החזר תוך 14 יום</span>
             </div>
 
             <p className="mt-4 text-center text-xs text-ink/50">

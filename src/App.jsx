@@ -121,8 +121,6 @@ const OrdersCounter = () => {
 export const TRUST_ITEMS = [
   { icon: '🔒', label: 'תשלום מאובטח · Hyp' },
   { icon: '🚚', label: 'משלוח חינם לנקודת איסוף' },
-  { icon: '↩️', label: 'החזר תוך 14 יום' },
-  { icon: '💳', label: 'כל כרטיסי האשראי' },
 ];
 
 const TrustStrip = () => (
