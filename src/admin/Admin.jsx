@@ -373,8 +373,26 @@ const SHIP_OPTIONS = [
   { v: 'cancelled', l: 'נאבד' },
 ];
 
+// Build a CSV string and trigger a download in the browser.
+function downloadCSV(filename, headers, rows) {
+  const esc = (v) => {
+    const s = v == null ? '' : String(v);
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const csv = [headers.map(esc).join(','), ...rows.map((r) => r.map(esc).join(','))].join('\n');
+  // Prepend a BOM so Excel opens Hebrew as UTF-8 correctly.
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 const OrdersView = ({ orders, shipments, customers, onChanged, onDelete }) => {
   const [query, setQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all'); // shipment status filter
 
   const allRows = useMemo(() => {
     // One shipment per order (latest wins if duplicates exist).
@@ -402,15 +420,36 @@ const OrdersView = ({ orders, shipments, customers, onChanged, onDelete }) => {
 
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return allRows;
-    // Match by customer name or phone (ignore spaces/dashes in phone numbers).
     const qDigits = q.replace(/\D/g, '');
-    return allRows.filter(({ order, phone }) => {
-      const nameHit = (order.customer_name || '').toLowerCase().includes(q);
-      const phoneHit = qDigits && phone.replace(/\D/g, '').includes(qDigits);
-      return nameHit || phoneHit;
+    return allRows.filter(({ order, shipment, phone }) => {
+      // Text match by customer name or phone.
+      if (q) {
+        const nameHit = (order.customer_name || '').toLowerCase().includes(q);
+        const phoneHit = qDigits && phone.replace(/\D/g, '').includes(qDigits);
+        if (!nameHit && !phoneHit) return false;
+      }
+      // Shipment status filter.
+      if (statusFilter !== 'all' && (shipment?.status || 'pending') !== statusFilter) return false;
+      return true;
     });
-  }, [allRows, query]);
+  }, [allRows, query, statusFilter]);
+
+  const exportCsv = () => {
+    const headers = ['מס׳ הזמנה', 'שם לקוח', 'טלפון', 'כתובת', 'כמות', 'סכום', 'סטטוס תשלום', 'סטטוס משלוח', 'מספר מעקב', 'תאריך הזמנה'];
+    const data = rows.map(({ order, shipment, seq, phone }) => [
+      seq,
+      order.customer_name || '',
+      phone || '',
+      shipment?.address || '',
+      order.quantity ?? 1,
+      order.amount ?? '',
+      order.status === 'cancelled' ? 'שגיאה' : 'שולם',
+      SHIP_LABEL[shipment?.status || 'pending'] || '',
+      shipment?.tracking_number || '',
+      fmtDate(order.created_at),
+    ]);
+    downloadCSV(`courtcheck-orders-${new Date().toISOString().slice(0, 10)}.csv`, headers, data);
+  };
 
   const setPayment = async (order, value) => {
     const { error } = await supabase.from('orders').update({ status: value }).eq('id', order.id);
@@ -429,16 +468,30 @@ const OrdersView = ({ orders, shipments, customers, onChanged, onDelete }) => {
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="חיפוש לפי שם או טלפון…"
           className="w-full max-w-xs rounded-xl border border-white/10 bg-pine px-4 py-2.5 text-sm text-bone placeholder-bone/40 outline-none focus:border-ball"
         />
-        {query && (
-          <span className="text-xs text-bone/50">{rows.length} תוצאות</span>
-        )}
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="rounded-xl border border-white/10 bg-pine px-3 py-2.5 text-sm text-bone outline-none focus:border-ball"
+        >
+          <option value="all" style={{ color: '#0D0D0D', background: '#fff' }}>כל סטטוסי המשלוח</option>
+          {SHIP_OPTIONS.map((o) => (
+            <option key={o.v} value={o.v} style={{ color: '#0D0D0D', background: '#fff' }}>{o.l}</option>
+          ))}
+        </select>
+        <button
+          onClick={exportCsv}
+          className="rounded-xl border border-white/15 px-4 py-2.5 text-sm font-medium text-bone hover:bg-white/10"
+        >
+          ⭳ ייצוא CSV
+        </button>
+        <span className="text-xs text-bone/50">{rows.length} תוצאות</span>
       </div>
 
       <div className="overflow-x-auto rounded-2xl ring-1 ring-white/10">
@@ -565,8 +618,28 @@ const Panel = ({ title, children }) => (
   </div>
 );
 
+const RANGES = [
+  { key: '1', label: 'היום' },
+  { key: '7', label: '7 ימים' },
+  { key: '30', label: '30 ימים' },
+  { key: 'all', label: 'הכל' },
+];
+
 const Analytics = ({ events, orders }) => {
+  const [range, setRange] = useState('30');
+
+  const { events: fEvents, orders: fOrders } = useMemo(() => {
+    if (range === 'all') return { events, orders };
+    const cutoff = new Date();
+    cutoff.setHours(0, 0, 0, 0);
+    cutoff.setDate(cutoff.getDate() - (Number(range) - 1));
+    const inRange = (r) => new Date(r.created_at) >= cutoff;
+    return { events: events.filter(inRange), orders: orders.filter(inRange) };
+  }, [events, orders, range]);
+
   const m = useMemo(() => {
+    const events = fEvents;
+    const orders = fOrders;
     const pageviews = events.filter((e) => e.type === 'pageview');
     const checkouts = events.filter((e) => e.type === 'begin_checkout');
     const purchases = events.filter((e) => e.type === 'purchase');
@@ -631,7 +704,7 @@ const Analytics = ({ events, orders }) => {
       sources,
       days,
     };
-  }, [events, orders]);
+  }, [fEvents, fOrders]);
 
   if (!events.length) {
     return (
@@ -647,6 +720,20 @@ const Analytics = ({ events, orders }) => {
 
   return (
     <div className="space-y-5">
+      <div className="flex gap-1 rounded-full bg-pine p-1 w-fit">
+        {RANGES.map((r) => (
+          <button
+            key={r.key}
+            onClick={() => setRange(r.key)}
+            className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
+              range === r.key ? 'bg-ball text-ink' : 'text-bone/70 hover:text-bone'
+            }`}
+          >
+            {r.label}
+          </button>
+        ))}
+      </div>
+
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard label="צפיות בדפים" value={m.totalViews} />
         <StatCard label="מבקרים ייחודיים" value={m.uniqueVisitors} />
