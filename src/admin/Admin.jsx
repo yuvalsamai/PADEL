@@ -625,7 +625,7 @@ const RANGES = [
   { key: 'all', label: 'הכל' },
 ];
 
-const Analytics = ({ events, orders }) => {
+const Analytics = ({ events, orders, onReset }) => {
   const [range, setRange] = useState('30');
 
   const { events: fEvents, orders: fOrders } = useMemo(() => {
@@ -720,18 +720,26 @@ const Analytics = ({ events, orders }) => {
 
   return (
     <div className="space-y-5">
-      <div className="flex gap-1 rounded-full bg-pine p-1 w-fit">
-        {RANGES.map((r) => (
-          <button
-            key={r.key}
-            onClick={() => setRange(r.key)}
-            className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
-              range === r.key ? 'bg-ball text-ink' : 'text-bone/70 hover:text-bone'
-            }`}
-          >
-            {r.label}
-          </button>
-        ))}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex gap-1 rounded-full bg-pine p-1 w-fit">
+          {RANGES.map((r) => (
+            <button
+              key={r.key}
+              onClick={() => setRange(r.key)}
+              className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
+                range === r.key ? 'bg-ball text-ink' : 'text-bone/70 hover:text-bone'
+              }`}
+            >
+              {r.label}
+            </button>
+          ))}
+        </div>
+        <button
+          onClick={onReset}
+          className="rounded-xl border border-rose-400/30 px-4 py-2 text-sm font-medium text-rose-300 hover:bg-rose-400/10"
+        >
+          איפוס סטטיסטיקה
+        </button>
       </div>
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
@@ -816,6 +824,19 @@ const Dashboard = ({ session }) => {
     const { error: delErr } = await supabase.from(tab).delete().eq('id', row.id);
     if (delErr) setError(delErr.message);
     else load();
+  };
+
+  // Wipe all analytics events (used to clear numbers inflated by test traffic).
+  const handleResetStats = async () => {
+    if (!window.confirm('לאפס את כל נתוני הסטטיסטיקה? פעולה זו תמחק לצמיתות את כל אירועי התנועה (צפיות, המרות) ואינה הפיכה.')) return;
+    if (!window.confirm('אישור אחרון — האם אתה בטוח שברצונך לאפס את הסטטיסטיקה?')) return;
+    // Delete every row (id > 0 matches all).
+    const { error: delErr } = await supabase.from('analytics_events').delete().gt('id', 0);
+    if (delErr) setError(delErr.message);
+    else {
+      load();
+      window.alert('הסטטיסטיקה אופסה בהצלחה.');
+    }
   };
 
   const columns = useMemo(
@@ -939,7 +960,7 @@ const Dashboard = ({ session }) => {
           {loading ? (
             <p className="py-10 text-center text-bone/50">טוען…</p>
           ) : tab === 'analytics' ? (
-            <Analytics events={data.analytics} orders={data.orders} />
+            <Analytics events={data.analytics} orders={data.orders} onReset={handleResetStats} />
           ) : tab === 'orders' ? (
             <OrdersView orders={data.orders} shipments={data.shipments} customers={data.customers} onChanged={load} onDelete={handleDelete} />
           ) : (

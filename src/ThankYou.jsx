@@ -113,7 +113,7 @@ export default function ThankYou() {
                 </div>
               )}
 
-              <
+              <a
                 href="/"
                 className="mt-9 inline-flex items-center gap-2 rounded-full bg-ball px-7 py-3 font-semibold text-ink transition-colors hover:bg-white"
               >
