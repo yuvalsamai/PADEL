@@ -31,6 +31,12 @@ create table if not exists public.orders (
 alter table public.orders add column if not exists order_ref text;
 alter table public.orders add column if not exists tran_id   text;
 
+-- Separate shipping-address parts (for the supplier / dropshipping export).
+alter table public.shipments add column if not exists street text;
+alter table public.shipments add column if not exists city   text;
+alter table public.shipments add column if not exists zip    text;
+alter table public.shipments add column if not exists region text;
+
 create table if not exists public.shipments (
   id              bigint generated always as identity primary key,
   order_id        bigint references public.orders(id) on delete cascade,

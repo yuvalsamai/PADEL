@@ -391,6 +391,32 @@ function downloadCSV(filename, headers, rows) {
   URL.revokeObjectURL(url);
 }
 
+// Normalize an Israeli phone to international format for the supplier.
+function intlPhone(phone) {
+  if (!phone) return '';
+  let p = String(phone).replace(/[\s-]/g, '');
+  if (p.startsWith('+')) return p;
+  if (p.startsWith('0')) return '+972' + p.slice(1);
+  if (p.startsWith('972')) return '+' + p;
+  return p;
+}
+
+// English shipping block for the dropshipping supplier.
+function supplierBlock({ order, shipment, phone, email }) {
+  const s = shipment || {};
+  const address = s.street || s.address || '';
+  return [
+    `Customer Name: ${order.customer_name || ''}`,
+    'Country: Israel',
+    `Address: ${address}`,
+    `City: ${s.city || ''}`,
+    `Region / State: ${s.region || ''}`,
+    `Post Code: ${s.zip || ''}`,
+    `Phone Number: ${intlPhone(phone)}`,
+    `E-mail: ${email || ''}`,
+  ].join('\n');
+}
+
 const OrdersView = ({ orders, shipments, customers, onChanged, onDelete }) => {
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all'); // shipment status filter
@@ -399,9 +425,13 @@ const OrdersView = ({ orders, shipments, customers, onChanged, onDelete }) => {
     // One shipment per order (latest wins if duplicates exist).
     const shipByOrder = new Map();
     for (const s of shipments) if (!shipByOrder.has(s.order_id)) shipByOrder.set(s.order_id, s);
-    // Phone lookup by customer id (phone lives on the customer record).
+    // Phone + email lookup by customer id (they live on the customer record).
     const phoneByCustomer = new Map();
-    for (const c of customers || []) phoneByCustomer.set(c.id, c.phone || '');
+    const emailByCustomer = new Map();
+    for (const c of customers || []) {
+      phoneByCustomer.set(c.id, c.phone || '');
+      emailByCustomer.set(c.id, c.email || '');
+    }
 
     // Chronological order number (oldest = 1), stable regardless of display order.
     const asc = [...orders].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
@@ -416,6 +446,7 @@ const OrdersView = ({ orders, shipments, customers, onChanged, onDelete }) => {
         shipment: shipByOrder.get(o.id) || null,
         seq: seqById.get(o.id),
         phone: phoneByCustomer.get(o.customer_id) || '',
+        email: emailByCustomer.get(o.customer_id) || '',
       }));
   }, [orders, shipments, customers]);
 
@@ -509,7 +540,7 @@ const OrdersView = ({ orders, shipments, customers, onChanged, onDelete }) => {
           {rows.length === 0 ? (
             <tr><td colSpan={10} className="px-4 py-10 text-center text-bone/50">אין הזמנות להצגה</td></tr>
           ) : (
-            rows.map(({ order, shipment, seq }) => (
+            rows.map(({ order, shipment, seq, phone, email }) => (
               <tr key={order.id} className="text-bone/90">
                 <td className="whitespace-nowrap px-4 py-3 font-semibold">#{seq}</td>
                 <td className="whitespace-nowrap px-4 py-3">{order.customer_name || '—'}</td>
@@ -580,12 +611,38 @@ const OrdersView = ({ orders, shipments, customers, onChanged, onDelete }) => {
                 <td className="whitespace-nowrap px-4 py-3 text-bone/70">{fmtDate(order.created_at)}</td>
 
                 <td className="whitespace-nowrap px-4 py-3 text-left">
-                  <button
-                    onClick={() => onDelete(order)}
-                    className="rounded-lg px-2 py-1 text-xs text-rose-400 hover:bg-rose-400/10"
-                  >
-                    מחיקה
-                  </button>
+                  <div className="flex items-center justify-end gap-1">
+                    <button
+                      onClick={async () => {
+                        const text = supplierBlock({ order, shipment, phone, email });
+                        try {
+                          await navigator.clipboard.writeText(text);
+                          window.alert('הפרטים הועתקו — הדבק לספק בוואטסאפ.');
+                        } catch {
+                          window.prompt('העתק את הפרטים לספק:', text);
+                        }
+                      }}
+                      className="rounded-lg px-2 py-1 text-xs text-ball hover:bg-white/10"
+                      title="העתק פרטים לספק (אנגלית)"
+                    >
+                      📋 ספק
+                    </button>
+                    <a
+                      href={`https://wa.me/?text=${encodeURIComponent(supplierBlock({ order, shipment, phone, email }))}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="rounded-lg px-2 py-1 text-xs text-emerald-300 hover:bg-white/10"
+                      title="שלח לספק בוואטסאפ"
+                    >
+                      וואטסאפ
+                    </a>
+                    <button
+                      onClick={() => onDelete(order)}
+                      className="rounded-lg px-2 py-1 text-xs text-rose-400 hover:bg-rose-400/10"
+                    >
+                      מחיקה
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))

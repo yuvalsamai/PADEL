@@ -15,6 +15,9 @@ const FIELDS = [
   { key: 'zip', label: 'מיקוד', type: 'text', autoComplete: 'postal-code', inputMode: 'numeric', placeholder: '6100000' },
 ];
 
+// Israeli districts (מחוז) — used for the supplier's Region/State field.
+const REGIONS = ['מרכז', 'תל אביב', 'ירושלים', 'חיפה', 'צפון', 'דרום', 'יהודה ושומרון'];
+
 // Amount override for testing, e.g. /pay?amount=7&token=SECRET — falls back to
 // ₪89. The server only honors a non-default amount when the token matches its
 // secret TEST_AMOUNT_TOKEN, so a plain /pay?amount=7 (no token) is ignored both
@@ -29,7 +32,7 @@ function getCheckout() {
 }
 
 export default function PayPage() {
-  const [form, setForm] = useState({ fullName: '', cell: '', email: '', street: '', city: '', zip: '' });
+  const [form, setForm] = useState({ fullName: '', cell: '', email: '', street: '', city: '', zip: '', region: '' });
   const [{ amount, token }] = useState(getCheckout);
   const [qty, setQty] = useState(1);
   const [url, setUrl] = useState('');
@@ -71,6 +74,7 @@ export default function PayPage() {
           street: form.street.trim(),
           city: form.city.trim(),
           zip: form.zip.trim(),
+          region: form.region,
         }),
       });
       const d = await res.json();
@@ -128,6 +132,19 @@ export default function PayPage() {
                   />
                 </label>
               ))}
+
+              <label className="block">
+                <span className="mb-1.5 block text-sm font-semibold text-ink/80">מחוז</span>
+                <select
+                  required
+                  value={form.region}
+                  onChange={update('region')}
+                  className="w-full rounded-xl border border-ink/15 bg-white px-4 py-3 text-ink outline-none transition-colors focus:border-moss focus:ring-2 focus:ring-moss/20"
+                >
+                  <option value="" disabled>בחר מחוז…</option>
+                  {REGIONS.map((r) => <option key={r} value={r}>{r}</option>)}
+                </select>
+              </label>
             </div>
 
             {/* Quantity + total */}

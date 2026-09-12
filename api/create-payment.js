@@ -11,7 +11,7 @@ const SUPABASE_URL = process.env.SUPABASE_URL || 'https://uwmydcfhedcquktxqsis.s
 // Best-effort: store the checkout details as a pending order keyed by order_ref.
 // verify-payment finishes it (status → paid) on a confirmed completion redirect.
 // Never throws — the buyer must reach the payment page even if the DB write fails.
-async function recordPending({ order, amount, quantity, name, email, cell, address }) {
+async function recordPending({ order, amount, quantity, name, email, cell, address, street, city, zip, region }) {
   const { SUPABASE_SERVICE_ROLE_KEY } = process.env;
   if (!SUPABASE_SERVICE_ROLE_KEY) return;
 
@@ -48,6 +48,10 @@ async function recordPending({ order, amount, quantity, name, email, cell, addre
       await supabase.from('shipments').insert({
         order_id: newOrder.id,
         address: address || null,
+        street: street || null,
+        city: city || null,
+        zip: zip || null,
+        region: region || null,
         status: 'pending',
       });
     }
@@ -142,6 +146,10 @@ export default async function handler(req, res) {
       email: src.email ? String(src.email) : null,
       cell: src.cell ? String(src.cell) : null,
       address: fullAddress || null,
+      street: src.street ? String(src.street) : null,
+      city: src.city ? String(src.city) : null,
+      zip: src.zip ? String(src.zip) : null,
+      region: src.region ? String(src.region) : null,
     });
 
     // Append the response verbatim (order preserved) to the payment-page base.
