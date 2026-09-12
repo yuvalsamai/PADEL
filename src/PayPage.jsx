@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { track } from './lib/analytics.js';
 
 /* Collects the customer details we want on record (full name, phone, email,
    full shipping address + postal code) and forwards them to the backend, which
@@ -40,6 +41,7 @@ export default function PayPage() {
     e.preventDefault();
     setError('');
     setLoading(true);
+    track('begin_checkout'); // funnel step: submitted details, heading to Hyp
 
     // Split the full name into first / last for Hyp's ClientName / ClientLName.
     const trimmed = form.fullName.trim();

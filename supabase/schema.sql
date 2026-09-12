@@ -42,14 +42,34 @@ create table if not exists public.shipments (
   created_at      timestamptz not null default now()
 );
 
+-- ---- Analytics events ----------------------------------------------------
+-- Lightweight first-party visit/conversion tracking. Rows are written ONLY by
+-- the server (api/track.js and api/verify-payment.js use the service-role key,
+-- which bypasses RLS), so no public insert policy is needed and the anon key
+-- can neither read nor write this table.
+create table if not exists public.analytics_events (
+  id          bigint generated always as identity primary key,
+  type        text not null,          -- 'pageview' | 'begin_checkout' | 'purchase'
+  path        text,                   -- page URL path
+  referrer    text,                   -- document.referrer (traffic source)
+  session_id  text,                   -- random per-browser id (de-dupe visitors)
+  user_agent  text,                   -- browser/device string
+  order_ref   text,                   -- set on 'purchase' — links to the order
+  amount      numeric(10,2),          -- set on 'purchase'
+  created_at  timestamptz not null default now()
+);
+create index if not exists analytics_events_created_at_idx on public.analytics_events (created_at desc);
+create index if not exists analytics_events_type_idx       on public.analytics_events (type);
+
 -- ---- Row Level Security --------------------------------------------------
 -- Access is denied by default once RLS is on. We only allow *authenticated*
 -- users (i.e. someone who signed in through the admin login). The public
 -- anon key on the website therefore cannot read or write these tables.
 
-alter table public.customers  enable row level security;
-alter table public.orders     enable row level security;
-alter table public.shipments  enable row level security;
+alter table public.customers        enable row level security;
+alter table public.orders           enable row level security;
+alter table public.shipments        enable row level security;
+alter table public.analytics_events enable row level security;
 
 -- HARDENED: access is limited to a single admin email, not every authenticated
 -- user. This way, even if public sign-ups are ever enabled, a random account
@@ -63,7 +83,7 @@ declare
   t text;
   admin_email text := 'admin@example.com';  -- ← CHANGE ME
 begin
-  foreach t in array array['customers','orders','shipments'] loop
+  foreach t in array array['customers','orders','shipments','analytics_events'] loop
     -- Drop any previous policies (the old permissive one included).
     execute format('drop policy if exists "admin_all" on public.%I;', t);
     execute format('drop policy if exists "admin_only" on public.%I;', t);

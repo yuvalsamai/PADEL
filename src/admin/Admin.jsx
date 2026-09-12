@@ -294,11 +294,160 @@ const TABS = [
   { key: 'orders', label: 'הזמנות' },
   { key: 'shipments', label: 'משלוחים' },
   { key: 'customers', label: 'לקוחות' },
+  { key: 'analytics', label: 'אנליטיקס' },
 ];
+
+/* ================================================================== */
+/*  Analytics (first-party tracking)                                  */
+/* ================================================================== */
+
+// A labelled horizontal bar, width proportional to its share of `max`.
+const BarRow = ({ label, value, max }) => (
+  <div className="flex items-center gap-3">
+    <span className="w-32 flex-shrink-0 truncate text-sm text-bone/70" title={label}>{label}</span>
+    <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-white/10">
+      <div className="h-full rounded-full bg-ball" style={{ width: `${max ? (value / max) * 100 : 0}%` }} />
+    </div>
+    <span className="w-10 flex-shrink-0 text-left text-sm font-semibold text-bone">{value}</span>
+  </div>
+);
+
+const Panel = ({ title, children }) => (
+  <div className="rounded-2xl border border-white/10 bg-pine/40 p-5">
+    <h3 className="mb-4 font-display text-lg font-bold text-bone">{title}</h3>
+    {children}
+  </div>
+);
+
+const Analytics = ({ events, orders }) => {
+  const m = useMemo(() => {
+    const pageviews = events.filter((e) => e.type === 'pageview');
+    const checkouts = events.filter((e) => e.type === 'begin_checkout');
+    const purchases = events.filter((e) => e.type === 'purchase');
+
+    const uniqueVisitors = new Set(pageviews.map((e) => e.session_id).filter(Boolean)).size;
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    const viewsToday = pageviews.filter((e) => new Date(e.created_at) >= startOfToday).length;
+
+    // Revenue from confirmed paid orders (source of truth), not from events.
+    const revenue = orders
+      .filter((o) => ['paid', 'shipped', 'delivered'].includes(o.status))
+      .reduce((s, o) => s + (Number(o.amount) || 0), 0);
+
+    const convRate = uniqueVisitors ? (purchases.length / uniqueVisitors) * 100 : 0;
+    const checkoutRate = checkouts.length ? (purchases.length / checkouts.length) * 100 : 0;
+
+    // Group pageviews by path.
+    const byPath = {};
+    for (const e of pageviews) {
+      const key = e.path || '/';
+      byPath[key] = (byPath[key] || 0) + 1;
+    }
+    const paths = Object.entries(byPath).sort((a, b) => b[1] - a[1]).slice(0, 6);
+
+    // Traffic sources by referrer host.
+    const bySource = {};
+    for (const e of pageviews) {
+      let key = 'כניסה ישירה';
+      if (e.referrer) {
+        try { key = new URL(e.referrer).hostname.replace(/^www\./, ''); } catch { key = e.referrer; }
+      }
+      bySource[key] = (bySource[key] || 0) + 1;
+    }
+    const sources = Object.entries(bySource).sort((a, b) => b[1] - a[1]).slice(0, 6);
+
+    // Pageviews per day for the last 7 days (oldest → newest).
+    const days = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setHours(0, 0, 0, 0);
+      d.setDate(d.getDate() - i);
+      const next = new Date(d);
+      next.setDate(next.getDate() + 1);
+      const count = pageviews.filter((e) => {
+        const t = new Date(e.created_at);
+        return t >= d && t < next;
+      }).length;
+      days.push({ label: d.toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit' }), value: count });
+    }
+
+    return {
+      totalViews: pageviews.length,
+      uniqueVisitors,
+      viewsToday,
+      checkouts: checkouts.length,
+      purchases: purchases.length,
+      revenue,
+      convRate,
+      checkoutRate,
+      paths,
+      sources,
+      days,
+    };
+  }, [events, orders]);
+
+  if (!events.length) {
+    return (
+      <p className="rounded-2xl border border-white/10 bg-pine/40 py-12 text-center text-bone/50">
+        עדיין אין נתוני תנועה. הנתונים יופיעו כאן ברגע שגולשים ייכנסו לאתר.
+      </p>
+    );
+  }
+
+  const maxDay = Math.max(1, ...m.days.map((d) => d.value));
+  const maxPath = Math.max(1, ...m.paths.map((p) => p[1]));
+  const maxSource = Math.max(1, ...m.sources.map((s) => s[1]));
+
+  return (
+    <div className="space-y-5">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <StatCard label="צפיות בדפים" value={m.totalViews} />
+        <StatCard label="מבקרים ייחודיים" value={m.uniqueVisitors} />
+        <StatCard label="צפיות היום" value={m.viewsToday} />
+        <StatCard label="התחלות תשלום" value={m.checkouts} />
+        <StatCard label="רכישות" value={m.purchases} />
+        <StatCard label="אחוז המרה" value={`${m.convRate.toFixed(1)}%`} />
+        <StatCard label="המרת עגלה" value={`${m.checkoutRate.toFixed(1)}%`} />
+        <StatCard label="הכנסות" value={`₪${m.revenue.toLocaleString('he-IL')}`} />
+      </div>
+
+      <Panel title="צפיות ב-7 הימים האחרונים">
+        <div className="space-y-2.5">
+          {m.days.map((d) => (
+            <BarRow key={d.label} label={d.label} value={d.value} max={maxDay} />
+          ))}
+        </div>
+      </Panel>
+
+      <div className="grid gap-5 lg:grid-cols-2">
+        <Panel title="דפים מובילים">
+          <div className="space-y-2.5">
+            {m.paths.map(([p, v]) => (
+              <BarRow key={p} label={p} value={v} max={maxPath} />
+            ))}
+          </div>
+        </Panel>
+
+        <Panel title="מקורות תנועה">
+          <div className="space-y-2.5">
+            {m.sources.map(([s, v]) => (
+              <BarRow key={s} label={s} value={v} max={maxSource} />
+            ))}
+          </div>
+        </Panel>
+      </div>
+
+      <p className="text-center text-xs text-bone/40">
+        המרה = רכישות ÷ מבקרים ייחודיים · המרת עגלה = רכישות ÷ התחלות תשלום · מבוסס על עד 5,000 האירועים האחרונים
+      </p>
+    </div>
+  );
+};
 
 const Dashboard = ({ session }) => {
   const [tab, setTab] = useState('orders');
-  const [data, setData] = useState({ orders: [], shipments: [], customers: [] });
+  const [data, setData] = useState({ orders: [], shipments: [], customers: [], analytics: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [adding, setAdding] = useState(false);
@@ -307,17 +456,19 @@ const Dashboard = ({ session }) => {
   const load = async () => {
     setLoading(true);
     setError('');
-    const [orders, shipments, customers] = await Promise.all([
+    const [orders, shipments, customers, analytics] = await Promise.all([
       supabase.from('orders').select('*').order('created_at', { ascending: false }),
       supabase.from('shipments').select('*').order('created_at', { ascending: false }),
       supabase.from('customers').select('*').order('created_at', { ascending: false }),
+      supabase.from('analytics_events').select('*').order('created_at', { ascending: false }).limit(5000),
     ]);
-    const firstErr = orders.error || shipments.error || customers.error;
+    const firstErr = orders.error || shipments.error || customers.error || analytics.error;
     if (firstErr) setError(firstErr.message);
     setData({
       orders: orders.data || [],
       shipments: shipments.data || [],
       customers: customers.data || [],
+      analytics: analytics.data || [],
     });
     setLoading(false);
   };
@@ -431,12 +582,14 @@ const Dashboard = ({ session }) => {
             ))}
           </div>
           <div className="flex gap-2">
-            <button
-              onClick={() => setAdding(true)}
-              className="rounded-xl bg-ball px-4 py-2 text-sm font-semibold text-ink transition hover:bg-white"
-            >
-              + הוספה
-            </button>
+            {tab !== 'analytics' && (
+              <button
+                onClick={() => setAdding(true)}
+                className="rounded-xl bg-ball px-4 py-2 text-sm font-semibold text-ink transition hover:bg-white"
+              >
+                + הוספה
+              </button>
+            )}
             <button onClick={load} className="rounded-xl border border-white/15 px-4 py-2 text-sm hover:bg-white/10">
               רענון
             </button>
@@ -452,6 +605,8 @@ const Dashboard = ({ session }) => {
         <div className="mt-4">
           {loading ? (
             <p className="py-10 text-center text-bone/50">טוען…</p>
+          ) : tab === 'analytics' ? (
+            <Analytics events={data.analytics} orders={data.orders} />
           ) : (
             <Table columns={columns[tab]} rows={data[tab]} onEdit={setEditing} onDelete={handleDelete} />
           )}

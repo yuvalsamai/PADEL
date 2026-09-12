@@ -2,6 +2,7 @@ import React, { Suspense, lazy } from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 import './index.css'
+import { trackPageview } from './lib/analytics.js'
 
 const Admin = lazy(() => import('./admin/Admin.jsx'))
 const PayPage = lazy(() => import('./PayPage.jsx'))
@@ -17,6 +18,9 @@ const route =
   : path.endsWith('/pay') ? 'pay'
   : path.endsWith('/thank-you') ? 'thankyou'
   : 'notfound'
+
+// Record a first-party pageview for every public page (skip the admin panel).
+if (route !== 'admin') trackPageview()
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

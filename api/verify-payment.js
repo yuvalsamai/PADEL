@@ -161,6 +161,18 @@ export default async function handler(req, res) {
       address = ship?.address ?? null;
     }
 
+    // Record the conversion for the analytics dashboard (best-effort).
+    try {
+      await supabase.from('analytics_events').insert({
+        type: 'purchase',
+        path: '/thank-you',
+        order_ref: order,
+        amount,
+      });
+    } catch {
+      /* ignore analytics failures */
+    }
+
     // Fire a Telegram notification (best-effort — never blocks the buyer's success).
     await notifyTelegram({ name, email, phone, address, amount, order, tranId, orderId });
 
