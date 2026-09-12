@@ -14,17 +14,22 @@ const FIELDS = [
   { key: 'zip', label: 'מיקוד', type: 'text', autoComplete: 'postal-code', inputMode: 'numeric', placeholder: '6100000' },
 ];
 
-// Optional amount override for testing, e.g. /pay?amount=7 — falls back to ₪89.
-// Guards against junk/negative values so it can't be abused into a zero charge.
-function getAmount() {
-  const raw = new URLSearchParams(window.location.search).get('amount');
+// Amount override for testing, e.g. /pay?amount=7&token=SECRET — falls back to
+// ₪89. The server only honors a non-default amount when the token matches its
+// secret TEST_AMOUNT_TOKEN, so a plain /pay?amount=7 (no token) is ignored both
+// here and server-side and the buyer is charged the real price.
+function getCheckout() {
+  const q = new URLSearchParams(window.location.search);
+  const token = q.get('token') || '';
+  const raw = q.get('amount');
   const n = Number(raw);
-  return raw && Number.isFinite(n) && n > 0 ? String(n) : '89';
+  const amount = token && raw && Number.isFinite(n) && n > 0 ? String(n) : '89';
+  return { amount, token };
 }
 
 export default function PayPage() {
   const [form, setForm] = useState({ fullName: '', cell: '', email: '', street: '', city: '', zip: '' });
-  const [amount] = useState(getAmount);
+  const [{ amount, token }] = useState(getCheckout);
   const [url, setUrl] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -48,6 +53,7 @@ export default function PayPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           amount,
+          testToken: token,
           clientName,
           clientLName,
           cell: form.cell.trim(),

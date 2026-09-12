@@ -62,9 +62,20 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Hyp credentials are not configured' });
   }
 
-  // Accept optional customer/amount from the query (GET) or JSON body (POST).
+  // Accept optional customer fields from the query (GET) or JSON body (POST).
   const src = req.method === 'POST' ? req.body || {} : req.query || {};
-  const amount = String(src.amount || '89');
+
+  // SECURITY: the price is fixed server-side — never trust an amount from the
+  // client, or a buyer could sign a ₪1 charge for this product. A different
+  // amount is honored ONLY for testing, and only when the request carries the
+  // secret TEST_AMOUNT_TOKEN (set as an env var, known to the site owner alone).
+  const PRODUCT_PRICE = process.env.PRODUCT_PRICE || '89';
+  const testToken = process.env.TEST_AMOUNT_TOKEN;
+  const requested = src.amount != null ? String(src.amount) : PRODUCT_PRICE;
+  const n = Number(requested);
+  const testAllowed = Boolean(testToken) && src.testToken === testToken && Number.isFinite(n) && n > 0;
+  const amount = testAllowed ? requested : PRODUCT_PRICE;
+
   const order = String(src.order || `CC-${Date.now()}`);
 
   const params = new URLSearchParams({
