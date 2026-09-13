@@ -6,9 +6,10 @@ import { AccessibilityStatementModal } from './Accessibility.jsx';
 /* Hero background photo. Drop the supplied image at public/hero.jpg to swap it in;
    a court-toned gradient shows until then. */
 const HERO_IMG = '/hero.webp';
-/* Optional hero video — drop a file at public/hero-video.mp4 to show it in the
-   product column; falls back to the spinning product photo if absent. */
-const HERO_VIDEO = '/hero-video.mp4';
+/* Optional hero video — shown in the product column; falls back to the spinning
+   product photo if it can't load. Keep the file small (ideally < 8MB) so it
+   doesn't slow the page. */
+const HERO_VIDEO = '/FDown.vn_Instagram_Video_Downloader_2653.mp4';
 
 /* ================================================================== */
 /*  Orders counter (social proof)                                     */
@@ -282,15 +283,21 @@ const HeroMedia = () => {
   return (
     <div className="relative flex items-center justify-center py-6 lg:py-0">
       <div className="pointer-events-none absolute h-2/3 w-2/3 rounded-full bg-ball/25 blur-3xl" />
-      <video
-        src={HERO_VIDEO}
-        autoPlay
-        muted
-        loop
-        playsInline
-        onError={() => setVideoOk(false)}
-        className="relative w-[min(88%,420px)] rounded-3xl object-cover shadow-2xl ring-1 ring-white/10"
-      />
+      {/* Fixed 9:16 frame → no layout shift; poster shows instantly while the
+          video streams; preload=metadata avoids downloading it all up front. */}
+      <div className="relative w-[min(72%,300px)] overflow-hidden rounded-3xl shadow-2xl ring-1 ring-white/10 lg:w-[min(85%,360px)]" style={{ aspectRatio: '9 / 16' }}>
+        <video
+          src={HERO_VIDEO}
+          poster="/product.webp"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          onError={() => setVideoOk(false)}
+          className="h-full w-full object-cover"
+        />
+      </div>
     </div>
   );
 };
