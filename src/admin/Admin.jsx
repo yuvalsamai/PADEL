@@ -113,7 +113,7 @@ const Login = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-ink px-5">
+    <div dir="rtl" className="flex min-h-screen items-center justify-center bg-ink px-5">
       <form onSubmit={submit} className="w-full max-w-sm rounded-3xl bg-court p-8 ring-1 ring-white/10">
         <h1 className="font-display text-2xl font-black text-bone">כניסת מנהל</h1>
         <p className="mt-1 text-sm text-bone/60">COURTCHECK · אזור מאובטח</p>
@@ -1015,7 +1015,7 @@ const Dashboard = ({ session }) => {
     .reduce((s, o) => s + (Number(o.amount) || 0), 0);
 
   return (
-    <div className="min-h-screen bg-ink text-bone">
+    <div dir="rtl" className="min-h-screen bg-ink text-bone">
       <header className="border-b border-white/10 bg-court">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
           <div className="flex items-center gap-3">

@@ -301,7 +301,7 @@ const Hero = () => (
     <div
       className="absolute inset-0 -z-10 bg-court"
       style={{
-        backgroundImage: `linear-gradient(180deg, rgba(17,24,19,0.35) 0%, rgba(17,24,19,0.08) 42%, rgba(17,24,19,0.6) 100%), linear-gradient(270deg, rgba(17,24,19,0) 0%, rgba(17,24,19,0.25) 100%), url(${HERO_IMG})`,
+        backgroundImage: `linear-gradient(180deg, rgba(17,24,19,0.5) 0%, rgba(17,24,19,0.35) 42%, rgba(17,24,19,0.7) 100%), linear-gradient(270deg, rgba(17,24,19,0.15) 0%, rgba(17,24,19,0.45) 100%), url(${HERO_IMG})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
       }}
@@ -317,15 +317,15 @@ const Hero = () => (
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="max-w-3xl"
+            className="max-w-3xl [text-shadow:_0_2px_16px_rgba(0,0,0,0.55)]"
           >
-            <Eyebrow className="text-bone/80">מערכת הצילום למגרש · פאדל &amp; טניס</Eyebrow>
+            <Eyebrow className="text-bone">מערכת הצילום למגרש · פאדל &amp; טניס</Eyebrow>
             <h1 className="mt-5 font-display text-5xl font-black leading-[0.98] tracking-tight text-bone sm:text-7xl lg:text-7xl">
               צלם כל נקודה.
               <br />
               שחק חכם יותר.
             </h1>
-            <p className="mt-6 max-w-lg text-lg leading-relaxed text-bone/80">
+            <p className="mt-6 max-w-lg text-lg font-medium leading-relaxed text-bone">
               תושבת שמתלבשת בשניות על רשת המגרש ומצלמת בזווית גבוהה ויציבה — לתוכן, לשיפור
               הטכניקה ולהכרעת כל ויכוח על קו.
             </p>
@@ -524,7 +524,7 @@ const Showcase = () => (
 
 const HawkEye = () => (
   <section id="hawkeye" className="bg-court px-5 py-20 sm:px-8 sm:py-28">
-    <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-12 lg:grid-cols-2">
+    <div className="mx-auto max-w-3xl">
       <Reveal>
         <h2 className="font-display text-4xl font-black leading-[1.05] tracking-tight text-bone sm:text-6xl">
           הכדור היה על הקו.
@@ -542,26 +542,6 @@ const HawkEye = () => (
           לרכישה מהירה
           <ArrowChip className="!bg-ink !text-ball" />
         </a>
-      </Reveal>
-
-      {/* minimalist court-corner proof graphic (static, clean) */}
-      <Reveal delay={0.12}>
-        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-3xl bg-pine/50 ring-1 ring-white/10">
-          <div className="absolute inset-6">
-            {/* baseline + sideline */}
-            <div className="absolute bottom-8 right-0 left-0 h-[3px] rounded bg-bone/80" />
-            <div className="absolute bottom-8 right-24 top-0 w-[3px] rounded bg-bone/80" />
-            {/* ball just inside the line */}
-            <div className="absolute bottom-[2.4rem] right-14 h-8 w-8 rounded-full bg-ball shadow-lg ring-2 ring-ink/20" />
-            {/* verdict tag */}
-            <div className="absolute right-6 top-4 flex items-center gap-2">
-              <span className="rounded-full bg-ball px-3 py-1 text-sm font-bold text-ink">
-                בפנים
-              </span>
-              <span className="text-xs uppercase tracking-[0.2em] text-bone/50">Hawk-Eye</span>
-            </div>
-          </div>
-        </div>
       </Reveal>
     </div>
   </section>
