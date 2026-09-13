@@ -100,19 +100,19 @@ const OrdersCounter = () => {
   const count = baseline + live;
   const [display, ref] = useCountUp(count);
   return (
-    <section className="bg-ink px-5 py-14 sm:py-16">
-      <div ref={ref} className="mx-auto flex max-w-3xl flex-col items-center gap-4 text-center">
-        <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5">
-          <span className="relative flex h-2.5 w-2.5">
+    <section className="bg-ink px-5 py-9 sm:py-11">
+      <div ref={ref} className="mx-auto flex max-w-3xl flex-col items-center gap-2.5 text-center">
+        <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1">
+          <span className="relative flex h-2 w-2">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-ball opacity-75" />
-            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-ball" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-ball" />
           </span>
-          <span className="text-xs font-medium uppercase tracking-[0.18em] text-bone/70">בזמן אמת</span>
+          <span className="text-[0.65rem] font-medium uppercase tracking-[0.18em] text-bone/70">בזמן אמת</span>
         </span>
-        <div className="font-display text-6xl font-black leading-none text-ball sm:text-7xl">
+        <div className="font-display text-4xl font-black leading-none text-ball sm:text-5xl">
           {display.toLocaleString('he-IL')}
         </div>
-        <div className="font-display text-2xl font-bold text-bone sm:text-3xl">הזמנות שבוצעו</div>
+        <div className="font-display text-lg font-bold text-bone sm:text-xl">הזמנות שבוצעו</div>
       </div>
     </section>
   );
@@ -264,7 +264,7 @@ const ProductSpin = () => (
       src="/product.webp"
       alt="תושבת CourtCheck עם אייפון על המגרש"
       draggable={false}
-      className="relative w-[min(72%,300px)] select-none drop-shadow-2xl lg:w-[min(95%,420px)]"
+      className="relative w-[min(55%,220px)] select-none drop-shadow-2xl lg:w-[min(75%,320px)]"
       style={{ transformStyle: 'preserve-3d' }}
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1, rotateY: [-28, 28, -28], y: [-12, 12, -12] }}
@@ -314,7 +314,7 @@ const SpinSection = () => (
 );
 
 const Hero = () => (
-  <section id="top" className="relative isolate overflow-hidden rounded-panel">
+  <section id="top" className="relative isolate overflow-hidden">
     {/* background photo + court gradient fallback */}
     <div
       className="absolute inset-0 -z-10 bg-court"
