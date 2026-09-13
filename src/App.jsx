@@ -252,34 +252,6 @@ const Nav = () => {
 /*  Hero                                                              */
 /* ================================================================== */
 
-/* Product image with a continuous 3D turn + float (single-photo pseudo-3D). */
-const ProductSpin = () => (
-  <div
-    className="relative flex items-center justify-center py-6 lg:py-0"
-    style={{ perspective: '1400px' }}
-  >
-    {/* ambient glow */}
-    <div className="pointer-events-none absolute h-2/3 w-2/3 rounded-full bg-ball/25 blur-3xl" />
-    <motion.img
-      src="/product.webp"
-      alt="תושבת CourtCheck עם אייפון על המגרש"
-      draggable={false}
-      className="relative w-[min(55%,220px)] select-none drop-shadow-2xl lg:w-[min(75%,320px)]"
-      style={{ transformStyle: 'preserve-3d' }}
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1, rotateY: [-28, 28, -28], y: [-12, 12, -12] }}
-      transition={{
-        opacity: { duration: 0.8 },
-        scale: { duration: 0.8 },
-        rotateY: { duration: 9, repeat: Infinity, ease: 'easeInOut' },
-        y: { duration: 6, repeat: Infinity, ease: 'easeInOut' },
-      }}
-    />
-  </div>
-);
-
-/* Shows the hero video when public/hero-video.mp4 exists; otherwise the
-   spinning product photo. Falls back automatically if the video can't load. */
 /* Hero video (top of the page). Clean — no background glow or poster flash;
    falls back to a STATIC product image (no animation) if it can't load. */
 const HeroMedia = () => {
@@ -306,14 +278,6 @@ const HeroMedia = () => {
   );
 };
 
-/* Animated product showcase section (moved down from the hero). */
-const SpinSection = () => (
-  <section className="bg-bone px-5 pt-8 pb-2">
-    <div className="mx-auto max-w-md">
-      <ProductSpin />
-    </div>
-  </section>
-);
 
 const Hero = () => (
   <section id="top" className="relative isolate overflow-hidden">
@@ -923,7 +887,6 @@ export default function App() {
         <Hero />
         <OrdersCounter />
         <TrustStrip />
-        <SpinSection />
         <Features />
         <Steps />
         <Showcase />
