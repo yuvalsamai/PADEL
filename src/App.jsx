@@ -125,12 +125,15 @@ export const TRUST_ITEMS = [
 ];
 
 const TrustStrip = () => (
-  <section className="border-y border-ink/5 bg-bone2 px-5 py-6">
-    <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-center gap-x-8 gap-y-3 text-center">
+  <section className="bg-ink px-5 py-8 sm:py-10">
+    <div className="mx-auto grid max-w-4xl grid-cols-1 gap-4 sm:grid-cols-2">
       {TRUST_ITEMS.map((t) => (
-        <div key={t.label} className="flex items-center gap-2 text-sm font-medium text-ink/70">
-          <span className="text-lg" aria-hidden="true">{t.icon}</span>
-          {t.label}
+        <div
+          key={t.label}
+          className="flex items-center justify-center gap-4 rounded-2xl border border-white/10 bg-white/5 px-6 py-5"
+        >
+          <span className="text-3xl sm:text-4xl" aria-hidden="true">{t.icon}</span>
+          <span className="font-display text-lg font-bold text-bone sm:text-xl">{t.label}</span>
         </div>
       ))}
     </div>
@@ -277,32 +280,38 @@ const ProductSpin = () => (
 
 /* Shows the hero video when public/hero-video.mp4 exists; otherwise the
    spinning product photo. Falls back automatically if the video can't load. */
-/* Simple product video section (no animation). Hides itself if the file can't
-   load. Placed between the trust strip and the features section. */
-const VideoSection = () => {
+/* Hero video (top of the page). Falls back to the product photo if it can't load. */
+const HeroMedia = () => {
   const [ok, setOk] = useState(true);
-  if (!ok) return null;
+  if (!ok) return <ProductSpin />;
   return (
-    <section className="bg-bone px-5 pt-10 pb-2 sm:pt-14">
-      <div className="mx-auto max-w-sm">
-        <div className="overflow-hidden rounded-3xl shadow-xl ring-1 ring-ink/10" style={{ aspectRatio: '9 / 16' }}>
-          <video
-            src={HERO_VIDEO}
-            poster="/product.webp"
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="metadata"
-            controls
-            onError={() => setOk(false)}
-            className="h-full w-full object-cover"
-          />
-        </div>
+    <div className="relative flex items-center justify-center py-6 lg:py-0">
+      <div className="pointer-events-none absolute h-2/3 w-2/3 rounded-full bg-ball/25 blur-3xl" />
+      <div className="relative w-[min(72%,300px)] overflow-hidden rounded-3xl shadow-2xl ring-1 ring-white/10 lg:w-[min(85%,360px)]" style={{ aspectRatio: '9 / 16' }}>
+        <video
+          src={HERO_VIDEO}
+          poster="/product.webp"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          onError={() => setOk(false)}
+          className="h-full w-full object-cover"
+        />
       </div>
-    </section>
+    </div>
   );
 };
+
+/* Animated product showcase section (moved down from the hero). */
+const SpinSection = () => (
+  <section className="bg-bone px-5 pt-8 pb-2">
+    <div className="mx-auto max-w-md">
+      <ProductSpin />
+    </div>
+  </section>
+);
 
 const Hero = () => (
   <section id="top" className="relative isolate overflow-hidden rounded-panel">
@@ -363,7 +372,7 @@ const Hero = () => (
         </div>
 
         {/* product column — left in RTL */}
-        <ProductSpin />
+        <HeroMedia />
       </div>
     </div>
   </section>
@@ -842,30 +851,58 @@ const StickyBar = () => {
   return (
     <AnimatePresence>
       {show && (
-        <motion.div
-          initial={{ y: 100 }}
-          animate={{ y: 0 }}
-          exit={{ y: 100 }}
-          transition={{ type: 'spring', stiffness: 320, damping: 32 }}
-          className="fixed inset-x-3 bottom-3 z-[70] rounded-full border border-white/10 bg-ink/95 px-3 py-2.5 backdrop-blur-md lg:hidden"
-        >
-          <div className="flex items-center gap-3">
-            <div className="flex-shrink-0 pr-2 text-right">
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-xs text-bone/50 line-through">₪119.90</span>
-                <span className="font-display text-lg font-black leading-none text-bone">₪89</span>
+        <React.Fragment>
+          {/* Mobile: full-width bottom bar */}
+          <motion.div
+            key="mobile-bar"
+            initial={{ y: 100 }}
+            animate={{ y: 0 }}
+            exit={{ y: 100 }}
+            transition={{ type: 'spring', stiffness: 320, damping: 32 }}
+            className="fixed inset-x-3 bottom-3 z-[70] rounded-full border border-white/10 bg-ink/95 px-3 py-2.5 backdrop-blur-md lg:hidden"
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex-shrink-0 pr-2 text-right">
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-xs text-bone/50 line-through">₪119.90</span>
+                  <span className="font-display text-lg font-black leading-none text-bone">₪89</span>
+                </div>
+                <div className="mt-0.5 text-[0.6rem] text-ball">מחיר מבצע · משלוח חינם</div>
               </div>
-              <div className="mt-0.5 text-[0.6rem] text-ball">מחיר מבצע · משלוח חינם</div>
+              <motion.a
+                href="/pay"
+                whileTap={{ scale: 0.98 }}
+                className="flex flex-1 items-center justify-center gap-2 rounded-full bg-ball py-3 text-sm font-bold text-ink"
+              >
+                הזמן עכשיו <ArrowUpLeft size={16} strokeWidth={2.5} />
+              </motion.a>
             </div>
-            <motion.a
+          </motion.div>
+
+          {/* Desktop: floating purchase card, bottom-left */}
+          <motion.div
+            key="desktop-card"
+            initial={{ y: 40, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 40, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            dir="rtl"
+            className="fixed bottom-6 left-6 z-[70] hidden w-72 rounded-3xl border border-white/10 bg-ink/95 p-5 shadow-2xl backdrop-blur-md lg:block"
+          >
+            <div className="flex items-center gap-2 text-sm font-medium text-ball">🎾 תושבת CourtCheck</div>
+            <div className="mt-2 flex items-baseline gap-2">
+              <span className="text-sm text-bone/50 line-through">₪119.90</span>
+              <span className="font-display text-3xl font-black leading-none text-bone">₪89</span>
+            </div>
+            <div className="mt-1 text-xs text-bone/70">מחיר מבצע · משלוח חינם</div>
+            <a
               href="/pay"
-              whileTap={{ scale: 0.98 }}
-              className="flex flex-1 items-center justify-center gap-2 rounded-full bg-ball py-3 text-sm font-bold text-ink"
+              className="mt-4 flex items-center justify-center gap-2 rounded-full bg-ball py-3 font-bold text-ink transition-colors hover:bg-white"
             >
-              הזמן עכשיו <ArrowUpLeft size={16} strokeWidth={2.5} />
-            </motion.a>
-          </div>
-        </motion.div>
+              הזמן עכשיו <ArrowUpLeft size={18} strokeWidth={2.5} />
+            </a>
+          </motion.div>
+        </React.Fragment>
       )}
     </AnimatePresence>
   );
@@ -884,7 +921,7 @@ export default function App() {
         <Hero />
         <OrdersCounter />
         <TrustStrip />
-        <VideoSection />
+        <SpinSection />
         <Features />
         <Steps />
         <Showcase />
