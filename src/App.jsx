@@ -277,28 +277,30 @@ const ProductSpin = () => (
 
 /* Shows the hero video when public/hero-video.mp4 exists; otherwise the
    spinning product photo. Falls back automatically if the video can't load. */
-const HeroMedia = () => {
-  const [videoOk, setVideoOk] = useState(true);
-  if (!videoOk) return <ProductSpin />;
+/* Simple product video section (no animation). Hides itself if the file can't
+   load. Placed between the trust strip and the features section. */
+const VideoSection = () => {
+  const [ok, setOk] = useState(true);
+  if (!ok) return null;
   return (
-    <div className="relative flex items-center justify-center py-6 lg:py-0">
-      <div className="pointer-events-none absolute h-2/3 w-2/3 rounded-full bg-ball/25 blur-3xl" />
-      {/* Fixed 9:16 frame → no layout shift; poster shows instantly while the
-          video streams; preload=metadata avoids downloading it all up front. */}
-      <div className="relative w-[min(72%,300px)] overflow-hidden rounded-3xl shadow-2xl ring-1 ring-white/10 lg:w-[min(85%,360px)]" style={{ aspectRatio: '9 / 16' }}>
-        <video
-          src={HERO_VIDEO}
-          poster="/product.webp"
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          onError={() => setVideoOk(false)}
-          className="h-full w-full object-cover"
-        />
+    <section className="bg-bone px-5 pt-10 pb-2 sm:pt-14">
+      <div className="mx-auto max-w-sm">
+        <div className="overflow-hidden rounded-3xl shadow-xl ring-1 ring-ink/10" style={{ aspectRatio: '9 / 16' }}>
+          <video
+            src={HERO_VIDEO}
+            poster="/product.webp"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            controls
+            onError={() => setOk(false)}
+            className="h-full w-full object-cover"
+          />
+        </div>
       </div>
-    </div>
+    </section>
   );
 };
 
@@ -361,7 +363,7 @@ const Hero = () => (
         </div>
 
         {/* product column — left in RTL */}
-        <HeroMedia />
+        <ProductSpin />
       </div>
     </div>
   </section>
@@ -882,6 +884,7 @@ export default function App() {
         <Hero />
         <OrdersCounter />
         <TrustStrip />
+        <VideoSection />
         <Features />
         <Steps />
         <Showcase />
