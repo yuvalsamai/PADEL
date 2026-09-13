@@ -280,25 +280,27 @@ const ProductSpin = () => (
 
 /* Shows the hero video when public/hero-video.mp4 exists; otherwise the
    spinning product photo. Falls back automatically if the video can't load. */
-/* Hero video (top of the page). Falls back to the product photo if it can't load. */
+/* Hero video (top of the page). Clean — no background glow or poster flash;
+   falls back to a STATIC product image (no animation) if it can't load. */
 const HeroMedia = () => {
   const [ok, setOk] = useState(true);
-  if (!ok) return <ProductSpin />;
   return (
-    <div className="relative flex items-center justify-center py-6 lg:py-0">
-      <div className="pointer-events-none absolute h-2/3 w-2/3 rounded-full bg-ball/25 blur-3xl" />
-      <div className="relative w-[min(72%,300px)] overflow-hidden rounded-3xl shadow-2xl ring-1 ring-white/10 lg:w-[min(85%,360px)]" style={{ aspectRatio: '9 / 16' }}>
-        <video
-          src={HERO_VIDEO}
-          poster="/product.webp"
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          onError={() => setOk(false)}
-          className="h-full w-full object-cover"
-        />
+    <div className="flex items-center justify-center py-6 lg:py-0">
+      <div className="relative w-[min(72%,300px)] overflow-hidden rounded-3xl bg-ink shadow-2xl ring-1 ring-white/10 lg:w-[min(85%,360px)]" style={{ aspectRatio: '9 / 16' }}>
+        {ok ? (
+          <video
+            src={HERO_VIDEO}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            onError={() => setOk(false)}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <img src="/product.webp" alt="תושבת CourtCheck" className="h-full w-full object-cover" />
+        )}
       </div>
     </div>
   );
