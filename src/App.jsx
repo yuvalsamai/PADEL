@@ -328,7 +328,7 @@ const Hero = () => (
                   <span className="text-sm text-bone/50 line-through">₪119.90</span>
                   <span className="font-display text-xl font-black text-ball">₪89</span>
                 </div>
-                <div className="text-xs font-medium text-bone/80">מחיר מבצע · משלוח חינם</div>
+                <div className="text-xs font-medium text-bone/80">מחיר מבצע · משלוח חינם עד הדלת</div>
               </div>
               <a href="/pay" className="group">
                 <ArrowChip />
@@ -616,7 +616,7 @@ const faqs = [
   },
   {
     q: 'תוך כמה זמן המשלוח מגיע?',
-    a: 'המשלוח נשלח לנקודת האיסוף או הלוקר הקרובים לביתך ומגיע תוך 7–12 ימי עסקים, עם מספר מעקב מלא.',
+    a: 'המשלוח חינם ומגיע עד הדלת שלך תוך 7–12 ימי עסקים, עם מספר מעקב מלא.',
   },
   {
     q: 'ממה עשוי המתקן?',
@@ -703,7 +703,7 @@ const terms = [
   },
   {
     h: 'משלוחים',
-    p: 'אספקת המוצר מתבצעת לנקודת איסוף/לוקר תוך 7–12 ימי עסקים ממועד ביצוע ההזמנה, בכפוף לזמינות מלאי ולתנאי חברת השילוח.',
+    p: 'אספקת המוצר מתבצעת במשלוח חינם עד הדלת תוך 7–12 ימי עסקים ממועד ביצוע ההזמנה, בכפוף לזמינות מלאי ולתנאי חברת השילוח.',
   },
 ];
 
@@ -833,7 +833,7 @@ const StickyBar = () => {
                   <span className="text-xs text-bone/50 line-through">₪119.90</span>
                   <span className="font-display text-lg font-black leading-none text-bone">₪89</span>
                 </div>
-                <div className="mt-0.5 text-[0.6rem] text-ball">מחיר מבצע · משלוח חינם</div>
+                <div className="mt-0.5 text-[0.6rem] text-ball">מחיר מבצע · משלוח חינם עד הדלת</div>
               </div>
               <motion.a
                 href="/pay"
@@ -860,7 +860,7 @@ const StickyBar = () => {
               <span className="text-sm text-bone/50 line-through">₪119.90</span>
               <span className="font-display text-3xl font-black leading-none text-bone">₪89</span>
             </div>
-            <div className="mt-1 text-xs text-bone/70">מחיר מבצע · משלוח חינם</div>
+            <div className="mt-1 text-xs text-bone/70">מחיר מבצע · משלוח חינם עד הדלת</div>
             <a
               href="/pay"
               className="mt-4 flex items-center justify-center gap-2 rounded-full bg-ball py-3 font-bold text-ink transition-colors hover:bg-white"
