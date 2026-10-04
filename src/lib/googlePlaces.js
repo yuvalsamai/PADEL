@@ -51,3 +51,46 @@ export function parseAddress(place) {
     zip: get('postal_code'),
   };
 }
+
+// Places (New) often omits postal_code for Israeli addresses even though the
+// legacy Places / Geocoding services return it. Try those as fallbacks; each
+// step fails quietly (e.g. if that API isn't enabled on the key).
+const withTimeout = (p, ms = 4000) =>
+  Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]);
+
+const zipFrom = (components) =>
+  components?.find((c) => c.types.includes('postal_code'))?.long_name || '';
+
+export async function findZip(placeId) {
+  const g = window.google?.maps;
+  if (!g || !placeId) return '';
+
+  // 1) Legacy PlacesService.getDetails (what the classic widget's place_changed uses).
+  try {
+    const { PlacesService } = await g.importLibrary('places');
+    const svc = new PlacesService(document.createElement('div'));
+    const zip = await withTimeout(
+      new Promise((resolve, reject) =>
+        svc.getDetails({ placeId, fields: ['address_components'], language: 'he' }, (res, status) =>
+          status === 'OK' ? resolve(zipFrom(res?.address_components)) : reject(new Error(status)),
+        ),
+      ),
+    );
+    if (zip) return zip;
+  } catch {
+    /* fall through */
+  }
+
+  // 2) Geocoder by place id.
+  try {
+    const { Geocoder } = await g.importLibrary('geocoding');
+    const { results } = await withTimeout(new Geocoder().geocode({ placeId, language: 'he' }));
+    for (const r of results || []) {
+      const zip = zipFrom(r.address_components);
+      if (zip) return zip;
+    }
+  } catch {
+    /* no zip available */
+  }
+  return '';
+}

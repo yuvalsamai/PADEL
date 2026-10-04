@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { track } from './lib/analytics.js';
-import { hasPlacesKey, loadPlaces, parseAddress } from './lib/googlePlaces.js';
+import { findZip, hasPlacesKey, loadPlaces, parseAddress } from './lib/googlePlaces.js';
 
 /* Collects the customer details we want on record (full name, phone, email,
    full shipping address + postal code) and forwards them to the backend, which
@@ -77,7 +77,7 @@ function AddressSearch({ value, onChange, onPick, onUnavailable }) {
       const place = pred.toPlace();
       await place.fetchFields({ fields: ['addressComponents'] });
       const a = parseAddress(place);
-      parsed = { street: a.street || typed, city: a.city, zip: a.zip };
+      parsed = { street: a.street || typed, city: a.city, zip: a.zip || (await findZip(pred.placeId)) };
     } catch {
       /* fall back to the suggestion text; the buyer completes the rest */
     }
