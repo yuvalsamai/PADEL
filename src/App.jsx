@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowUpLeft, Plus, X, Menu } from 'lucide-react';
+import { ArrowUpLeft, Plus, X, Menu, Instagram } from 'lucide-react';
 import { AccessibilityStatementModal } from './Accessibility.jsx';
 
 /* Hero background photo. Drop the supplied image at public/hero.jpg to swap it in;
@@ -9,6 +9,7 @@ const HERO_IMG = '/hero.webp';
 /* Optional hero video — shown in the product column; falls back to the spinning
    product photo if it can't load. Keep the file small (ideally < 8MB) so it
    doesn't slow the page. */
+const INSTAGRAM_URL = 'https://www.instagram.com/courtcheck_il/';
 const HERO_VIDEO = '/FDown.vn_Instagram_Video_Downloader_2653.mp4';
 
 /* ================================================================== */
@@ -121,7 +122,7 @@ const OrdersCounter = () => {
 /* Trust badges — reused on the landing page and (compact) on checkout. */
 export const TRUST_ITEMS = [
   { icon: '🔒', label: 'תשלום מאובטח · Hyp' },
-  { icon: '🚚', label: 'משלוח חינם לנקודת איסוף' },
+  { icon: '🚚', label: 'משלוח חינם עד הדלת' },
 ];
 
 const TrustStrip = () => (
@@ -665,9 +666,20 @@ const Faq = () => {
       <div className="mx-auto max-w-3xl">
         <Reveal>
           <Eyebrow className="text-moss">שאלות נפוצות</Eyebrow>
-          <h2 className="mb-10 mt-4 font-display text-4xl font-black tracking-tight text-ink sm:text-5xl">
+          <h2 className="mt-4 font-display text-4xl font-black tracking-tight text-ink sm:text-5xl">
             כל מה שרציתם לדעת.
           </h2>
+          <p className="mb-10 mt-4 text-lg text-ink/70">
+            יש לכם שאלה? אנחנו זמינים לכם{' '}
+            <a
+              href={INSTAGRAM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 font-semibold text-ink underline decoration-ball decoration-2 underline-offset-4 hover:text-moss"
+            >
+              <Instagram size={18} /> באינסטגרם
+            </a>
+          </p>
         </Reveal>
         <div className="space-y-3">
           {faqs.map((item, i) => (
@@ -765,6 +777,16 @@ const Footer = ({ onOpenTerms, onOpenA11y }) => (
           <p className="mt-3 max-w-sm text-lg text-bone/70">
             עין הנץ שלך על המגרש. צלם, נתח והכרע.
           </p>
+          <a
+            href={INSTAGRAM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-5 inline-flex items-center gap-2 rounded-full border border-white/15 px-4 py-2 text-sm text-bone/80 transition-colors hover:border-ball hover:text-ball"
+          >
+            <Instagram size={18} />
+            <span>יש לכם שאלה? דברו איתנו באינסטגרם</span>
+            <span dir="ltr" className="font-semibold">@courtcheck_il</span>
+          </a>
         </div>
         <div className="flex flex-wrap items-center gap-6 text-sm">
           <button

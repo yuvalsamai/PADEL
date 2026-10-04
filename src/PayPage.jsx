@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { track } from './lib/analytics.js';
+import { hasPlacesKey, loadPlaces, parseAddress } from './lib/googlePlaces.js';
 
 /* Collects the customer details we want on record (full name, phone, email,
    full shipping address + postal code) and forwards them to the backend, which
@@ -14,6 +15,137 @@ const FIELDS = [
   { key: 'city', label: 'עיר', type: 'text', autoComplete: 'address-level2', placeholder: 'תל אביב' },
   { key: 'zip', label: 'מיקוד', type: 'text', autoComplete: 'postal-code', inputMode: 'numeric', placeholder: '6100000' },
 ];
+
+const INPUT_CLS =
+  'w-full rounded-xl border border-ink/15 bg-white px-4 py-3 text-ink placeholder-ink/30 outline-none transition-colors focus:border-moss focus:ring-2 focus:ring-moss/20';
+
+/* Street field with Google Places (New) suggestions. Picking one fills street,
+   city and zip; without a key / if Google fails it is a plain input. */
+function StreetInput({ field, value, onChange, onPick }) {
+  const [places, setPlaces] = useState(null);
+  const [suggestions, setSuggestions] = useState([]);
+  const [open, setOpen] = useState(false);
+  const [active, setActive] = useState(-1);
+  const tokenRef = useRef(null);
+  const reqRef = useRef(0);
+
+  useEffect(() => {
+    if (!hasPlacesKey()) return;
+    loadPlaces()
+      .then((lib) => {
+        tokenRef.current = new lib.AutocompleteSessionToken();
+        setPlaces(lib);
+      })
+      .catch(() => {});
+  }, []);
+
+  // Debounced suggestion fetch.
+  useEffect(() => {
+    if (!places || value.trim().length < 2) {
+      setSuggestions([]);
+      return;
+    }
+    const id = ++reqRef.current;
+    const t = setTimeout(async () => {
+      try {
+        const { suggestions: res } = await places.AutocompleteSuggestion.fetchAutocompleteSuggestions({
+          input: value,
+          sessionToken: tokenRef.current,
+          includedRegionCodes: ['il'],
+          language: 'he',
+          region: 'il',
+        });
+        if (id === reqRef.current) setSuggestions(res.filter((s) => s.placePrediction));
+      } catch {
+        if (id === reqRef.current) setSuggestions([]);
+      }
+    }, 220);
+    return () => clearTimeout(t);
+  }, [value, places]);
+
+  const pick = async (s) => {
+    setOpen(false);
+    setSuggestions([]);
+    const pred = s.placePrediction;
+    onChange(pred.mainText?.text || pred.text.text);
+    try {
+      const place = pred.toPlace();
+      await place.fetchFields({ fields: ['addressComponents'] });
+      onPick(parseAddress(place));
+    } catch {
+      /* keep what the user typed */
+    }
+    // A session ends once a place is fetched — start a fresh one.
+    tokenRef.current = new places.AutocompleteSessionToken();
+  };
+
+  const onKeyDown = (e) => {
+    if (!open || !suggestions.length) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setActive((i) => (i + 1) % suggestions.length);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setActive((i) => (i <= 0 ? suggestions.length - 1 : i - 1));
+    } else if (e.key === 'Enter' && active >= 0) {
+      e.preventDefault();
+      pick(suggestions[active]);
+    } else if (e.key === 'Escape') {
+      setOpen(false);
+    }
+  };
+
+  return (
+    <div className="relative">
+      <label className="block">
+        <span className="mb-1.5 block text-sm font-semibold text-ink/80">
+          {field.label}
+          {places && <span className="font-normal text-ink/50"> · התחילו להקליד ונשלים עיר ומיקוד</span>}
+        </span>
+        <input
+          type="text"
+          required
+          value={value}
+          autoComplete={places ? 'off' : field.autoComplete}
+          placeholder={field.placeholder}
+          onChange={(e) => {
+            onChange(e.target.value);
+            setOpen(true);
+            setActive(-1);
+          }}
+          onFocus={() => setOpen(true)}
+          onBlur={() => setTimeout(() => setOpen(false), 150)}
+          onKeyDown={onKeyDown}
+          className={INPUT_CLS}
+        />
+      </label>
+
+      {open && suggestions.length > 0 && (
+        <ul className="absolute inset-x-0 top-full z-20 mt-1 overflow-hidden rounded-xl border border-ink/10 bg-white shadow-xl">
+          {suggestions.map((s, i) => {
+            const p = s.placePrediction;
+            return (
+              <li key={p.placeId}>
+                <button
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => pick(s)}
+                  className={`flex w-full flex-col items-start px-4 py-2.5 text-right transition-colors ${
+                    i === active ? 'bg-ink/5' : 'hover:bg-ink/5'
+                  }`}
+                >
+                  <span className="text-ink">{p.mainText?.text || p.text.text}</span>
+                  {p.secondaryText?.text && <span className="text-xs text-ink/50">{p.secondaryText.text}</span>}
+                </button>
+              </li>
+            );
+          })}
+          <li className="px-4 py-1.5 text-left text-[10px] text-ink/30">powered by Google</li>
+        </ul>
+      )}
+    </div>
+  );
+}
 
 // Amount override for testing, e.g. /pay?amount=7&token=SECRET — falls back to
 // ₪89. The server only honors a non-default amount when the token matches its
@@ -113,7 +245,23 @@ export default function PayPage() {
             </p>
 
             <div className="mt-7 space-y-4">
-              {FIELDS.map((f) => (
+              {FIELDS.map((f) =>
+                f.key === 'street' ? (
+                  <StreetInput
+                    key={f.key}
+                    field={f}
+                    value={form.street}
+                    onChange={(v) => setForm((prev) => ({ ...prev, street: v }))}
+                    onPick={(a) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        street: a.street || prev.street,
+                        city: a.city || prev.city,
+                        zip: a.zip || prev.zip,
+                      }))
+                    }
+                  />
+                ) : (
                 <label key={f.key} className="block">
                   <span className="mb-1.5 block text-sm font-semibold text-ink/80">{f.label}</span>
                   <input
@@ -124,10 +272,11 @@ export default function PayPage() {
                     onChange={update(f.key)}
                     autoComplete={f.autoComplete}
                     placeholder={f.placeholder}
-                    className="w-full rounded-xl border border-ink/15 bg-white px-4 py-3 text-ink placeholder-ink/30 outline-none transition-colors focus:border-moss focus:ring-2 focus:ring-moss/20"
+                    className={INPUT_CLS}
                   />
                 </label>
-              ))}
+                ),
+              )}
             </div>
 
             {/* Quantity + total */}
