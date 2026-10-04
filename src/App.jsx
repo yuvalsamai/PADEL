@@ -142,12 +142,19 @@ const TrustStrip = () => (
       href={INSTAGRAM_URL}
       target="_blank"
       rel="noopener noreferrer"
-      className="mx-auto mt-5 flex w-fit flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center text-bone/80 transition-colors hover:text-ball"
+      className="group mx-auto mt-4 flex max-w-4xl flex-col items-center justify-center gap-4 rounded-2xl bg-ball px-6 py-6 text-center text-ink shadow-lg shadow-ball/20 transition-transform hover:scale-[1.01] sm:flex-row sm:gap-6 sm:py-7"
     >
-      <span className="font-display font-bold text-bone">יש לכם שאלה?</span>
-      <span className="inline-flex items-center gap-1.5">
-        אנחנו זמינים לכם בעמוד האינסטגרם שלנו
-        <Instagram size={18} className="text-ball" />
+      <span className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-ink text-ball sm:h-16 sm:w-16">
+        <Instagram size={34} strokeWidth={2.2} />
+      </span>
+      <span>
+        <span className="block font-display text-2xl font-black sm:text-3xl">יש לכם שאלה?</span>
+        <span className="mt-1 block text-lg font-semibold sm:text-xl">
+          אנחנו זמינים לכם בעמוד האינסטגרם שלנו
+        </span>
+        <span dir="ltr" className="mt-1 block text-base font-bold underline decoration-2 underline-offset-4">
+          @courtcheck_il
+        </span>
       </span>
     </a>
   </section>
