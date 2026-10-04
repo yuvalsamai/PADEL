@@ -138,11 +138,23 @@ const TrustStrip = () => (
         </div>
       ))}
     </div>
+    <a
+      href={INSTAGRAM_URL}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="mx-auto mt-5 flex w-fit flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center text-bone/80 transition-colors hover:text-ball"
+    >
+      <span className="font-display font-bold text-bone">יש לכם שאלה?</span>
+      <span className="inline-flex items-center gap-1.5">
+        אנחנו זמינים לכם בעמוד האינסטגרם שלנו
+        <Instagram size={18} className="text-ball" />
+      </span>
+    </a>
   </section>
 );
 
 /* ================================================================== */
-/*  Primitives                                                        */
+/*  Primitives                                                       */
 /* ================================================================== */
 
 const Reveal = ({ children, delay = 0, className = '' }) => (
