@@ -33,6 +33,17 @@ The `#buy` section embeds the Hyp secure payment form in an iframe (`src/App.jsx
 It currently points at the **stage** URL (`stage.hyp.co.il`) — replace it with the
 production URL before going live.
 
+## Address autocomplete (Google Places)
+`/pay` first shows a shipping-details form; picking a Google suggestion in the street
+field auto-fills street, city and zip (all still editable). Details are passed to Hyp and
+saved with the order (`shipments.address`, `customers.phone`) and in the Telegram alert.
+
+1. Google Cloud console → enable **Maps JavaScript API** and **Places API (New)**.
+2. Restrict the key: *Application restrictions → Websites* (your domain + `localhost:5173`),
+   *API restrictions* → the two APIs above.
+3. Set `VITE_GOOGLE_MAPS_API_KEY` in `.env.local` and in Vercel env vars, then redeploy.
+   Without a key the form still works with manual entry.
+
 ## Admin panel (`/YUVAL`)
 A secure admin dashboard for tracking customers, orders, and shipments lives at any
 URL ending in **`/YUVAL`** (e.g. `https://yoursite.com/YUVAL`). It is powered by

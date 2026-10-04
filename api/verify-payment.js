@@ -7,7 +7,7 @@ const HYP_BASE = 'https://pay.hyp.co.il/p/';
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://uwmydcfhedcquktxqsis.supabase.co';
 
 // Sends a new-order alert to a Telegram group. No-op if not configured; never throws.
-async function notifyTelegram({ name, email, amount, order, tranId, orderId }) {
+async function notifyTelegram({ name, email, phone, address, amount, order, tranId, orderId }) {
   const { TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID } = process.env;
   if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) return;
 
@@ -16,6 +16,8 @@ async function notifyTelegram({ name, email, amount, order, tranId, orderId }) {
     '',
     `👤 שם: ${name || '—'}`,
     `✉️ אימייל: ${email || '—'}`,
+    `📞 טלפון: ${phone || '—'}`,
+    `📍 כתובת: ${address || '—'}`,
     `💰 סכום: ₪${amount ?? '—'}`,
     `🧾 מס׳ הזמנה: ${order || '—'}`,
     `🔖 עסקת Hyp: ${tranId || '—'}`,
@@ -78,6 +80,10 @@ export default async function handler(req, res) {
   const order = p.get('Order') || null;
   const name = p.get('Fild1') || null;
   const email = p.get('Fild2') || null;
+  // Fild3 = "phone | address" (set by create-payment).
+  const [fild3Phone, ...fild3Addr] = (p.get('Fild3') || '').split(' | ');
+  const phone = p.get('cell') || fild3Phone.trim() || null;
+  const address = fild3Addr.join(' | ') || null;
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
     auth: { persistSession: false },
@@ -93,7 +99,7 @@ export default async function handler(req, res) {
     let customerId = null;
     if (name || email) {
       const { data: cust } = await supabase
-        .from('customers').insert({ name: name || 'לקוח', email }).select('id').single();
+        .from('customers').insert({ name: name || 'לקוח', email, phone }).select('id').single();
       customerId = cust?.id ?? null;
     }
 
@@ -111,12 +117,13 @@ export default async function handler(req, res) {
     if (newOrder?.id) {
       await supabase.from('shipments').insert({
         order_id: newOrder.id,
+        address,
         status: 'pending',
       });
     }
 
     // Fire a Telegram notification (best-effort — never blocks the buyer's success).
-    await notifyTelegram({ name, email, amount, order, tranId, orderId: newOrder?.id });
+    await notifyTelegram({ name, email, phone, address, amount, order, tranId, orderId: newOrder?.id });
 
     return res.status(200).json({ ok: true, order });
   } catch (e) {
