@@ -19,12 +19,14 @@ export function loadPlaces() {
       resolve();
       return;
     }
+    // The script's onload fires before google.maps.importLibrary exists; Google
+    // invokes the callback only once the API is actually ready.
+    window.__ccMapsReady = () => resolve();
     const s = document.createElement('script');
     s.src =
       `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(KEY)}` +
-      '&loading=async&language=he&region=IL&v=weekly';
+      '&loading=async&language=he&region=IL&v=weekly&callback=__ccMapsReady';
     s.async = true;
-    s.onload = () => resolve();
     s.onerror = () => reject(new Error('Failed to load Google Maps'));
     document.head.appendChild(s);
   })
