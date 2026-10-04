@@ -7,7 +7,7 @@ const HYP_BASE = 'https://pay.hyp.co.il/p/';
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://uwmydcfhedcquktxqsis.supabase.co';
 
 // Sends a new-order alert to a Telegram group. No-op if not configured; never throws.
-async function notifyTelegram({ name, email, phone, address, amount, order, tranId, orderId }) {
+async function notifyTelegram({ name, email, phone, address, product, amount, order, tranId, orderId }) {
   const { TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID } = process.env;
   if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) return;
 
@@ -18,6 +18,7 @@ async function notifyTelegram({ name, email, phone, address, amount, order, tran
     `📱 טלפון: ${phone || '—'}`,
     `✉️ אימייל: ${email || '—'}`,
     `🏠 כתובת: ${address || '—'}`,
+    product ? `🎨 מוצר: ${product}` : null,
     `💰 סכום: ₪${amount ?? '—'}`,
     `🧾 מס׳ הזמנה: ${order || '—'}`,
     `🔖 עסקת Hyp: ${tranId || '—'}`,
@@ -101,7 +102,7 @@ export default async function handler(req, res) {
     if (order) {
       const { data: pending } = await supabase
         .from('orders')
-        .select('id, customer_id, customer_name')
+        .select('id, customer_id, customer_name, product')
         .eq('order_ref', order)
         .eq('status', 'pending')
         .order('created_at', { ascending: false })
@@ -183,7 +184,7 @@ export default async function handler(req, res) {
     }
 
     // Fire a Telegram notification (best-effort — never blocks the buyer's success).
-    await notifyTelegram({ name, email, phone, address, amount, order, tranId, orderId });
+    await notifyTelegram({ name, email, phone, address, product: orderRow?.product, amount, order, tranId, orderId });
 
     return res.status(200).json({ ok: true, details: { ...details, quantity, address } });
   } catch (e) {

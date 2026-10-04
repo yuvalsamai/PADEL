@@ -4,6 +4,7 @@
 // Secrets (HYP_MASOF / HYP_APIKEY / HYP_PASSP) live only here, never in the frontend.
 
 import { createClient } from '@supabase/supabase-js';
+import { DEFAULT_COLOR, PRODUCT_NAME, colorByKey } from '../src/lib/colors.js';
 
 const HYP_BASE = 'https://pay.hyp.co.il/p/';
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://uwmydcfhedcquktxqsis.supabase.co';
@@ -11,7 +12,7 @@ const SUPABASE_URL = process.env.SUPABASE_URL || 'https://uwmydcfhedcquktxqsis.s
 // Best-effort: store the checkout details as a pending order keyed by order_ref.
 // verify-payment finishes it (status → paid) on a confirmed completion redirect.
 // Never throws — the buyer must reach the payment page even if the DB write fails.
-async function recordPending({ order, amount, quantity, name, email, cell, address, street, city, zip, region }) {
+async function recordPending({ order, amount, quantity, product, name, email, cell, address, street, city, zip, region }) {
   const { SUPABASE_SERVICE_ROLE_KEY } = process.env;
   if (!SUPABASE_SERVICE_ROLE_KEY) return;
 
@@ -36,7 +37,7 @@ async function recordPending({ order, amount, quantity, name, email, cell, addre
         order_ref: order,
         customer_id: customerId,
         customer_name: name,
-        product: 'תושבת CourtCheck',
+        product: product || PRODUCT_NAME,
         quantity: quantity || 1,
         amount: Number(amount) || null,
         status: 'pending',
@@ -82,6 +83,8 @@ export default async function handler(req, res) {
 
   // Quantity is clamped to 1..10 server-side; total is derived, never trusted.
   const qty = Math.min(10, Math.max(1, Math.floor(Number(src.quantity)) || 1));
+  const color = colorByKey(src.color) || colorByKey(DEFAULT_COLOR);
+  const product = `${PRODUCT_NAME} · ${color.he}`;
   // Quantity discount: 1→0%, then 2×qty+1 (2→5%, 3→7% … 10→21%).
   const discountPct = qty < 2 ? 0 : 2 * qty + 1;
   const amount = String(Math.round(unitPrice * qty * (1 - discountPct / 100)));
@@ -142,6 +145,7 @@ export default async function handler(req, res) {
       order,
       amount,
       quantity: qty,
+      product,
       name: fullName || null,
       email: src.email ? String(src.email) : null,
       cell: src.cell ? String(src.cell) : null,

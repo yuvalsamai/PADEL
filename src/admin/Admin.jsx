@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { supabase, supabaseEnabled } from '../lib/supabase.js';
+import { colorFromProduct } from '../lib/colors.js';
 
 /* ================================================================== */
 /*  Small UI helpers                                                  */
@@ -470,6 +471,7 @@ function supplierBlock({ order, shipment, phone, email }) {
   const address = heToLatin(s.street || s.address || '');
   return [
     `Customer Name: ${heToLatin(order.customer_name || '')}`,
+    `Color: ${colorFromProduct(order.product)?.en || 'Black'}`,
     'Country: Israel',
     `Address: ${address}`,
     `City: ${cityEn(s.city)}`,
@@ -530,12 +532,13 @@ const OrdersView = ({ orders, shipments, customers, onChanged, onDelete }) => {
   }, [allRows, query, statusFilter]);
 
   const exportCsv = () => {
-    const headers = ['מס׳ הזמנה', 'שם לקוח', 'טלפון', 'כתובת', 'כמות', 'סכום', 'סטטוס תשלום', 'סטטוס משלוח', 'מספר מעקב', 'תאריך הזמנה'];
+    const headers = ['מס׳ הזמנה', 'שם לקוח', 'טלפון', 'כתובת', 'צבע', 'כמות', 'סכום', 'סטטוס תשלום', 'סטטוס משלוח', 'מספר מעקב', 'תאריך הזמנה'];
     const data = rows.map(({ order, shipment, seq, phone }) => [
       seq,
       order.customer_name || '',
       phone || '',
       shipment?.address || '',
+      colorFromProduct(order.product)?.he || '',
       order.quantity ?? 1,
       order.amount ?? '',
       order.status === 'cancelled' ? 'שגיאה' : 'שולם',
@@ -593,7 +596,7 @@ const OrdersView = ({ orders, shipments, customers, onChanged, onDelete }) => {
       <table className="w-full min-w-[900px] text-right text-sm">
         <thead className="bg-pine text-bone/60">
           <tr>
-            {['מס׳ הזמנה', 'שם לקוח', 'כתובת', 'כמות', 'סכום', 'סטטוס תשלום', 'סטטוס משלוח', 'מספר מעקב', 'תאריך הזמנה'].map((h) => (
+            {['מס׳ הזמנה', 'שם לקוח', 'כתובת', 'צבע', 'כמות', 'סכום', 'סטטוס תשלום', 'סטטוס משלוח', 'מספר מעקב', 'תאריך הזמנה'].map((h) => (
               <th key={h} className="whitespace-nowrap px-4 py-3 font-medium">{h}</th>
             ))}
             <th className="px-4 py-3" />
@@ -601,13 +604,21 @@ const OrdersView = ({ orders, shipments, customers, onChanged, onDelete }) => {
         </thead>
         <tbody className="divide-y divide-white/5">
           {rows.length === 0 ? (
-            <tr><td colSpan={10} className="px-4 py-10 text-center text-bone/50">אין הזמנות להצגה</td></tr>
+            <tr><td colSpan={11} className="px-4 py-10 text-center text-bone/50">אין הזמנות להצגה</td></tr>
           ) : (
             rows.map(({ order, shipment, seq, phone, email }) => (
               <tr key={order.id} className="text-bone/90">
                 <td className="whitespace-nowrap px-4 py-3 font-semibold">#{seq}</td>
                 <td className="whitespace-nowrap px-4 py-3">{order.customer_name || '—'}</td>
                 <td className="max-w-[220px] truncate px-4 py-3" title={shipment?.address || ''}>{shipment?.address || '—'}</td>
+                <td className="whitespace-nowrap px-4 py-3">
+                  {colorFromProduct(order.product) ? (
+                    <span className="inline-flex items-center gap-1.5">
+                      <span className="h-3 w-3 rounded-full ring-1 ring-white/30" style={{ backgroundColor: colorFromProduct(order.product).hex }} />
+                      {colorFromProduct(order.product).he}
+                    </span>
+                  ) : '—'}
+                </td>
                 <td className="whitespace-nowrap px-4 py-3">{order.quantity ?? 1}</td>
                 <td className="whitespace-nowrap px-4 py-3">{order.amount != null ? `₪${order.amount}` : '—'}</td>
 

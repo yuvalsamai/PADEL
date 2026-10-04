@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { track } from './lib/analytics.js';
+import { COLORS, DEFAULT_COLOR } from './lib/colors.js';
 import { findZip, hasPlacesKey, loadPlaces, parseAddress } from './lib/googlePlaces.js';
 
 /* Collects the customer details we want on record (full name, phone, email,
@@ -168,6 +169,7 @@ export default function PayPage() {
   const [form, setForm] = useState({ fullName: '', cell: '', email: '', street: '', city: '', zip: '' });
   const [{ amount, token }] = useState(getCheckout);
   const [qty, setQty] = useState(1);
+  const [color, setColor] = useState(DEFAULT_COLOR);
   const [url, setUrl] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -219,6 +221,7 @@ export default function PayPage() {
         body: JSON.stringify({
           amount,
           quantity: qty,
+          color,
           testToken: token,
           clientName,
           clientLName,
@@ -267,6 +270,29 @@ export default function PayPage() {
             <p className="mt-2 text-sm text-ink/60">
               מלאו את הפרטים ותועברו לדף תשלום מאובטח להזנת פרטי האשראי.
             </p>
+
+            {/* Color */}
+            <fieldset className="mt-6">
+              <legend className="mb-2 text-sm font-semibold text-ink/80">
+                צבע: <span className="font-bold text-ink">{COLORS.find((c) => c.key === color)?.he}</span>
+              </legend>
+              <div className="flex items-center gap-3">
+                {COLORS.map((c) => (
+                  <button
+                    key={c.key}
+                    type="button"
+                    onClick={() => setColor(c.key)}
+                    aria-label={c.he}
+                    aria-pressed={color === c.key}
+                    title={c.he}
+                    className={`h-10 w-10 rounded-full ring-offset-2 ring-offset-chalk transition ${
+                      color === c.key ? 'ring-2 ring-ink' : 'ring-1 ring-ink/15 hover:ring-ink/40'
+                    }`}
+                    style={{ backgroundColor: c.hex }}
+                  />
+                ))}
+              </div>
+            </fieldset>
 
             <div className="mt-7 space-y-4">
               {FIELDS.map((f) => (
