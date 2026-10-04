@@ -11,7 +11,11 @@ const FIELDS = [
   { key: 'fullName', label: 'שם מלא', type: 'text', autoComplete: 'name', placeholder: 'ישראל ישראלי' },
   { key: 'cell', label: 'טלפון', type: 'tel', autoComplete: 'tel', placeholder: '050-0000000' },
   { key: 'email', label: 'אימייל', type: 'email', autoComplete: 'email', placeholder: 'you@example.com' },
-  { key: 'street', label: 'רחוב ומספר בית', type: 'text', autoComplete: 'street-address', placeholder: 'הרצל 25, דירה 4' },
+];
+
+// Shown only after an address is picked (or for manual entry), so the buyer can review/edit.
+const ADDRESS_FIELDS = [
+  { key: 'street', label: 'רחוב, מספר בית ודירה', type: 'text', autoComplete: 'street-address', placeholder: 'הרצל 25, דירה 4' },
   { key: 'city', label: 'עיר', type: 'text', autoComplete: 'address-level2', placeholder: 'תל אביב' },
   { key: 'zip', label: 'מיקוד', type: 'text', autoComplete: 'postal-code', inputMode: 'numeric', placeholder: '6100000' },
 ];
@@ -19,9 +23,9 @@ const FIELDS = [
 const INPUT_CLS =
   'w-full rounded-xl border border-ink/15 bg-white px-4 py-3 text-ink placeholder-ink/30 outline-none transition-colors focus:border-moss focus:ring-2 focus:ring-moss/20';
 
-/* Street field with Google Places (New) suggestions. Picking one fills street,
-   city and zip; without a key / if Google fails it is a plain input. */
-function StreetInput({ field, value, onChange, onPick }) {
+/* Single "address" search box with Google Places (New) suggestions. Picking one
+   hands back street / city / zip; onUnavailable fires if Google can't load. */
+function AddressSearch({ value, onChange, onPick, onUnavailable }) {
   const [places, setPlaces] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
   const [open, setOpen] = useState(false);
@@ -36,7 +40,7 @@ function StreetInput({ field, value, onChange, onPick }) {
         tokenRef.current = new lib.AutocompleteSessionToken();
         setPlaces(lib);
       })
-      .catch(() => {});
+      .catch(() => onUnavailable());
   }, []);
 
   // Debounced suggestion fetch.
@@ -67,14 +71,17 @@ function StreetInput({ field, value, onChange, onPick }) {
     setOpen(false);
     setSuggestions([]);
     const pred = s.placePrediction;
-    onChange(pred.mainText?.text || pred.text.text);
+    const typed = pred.mainText?.text || pred.text.text;
+    let parsed = { street: typed, city: '', zip: '' };
     try {
       const place = pred.toPlace();
       await place.fetchFields({ fields: ['addressComponents'] });
-      onPick(parseAddress(place));
+      const a = parseAddress(place);
+      parsed = { street: a.street || typed, city: a.city, zip: a.zip };
     } catch {
-      /* keep what the user typed */
+      /* fall back to the suggestion text; the buyer completes the rest */
     }
+    onPick(parsed);
     // A session ends once a place is fetched — start a fresh one.
     tokenRef.current = new places.AutocompleteSessionToken();
   };
@@ -98,16 +105,13 @@ function StreetInput({ field, value, onChange, onPick }) {
   return (
     <div className="relative">
       <label className="block">
-        <span className="mb-1.5 block text-sm font-semibold text-ink/80">
-          {field.label}
-          {places && <span className="font-normal text-ink/50"> · התחילו להקליד ונשלים עיר ומיקוד</span>}
-        </span>
+        <span className="mb-1.5 block text-sm font-semibold text-ink/80">כתובת למשלוח</span>
         <input
           type="text"
           required
           value={value}
-          autoComplete={places ? 'off' : field.autoComplete}
-          placeholder={field.placeholder}
+          autoComplete="off"
+          placeholder="התחילו להקליד את הכתובת…"
           onChange={(e) => {
             onChange(e.target.value);
             setOpen(true);
@@ -176,8 +180,28 @@ export default function PayPage() {
 
   const update = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
 
+  // 'search' = one address box with Google suggestions; 'edit' = street/city/zip
+  // fields (after a pick, for manual entry, or when Google is unavailable).
+  const [addrMode, setAddrMode] = useState(hasPlacesKey() ? 'search' : 'edit');
+  const [addrQuery, setAddrQuery] = useState('');
+  const [picked, setPicked] = useState(false);
+  const [placesOk, setPlacesOk] = useState(hasPlacesKey());
+  const zipRef = useRef(null);
+
+  const toManual = () => {
+    setForm((f) => ({ ...f, street: f.street || addrQuery }));
+    setPicked(false);
+    setAddrMode('edit');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (addrMode === 'search') {
+      // Typed but never picked a suggestion — open the fields to complete it.
+      toManual();
+      setError('נא לבחור כתובת מהרשימה, או להשלים עיר ומיקוד.');
+      return;
+    }
     setError('');
     setLoading(true);
     track('begin_checkout'); // funnel step: submitted details, heading to Hyp
@@ -245,23 +269,7 @@ export default function PayPage() {
             </p>
 
             <div className="mt-7 space-y-4">
-              {FIELDS.map((f) =>
-                f.key === 'street' ? (
-                  <StreetInput
-                    key={f.key}
-                    field={f}
-                    value={form.street}
-                    onChange={(v) => setForm((prev) => ({ ...prev, street: v }))}
-                    onPick={(a) =>
-                      setForm((prev) => ({
-                        ...prev,
-                        street: a.street || prev.street,
-                        city: a.city || prev.city,
-                        zip: a.zip || prev.zip,
-                      }))
-                    }
-                  />
-                ) : (
+              {FIELDS.map((f) => (
                 <label key={f.key} className="block">
                   <span className="mb-1.5 block text-sm font-semibold text-ink/80">{f.label}</span>
                   <input
@@ -275,7 +283,71 @@ export default function PayPage() {
                     className={INPUT_CLS}
                   />
                 </label>
-                ),
+              ))}
+
+              {addrMode === 'search' ? (
+                <div>
+                  <AddressSearch
+                    value={addrQuery}
+                    onChange={setAddrQuery}
+                    onUnavailable={() => {
+                      setPlacesOk(false);
+                      toManual();
+                    }}
+                    onPick={(a) => {
+                      setForm((f) => ({ ...f, street: a.street, city: a.city, zip: a.zip }));
+                      setPicked(true);
+                      setAddrMode('edit');
+                      setError('');
+                      // Google often has no zip for Israeli addresses — point the buyer at it.
+                      if (!a.zip) setTimeout(() => zipRef.current?.focus(), 0);
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={toManual}
+                    className="mt-1.5 text-xs font-medium text-ink/50 underline underline-offset-2 hover:text-ink"
+                  >
+                    לא מוצאים? הזנה ידנית
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-3 rounded-2xl bg-bone2/60 p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <span>
+                      <span className="block text-sm font-semibold text-ink/80">כתובת למשלוח</span>
+                      {picked && <span className="block text-xs text-ink/50">בדקו ועדכנו אם צריך</span>}
+                    </span>
+                    {placesOk && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAddrQuery('');
+                          setAddrMode('search');
+                        }}
+                        className="whitespace-nowrap text-xs font-medium text-ink/50 underline underline-offset-2 hover:text-ink"
+                      >
+                        חיפוש מחדש
+                      </button>
+                    )}
+                  </div>
+                  {ADDRESS_FIELDS.map((f) => (
+                    <label key={f.key} className="block">
+                      <span className="mb-1 block text-xs font-semibold text-ink/60">{f.label}</span>
+                      <input
+                        ref={f.key === 'zip' ? zipRef : undefined}
+                        type={f.type}
+                        required
+                        inputMode={f.inputMode}
+                        value={form[f.key]}
+                        onChange={update(f.key)}
+                        autoComplete={f.autoComplete}
+                        placeholder={f.placeholder}
+                        className={INPUT_CLS}
+                      />
+                    </label>
+                  ))}
+                </div>
               )}
             </div>
 
