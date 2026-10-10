@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import Logo from '../Logo.jsx';
 import { BUSINESS } from '../lib/business.js';
+import { openConsentSettings } from '../lib/consent.js';
 
 /* Shared shell for the legal pages (/terms, /privacy, /cancel, /accessibility). */
 export function LegalLayout({ title, children }) {
@@ -32,6 +33,7 @@ export function LegalLayout({ title, children }) {
           <a href="/cancel" className="text-ink/70 underline underline-offset-4 hover:text-ink">ביטול עסקה</a>
           <a href="/privacy" className="text-ink/70 underline underline-offset-4 hover:text-ink">מדיניות פרטיות</a>
           <a href="/accessibility" className="text-ink/70 underline underline-offset-4 hover:text-ink">הצהרת נגישות</a>
+          <button type="button" onClick={openConsentSettings} className="text-ink/70 underline underline-offset-4 hover:text-ink">הגדרות עוגיות</button>
         </nav>
       </main>
     </div>

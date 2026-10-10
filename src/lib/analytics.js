@@ -1,3 +1,5 @@
+import { getConsent } from './consent.js';
+
 // Tiny first-party analytics client. Sends visit/conversion events to
 // /api/track. Fire-and-forget: any failure is swallowed so tracking can never
 // affect the user experience.
@@ -8,6 +10,11 @@ const SID_KEY = 'cc_sid';
 // an in-memory id if localStorage is blocked (private mode, etc.).
 let memorySid = null;
 function sessionId() {
+  // Without consent, never write a persistent id — use one per page load.
+  if (getConsent() !== 'all') {
+    if (!memorySid) memorySid = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    return memorySid;
+  }
   try {
     let sid = localStorage.getItem(SID_KEY);
     if (!sid) {

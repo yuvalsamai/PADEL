@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, MotionConfig } from 'framer-motion';
 import { ArrowUpLeft, Plus, X, Menu, Instagram, Pause, Play } from 'lucide-react';
 import Logo from './Logo.jsx';
+import { openConsentSettings } from './lib/consent.js';
 
 /* Hero background photo. Drop the supplied image at public/hero.jpg to swap it in;
    a court-toned gradient shows until then. */
@@ -788,6 +789,7 @@ const Footer = () => (
           <a href="/cancel" className="rounded-full border border-ball px-4 py-1.5 font-semibold text-ball hover:bg-ball hover:text-ink">ביטול עסקה</a>
           <a href="/privacy" className="font-medium text-ball underline-offset-4 hover:underline">מדיניות פרטיות</a>
           <a href="/accessibility" className="font-medium text-ball underline-offset-4 hover:underline">הצהרת נגישות</a>
+          <button type="button" onClick={openConsentSettings} className="font-medium text-ball underline-offset-4 hover:underline">הגדרות עוגיות</button>
           <a href="#top" className="text-bone/70 hover:text-bone">חזרה למעלה ↑</a>
         </nav>
       </div>
