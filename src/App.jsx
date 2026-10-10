@@ -3,6 +3,7 @@ import { motion, AnimatePresence, MotionConfig } from 'framer-motion';
 import { ArrowUpLeft, Plus, X, Menu, Instagram, Pause, Play } from 'lucide-react';
 import Logo from './Logo.jsx';
 import { openConsentSettings } from './lib/consent.js';
+import { INSTAGRAM_HANDLE, INSTAGRAM_URL } from './lib/business.js';
 
 /* Hero background photo. Drop the supplied image at public/hero.jpg to swap it in;
    a court-toned gradient shows until then. */
@@ -10,7 +11,6 @@ const HERO_IMG = '/hero.webp';
 /* Optional hero video — shown in the product column; falls back to the spinning
    product photo if it can't load. Keep the file small (ideally < 8MB) so it
    doesn't slow the page. */
-const INSTAGRAM_URL = 'https://www.instagram.com/courtcheck_il/';
 const HERO_VIDEO = '/FDown.vn_Instagram_Video_Downloader_2653.mp4';
 
 /* ================================================================== */
@@ -154,7 +154,7 @@ const TrustStrip = () => (
           אנחנו זמינים לכם בעמוד האינסטגרם שלנו
         </span>
         <span dir="ltr" className="mt-1 block text-base font-bold underline decoration-2 underline-offset-4">
-          @courtcheck_il
+          {INSTAGRAM_HANDLE}
         </span>
       </span>
     </a>
@@ -781,7 +781,7 @@ const Footer = () => (
           >
             <Instagram size={18} />
             <span>יש לכם שאלה? דברו איתנו באינסטגרם</span>
-            <span dir="ltr" className="font-semibold">@courtcheck_il</span>
+            <span dir="ltr" className="font-semibold">{INSTAGRAM_HANDLE}</span>
           </a>
         </div>
         <nav aria-label="מידע משפטי" className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm">

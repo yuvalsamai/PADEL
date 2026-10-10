@@ -21,4 +21,5 @@ export const BUSINESS = {
   updated: 'אוקטובר 2026',
 };
 
-export const INSTAGRAM_URL = 'https://www.instagram.com/courtcheck_il/';
+export const INSTAGRAM_HANDLE = '@netcam_il';
+export const INSTAGRAM_URL = 'https://www.instagram.com/netcam_il/';

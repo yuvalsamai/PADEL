@@ -1,6 +1,6 @@
 import React from 'react';
 import { LegalLayout, Section, BusinessDetails } from './legal/LegalLayout.jsx';
-import { BUSINESS } from './lib/business.js';
+import { BUSINESS, INSTAGRAM_URL } from './lib/business.js';
 import { PRODUCT_NAME } from './lib/colors.js';
 
 /* Site terms (/terms). Written to the Israeli Consumer Protection Law's
@@ -131,7 +131,7 @@ export default function Terms() {
       <Section h="13. יצירת קשר">
         <p>
           לכל שאלה ניתן לפנות אלינו בדוא״ל{b.phone ? ', בטלפון' : ''} או בהודעה ב
-          <a href="https://www.instagram.com/courtcheck_il/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">אינסטגרם</a>.
+          <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">אינסטגרם</a>.
         </p>
       </Section>
     </LegalLayout>
