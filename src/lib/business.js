@@ -8,15 +8,15 @@
 export const BUSINESS = {
   brand: 'NETCAM',
   legalName: '', // e.g. 'ישראל ישראלי' or 'נטקאם בע"מ'
-  businessType: '', // 'עוסק פטור' | 'עוסק מורשה' | 'חברה בע"מ'
-  businessId: '', // ח.פ. / ע.מ. / ת.ז.
+  businessType: 'עוסק זעיר', // 'עוסק זעיר' | 'עוסק פטור' | 'עוסק מורשה' | 'חברה בע"מ'
+  businessId: '', // עוסק זעיר / פטור: מספר תעודת הזהות
   address: '', // full postal address for written notices
   phone: '', // e.g. '050-0000000'
   email: 'yuvalsamai@gmail.com',
   // Accessibility coordinator (רכז/ת נגישות)
   a11yContactName: '',
   // true if prices include VAT (עוסק מורשה / חברה); false for עוסק פטור; null = don't state.
-  vatIncluded: null,
+  vatIncluded: false, // עוסק זעיר is VAT-exempt
   // Date the legal texts were last reviewed (shown on the pages).
   updated: 'אוקטובר 2026',
 };

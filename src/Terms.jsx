@@ -9,7 +9,7 @@ import { PRODUCT_NAME } from './lib/colors.js';
 export default function Terms() {
   const b = BUSINESS;
   const vat =
-    b.vatIncluded === true ? 'המחירים כוללים מע״מ כחוק.' : b.vatIncluded === false ? 'העסק הוא עוסק פטור ולכן לא נגבה מע״מ.' : '';
+    b.vatIncluded === true ? 'המחירים כוללים מע״מ כחוק.' : b.vatIncluded === false ? 'העסק פטור ממע״מ ולכן לא נגבה מע״מ.' : '';
 
   return (
     <LegalLayout title="תקנון האתר ותנאי רכישה">
