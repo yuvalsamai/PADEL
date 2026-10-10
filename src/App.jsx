@@ -208,7 +208,7 @@ const Nav = () => {
   return (
     <div className="flex w-full items-center justify-between gap-3 border-b border-white/30 bg-bone/90 px-5 py-3 shadow-lg shadow-black/10 backdrop-blur-xl sm:px-8 lg:px-10">
       <a href="#top" aria-label="NETCAM" className="inline-flex items-center">
-        <Logo className="h-12 sm:h-14 lg:h-16" />
+        <Logo className="h-14 sm:h-16 lg:h-20" />
       </a>
 
       {/* desktop pill */}
@@ -791,7 +791,7 @@ const Footer = ({ onOpenTerms, onOpenA11y }) => (
       <div className="flex flex-col gap-8 border-b border-white/10 pb-10 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <span className="inline-flex items-center rounded-2xl bg-bone px-4 py-3">
-            <Logo className="h-12" />
+            <Logo className="h-20" />
           </span>
 
           <p className="mt-3 max-w-sm text-lg text-bone/70">

@@ -1031,7 +1031,7 @@ const Dashboard = ({ session }) => {
       <header className="border-b border-white/10 bg-court">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
           <div className="flex items-center gap-3">
-            <Logo dark className="h-9" />
+            <Logo dark className="h-12" />
             <span className="rounded-full bg-white/10 px-3 py-1 text-xs text-bone/70">אדמין</span>
           </div>
           <div className="flex items-center gap-3">

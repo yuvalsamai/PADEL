@@ -247,7 +247,7 @@ export default function PayPage() {
     <div className="flex h-screen flex-col bg-bone">
       <header className="flex items-center justify-between border-b border-white/10 bg-court px-5 py-3">
         <a href="/" aria-label="NETCAM" className="inline-flex items-center">
-          <Logo dark className="h-9" />
+          <Logo dark className="h-12" />
         </a>
         <a
           href="/"
