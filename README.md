@@ -17,7 +17,7 @@ Built with **React + Vite**, **Tailwind CSS**, **Framer Motion**, and **Lucide R
 6. Sticky mobile quick-buy bar
 
 ## Brand assets
-- **Logo**: the NETCAM wordmark is the `Logo` component (`src/Logo.jsx`) — a lime lens mark plus the name in the surrounding text color. The browser favicon (`public/favicon.svg`) uses the same mark.
+- **Logo**: `public/netcam-logo.webp` (light backgrounds) and `public/netcam-logo-dark.webp` (dark backgrounds), rendered by `src/Logo.jsx`. Favicon: `public/favicon.png` / `apple-touch-icon.png` (the tennis ball from the logo).
 - **Product photo**: the showcase section uses `public/STUND.png` (the mount on the net). Until the file is committed, a dark placeholder shows.
 
 ## Getting started

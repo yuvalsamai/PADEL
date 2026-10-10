@@ -8,7 +8,7 @@ export default function NotFound() {
         {/* header */}
         <header className="p-5 sm:p-8">
           <a href="/" aria-label="NETCAM" className="inline-flex items-center">
-            <Logo className="text-2xl text-bone sm:text-3xl" />
+            <Logo dark className="h-12 sm:h-14" />
           </a>
         </header>
 

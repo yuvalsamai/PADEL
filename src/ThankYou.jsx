@@ -37,7 +37,7 @@ export default function ThankYou() {
       <div className="flex min-h-[calc(100vh-20px)] flex-col overflow-hidden rounded-panel bg-court sm:min-h-[calc(100vh-32px)]">
         <header className="p-5 sm:p-8">
           <a href="/" aria-label="NETCAM" className="inline-flex items-center">
-            <Logo className="text-2xl text-bone sm:text-3xl" />
+            <Logo dark className="h-12 sm:h-14" />
           </a>
         </header>
 
