@@ -23,7 +23,7 @@ const ADDRESS_FIELDS = [
 ];
 
 const INPUT_CLS =
-  'w-full rounded-xl border border-ink/15 bg-white px-4 py-3 text-ink placeholder-ink/30 outline-none transition-colors focus:border-moss focus:ring-2 focus:ring-moss/20';
+  'w-full rounded-xl border border-ink/15 bg-white px-4 py-3 text-ink placeholder-ink/60 outline-none transition-colors focus:border-moss focus:ring-2 focus:ring-moss/20';
 
 /* Single "address" search box with Google Places (New) suggestions. Picking one
    hands back street / city / zip; onUnavailable fires if Google can't load. */
@@ -113,6 +113,11 @@ function AddressSearch({ value, onChange, onPick, onUnavailable }) {
           required
           value={value}
           autoComplete="off"
+          role="combobox"
+          aria-autocomplete="list"
+          aria-expanded={open && suggestions.length > 0}
+          aria-controls="address-suggestions"
+          aria-activedescendant={active >= 0 ? `address-opt-${active}` : undefined}
           placeholder="התחילו להקליד את הכתובת…"
           onChange={(e) => {
             onChange(e.target.value);
@@ -127,13 +132,14 @@ function AddressSearch({ value, onChange, onPick, onUnavailable }) {
       </label>
 
       {open && suggestions.length > 0 && (
-        <ul className="absolute inset-x-0 top-full z-20 mt-1 overflow-hidden rounded-xl border border-ink/10 bg-white shadow-xl">
+        <ul id="address-suggestions" role="listbox" aria-label="הצעות כתובת" className="absolute inset-x-0 top-full z-20 mt-1 overflow-hidden rounded-xl border border-ink/10 bg-white shadow-xl">
           {suggestions.map((s, i) => {
             const p = s.placePrediction;
             return (
-              <li key={p.placeId}>
+              <li key={p.placeId} id={`address-opt-${i}`} role="option" aria-selected={i === active}>
                 <button
                   type="button"
+                  tabIndex={-1}
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => pick(s)}
                   className={`flex w-full flex-col items-start px-4 py-2.5 text-right transition-colors ${
@@ -141,12 +147,12 @@ function AddressSearch({ value, onChange, onPick, onUnavailable }) {
                   }`}
                 >
                   <span className="text-ink">{p.mainText?.text || p.text.text}</span>
-                  {p.secondaryText?.text && <span className="text-xs text-ink/50">{p.secondaryText.text}</span>}
+                  {p.secondaryText?.text && <span className="text-xs text-ink/60">{p.secondaryText.text}</span>}
                 </button>
               </li>
             );
           })}
-          <li className="px-4 py-1.5 text-left text-[10px] text-ink/30">powered by Google</li>
+          <li role="presentation" className="px-4 py-1.5 text-left text-[10px] text-ink/60">powered by Google</li>
         </ul>
       )}
     </div>
@@ -171,6 +177,7 @@ export default function PayPage() {
   const [{ amount, token }] = useState(getCheckout);
   const [qty, setQty] = useState(1);
   const [color, setColor] = useState(DEFAULT_COLOR);
+  const [agreed, setAgreed] = useState(false);
   const [url, setUrl] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -265,7 +272,7 @@ export default function PayPage() {
           allow="payment"
         />
       ) : (
-        <div dir="rtl" className="flex flex-1 items-start justify-center overflow-y-auto px-5 py-8">
+        <main dir="rtl" className="flex flex-1 items-start justify-center overflow-y-auto px-5 py-8">
           <form onSubmit={handleSubmit} className="w-full max-w-md rounded-3xl bg-chalk p-6 shadow-lg ring-1 ring-ink/5 sm:p-8">
             <h1 className="font-display text-3xl font-black text-ink">פרטי ההזמנה</h1>
             <p className="mt-2 text-sm text-ink/60">
@@ -333,7 +340,7 @@ export default function PayPage() {
                   <button
                     type="button"
                     onClick={toManual}
-                    className="mt-1.5 text-xs font-medium text-ink/50 underline underline-offset-2 hover:text-ink"
+                    className="mt-1.5 text-xs font-medium text-ink/60 underline underline-offset-2 hover:text-ink"
                   >
                     לא מוצאים? הזנה ידנית
                   </button>
@@ -343,7 +350,7 @@ export default function PayPage() {
                   <div className="flex items-center justify-between gap-3">
                     <span>
                       <span className="block text-sm font-semibold text-ink/80">כתובת למשלוח</span>
-                      {picked && <span className="block text-xs text-ink/50">בדקו ועדכנו אם צריך</span>}
+                      {picked && <span className="block text-xs text-ink/60">בדקו ועדכנו אם צריך</span>}
                     </span>
                     {placesOk && (
                       <button
@@ -352,7 +359,7 @@ export default function PayPage() {
                           setAddrQuery('');
                           setAddrMode('search');
                         }}
-                        className="whitespace-nowrap text-xs font-medium text-ink/50 underline underline-offset-2 hover:text-ink"
+                        className="whitespace-nowrap text-xs font-medium text-ink/60 underline underline-offset-2 hover:text-ink"
                       >
                         חיפוש מחדש
                       </button>
@@ -408,20 +415,41 @@ export default function PayPage() {
                 <span>-{discountPct}%</span>
               </div>
             ) : (
-              <p className="mt-2 px-1 text-xs text-ink/50">קנו יותר וחסכו — עד 21% הנחה על 10 יחידות</p>
+              <p className="mt-2 px-1 text-xs text-ink/60">קנו יותר וחסכו — עד 21% הנחה על 10 יחידות</p>
             )}
 
             <div className="mt-2 flex items-center justify-between px-1 text-sm">
               <span className="text-ink/60">סה״כ לתשלום</span>
               <span className="flex items-baseline gap-2">
-                {discountPct > 0 && <span className="text-sm text-ink/40 line-through">₪{fullTotal}</span>}
+                {discountPct > 0 && <span className="text-sm text-ink/60 line-through">₪{fullTotal}</span>}
                 <span className="font-display text-xl font-black text-ink">₪{total}</span>
               </span>
             </div>
 
             {error && (
-              <p className="mt-4 rounded-xl bg-red-100 px-4 py-3 text-sm text-red-700">{error}</p>
+              <p role="alert" className="mt-4 rounded-xl bg-red-100 px-4 py-3 text-sm text-red-800">{error}</p>
             )}
+
+            <div className="mt-4 rounded-xl bg-bone2/60 p-3 text-xs leading-relaxed text-ink/70">
+              המחיר הסופי כולל משלוח עד הדלת. אספקה תוך 7–12 ימי עסקים. ניתן לבטל את העסקה תוך 14 ימים מקבלת
+              המוצר, בהתאם ל<a href="/terms#cancel" target="_blank" rel="noopener" className="underline">תקנון</a>.
+            </div>
+
+            <label className="mt-3 flex items-start gap-2.5 text-sm text-ink/80">
+              <input
+                type="checkbox"
+                required
+                checked={agreed}
+                onChange={(e) => setAgreed(e.target.checked)}
+                className="mt-0.5 h-5 w-5 flex-shrink-0 accent-ink"
+              />
+              <span>
+                קראתי ואני מסכים/ה ל
+                <a href="/terms" target="_blank" rel="noopener" className="font-semibold underline">תקנון ותנאי הרכישה</a>
+                {' '}ול
+                <a href="/privacy" target="_blank" rel="noopener" className="font-semibold underline">מדיניות הפרטיות</a>
+              </span>
+            </label>
 
             <button
               type="submit"
@@ -437,11 +465,11 @@ export default function PayPage() {
               <span>🚚 משלוח חינם</span>
             </div>
 
-            <p className="mt-4 text-center text-xs text-ink/50">
+            <p className="mt-4 text-center text-xs text-ink/60">
               פרטי האשראי מוזנים בדף מאובטח של Hyp ואינם נשמרים אצלנו.
             </p>
           </form>
-        </div>
+        </main>
       )}
     </div>
   );

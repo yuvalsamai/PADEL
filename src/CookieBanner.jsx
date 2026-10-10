@@ -31,6 +31,8 @@ export default function CookieBanner() {
   return (
     <div
       dir="rtl"
+      role="region"
+      aria-label="הודעת עוגיות"
       className="fixed inset-x-3 bottom-3 z-[100] mx-auto max-w-2xl rounded-2xl border border-white/10 bg-ink/95 p-4 text-bone shadow-2xl backdrop-blur-md sm:flex sm:items-center sm:gap-4"
     >
       <p className="text-sm leading-relaxed text-bone/80">

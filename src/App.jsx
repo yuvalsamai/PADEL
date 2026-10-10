@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowUpLeft, Plus, X, Menu, Instagram } from 'lucide-react';
-import { AccessibilityStatementModal } from './Accessibility.jsx';
+import { motion, AnimatePresence, MotionConfig } from 'framer-motion';
+import { ArrowUpLeft, Plus, X, Menu, Instagram, Pause, Play } from 'lucide-react';
 import Logo from './Logo.jsx';
 
 /* Hero background photo. Drop the supplied image at public/hero.jpg to swap it in;
@@ -206,13 +205,13 @@ const navLinks = [
 const Nav = () => {
   const [openMenu, setOpenMenu] = useState(false);
   return (
-    <div className="flex w-full items-center justify-between gap-3 border-b border-white/30 bg-bone/90 px-5 py-3 shadow-lg shadow-black/10 backdrop-blur-xl sm:px-8 lg:px-10">
+    <header className="flex w-full items-center justify-between gap-3 border-b border-white/30 bg-bone/90 px-5 py-3 shadow-lg shadow-black/10 backdrop-blur-xl sm:px-8 lg:px-10">
       <a href="#top" aria-label="NETCAM" className="inline-flex items-center">
         <Logo className="h-14 sm:h-16 lg:h-20" />
       </a>
 
       {/* desktop pill */}
-      <nav className="hidden items-center gap-1 md:flex">
+      <nav aria-label="ניווט ראשי" className="hidden items-center gap-1 md:flex">
         {navLinks.map((l, i) => (
           <a
             key={l.href}
@@ -237,13 +236,17 @@ const Nav = () => {
         onClick={() => setOpenMenu((v) => !v)}
         className="rounded-full border border-ink/15 bg-ink/5 p-2.5 text-ink md:hidden"
         aria-label="תפריט"
+        aria-expanded={openMenu}
+        aria-controls="mobile-menu"
       >
         {openMenu ? <X size={20} /> : <Menu size={20} />}
       </button>
 
       <AnimatePresence>
         {openMenu && (
-          <motion.div
+          <motion.nav
+            id="mobile-menu"
+            aria-label="ניווט ראשי"
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
@@ -262,10 +265,10 @@ const Nav = () => {
             <a href="/pay" onClick={() => setOpenMenu(false)} className="rounded-2xl bg-ball px-4 py-3 text-center font-semibold text-ink">
               הזמנה ₪89
             </a>
-          </motion.div>
+          </motion.nav>
         )}
       </AnimatePresence>
-    </div>
+    </header>
   );
 };
 
@@ -277,20 +280,56 @@ const Nav = () => {
    falls back to a STATIC product image (no animation) if it can't load. */
 const HeroMedia = () => {
   const [ok, setOk] = useState(true);
+  // Moving content needs a pause control (WCAG 2.2.2). Start paused when the
+  // visitor prefers reduced motion or turned animations off in the a11y menu.
+  const videoRef = React.useRef(null);
+  const [playing, setPlaying] = useState(true);
+  useEffect(() => {
+    const reduce =
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ||
+      document.documentElement.classList.contains('acc-no-animations');
+    if (reduce) {
+      videoRef.current?.pause();
+      setPlaying(false);
+    }
+  }, []);
+  const toggle = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (v.paused) {
+      v.play();
+      setPlaying(true);
+    } else {
+      v.pause();
+      setPlaying(false);
+    }
+  };
   return (
     <div className="flex items-center justify-center py-6 lg:py-0">
       <div className="relative w-[min(72%,300px)] overflow-hidden rounded-3xl bg-ink shadow-2xl ring-1 ring-white/10 lg:w-[min(85%,360px)]" style={{ aspectRatio: '9 / 16' }}>
         {ok ? (
-          <video
-            src={HERO_VIDEO}
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="metadata"
-            onError={() => setOk(false)}
-            className="h-full w-full object-cover"
-          />
+          <>
+            <video
+              ref={videoRef}
+              src={HERO_VIDEO}
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="metadata"
+              aria-label="סרטון המחשה: תושבת NETCAM על רשת המגרש מצלמת משחק"
+              onError={() => setOk(false)}
+              className="h-full w-full object-cover"
+            />
+            <button
+              type="button"
+              onClick={toggle}
+              aria-label={playing ? 'עצירת הסרטון' : 'הפעלת הסרטון'}
+              className="absolute bottom-3 left-3 flex h-10 w-10 items-center justify-center rounded-full bg-ink/70 text-bone backdrop-blur hover:bg-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-ball"
+            >
+              {playing ? <Pause size={18} /> : <Play size={18} />}
+            </button>
+          </>
         ) : (
           <img src="/product.webp" alt="תושבת NETCAM" className="h-full w-full object-cover" />
         )}
@@ -315,7 +354,7 @@ const Hero = () => (
     <div className="flex min-h-[92vh] flex-col">
       <Nav />
 
-      <div className="grid flex-1 items-center gap-8 p-5 sm:p-8 lg:grid-cols-2 lg:p-10">
+      <div id="main" tabIndex={-1} className="grid flex-1 items-center gap-8 p-5 outline-none sm:p-8 lg:grid-cols-2 lg:p-10">
         {/* text column — right in RTL */}
         <div className="flex flex-col justify-center gap-8">
           <motion.div
@@ -351,7 +390,7 @@ const Hero = () => (
                 </div>
                 <div className="text-xs font-medium text-bone/80">מחיר מבצע · משלוח חינם עד הדלת</div>
               </div>
-              <a href="/pay" className="group">
+              <a href="/pay" className="group" aria-label="להזמנה">
                 <ArrowChip />
               </a>
             </div>
@@ -578,7 +617,7 @@ const reviews = [
 ];
 
 const Stars = () => (
-  <div className="flex gap-0.5" aria-hidden="true">
+  <div className="flex gap-0.5" role="img" aria-label="דירוג 5 מתוך 5">
     {Array.from({ length: 5 }).map((_, i) => (
       <span key={i} className="text-ball">★</span>
     ))}
@@ -611,7 +650,7 @@ const Reviews = () => (
                 </span>
                 <span>
                   <span className="block font-display font-bold text-ink">{r.name}</span>
-                  <span className="block text-xs text-ink/50">{r.role}</span>
+                  <span className="block text-xs text-ink/60">{r.role}</span>
                 </span>
               </figcaption>
             </figure>
@@ -653,6 +692,7 @@ const FaqItem = ({ item, isOpen, onToggle }) => (
   <div className="overflow-hidden rounded-3xl bg-chalk ring-1 ring-ink/5">
     <button
       onClick={onToggle}
+      aria-expanded={isOpen}
       className="flex w-full items-center justify-between gap-6 px-6 py-5 text-right"
     >
       <span className="font-display text-lg font-bold text-ink sm:text-xl">{item.q}</span>
@@ -717,75 +757,10 @@ const Faq = () => {
 };
 
 /* ================================================================== */
-/*  Terms modal                                                       */
-/* ================================================================== */
-
-const terms = [
-  {
-    h: 'הגבלת אחריות',
-    p: 'החברה/האתר אינם נושאים בכל אחריות לנזק ישיר או עקיף, כולל שבר, נפילה, נזק למכשיר הסלולרי, לגוף או לרכוש צד שלישי שנגרם במהלך או כתוצאה מהשימוש במוצר. השימוש במוצר, ברשת ובסביבת המגרש הינו באחריות המלאה של המשתמש בלבד.',
-  },
-  {
-    h: 'שימוש נכון',
-    p: 'על המשתמש לוודא כי המוצר מותקן כראוי ומאובטח לפני כל שימוש, ולפעול בזהירות בהתאם לתנאי המגרש. אין להשאיר את המכשיר ללא השגחה ואין להשתמש במוצר באופן החורג מייעודו.',
-  },
-  {
-    h: 'ביטול עסקה',
-    p: 'בהתאם לחוק הגנת הצרכן, התשמ"א‑1981, ניתן לבטל את העסקה תוך 14 ימים מיום קבלת המוצר, ובלבד שהמוצר מוחזר באריזתו המקורית ולא נעשה בו שימוש. החזר כספי יינתן בהתאם להוראות החוק.',
-  },
-  {
-    h: 'משלוחים',
-    p: 'אספקת המוצר מתבצעת במשלוח חינם עד הדלת תוך 7–12 ימי עסקים ממועד ביצוע ההזמנה, בכפוף לזמינות מלאי ולתנאי חברת השילוח. ייתכנו עיכובים בכפוף לתקנון חברת השליחויות.',
-  },
-];
-
-const TermsModal = ({ open, onClose }) => (
-  <AnimatePresence>
-    {open && (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        onClick={onClose}
-        className="fixed inset-0 z-[80] flex items-center justify-center bg-ink/60 p-4 backdrop-blur-sm"
-      >
-        <motion.div
-          initial={{ y: 24, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 24, opacity: 0 }}
-          onClick={(e) => e.stopPropagation()}
-          dir="rtl"
-          className="relative max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-panel bg-chalk p-7 text-ink/80 shadow-2xl sm:p-9"
-        >
-          <button
-            onClick={onClose}
-            className="absolute left-5 top-5 flex h-9 w-9 items-center justify-center rounded-full bg-bone2 text-ink transition-colors hover:bg-ball"
-            aria-label="סגור"
-          >
-            <X size={18} />
-          </button>
-          <h3 className="mb-6 font-display text-3xl font-black text-ink">תקנון ותנאי שימוש</h3>
-          <div className="space-y-5 text-sm leading-relaxed">
-            {terms.map((t, i) => (
-              <section key={t.h}>
-                <h4 className="mb-1.5 font-display font-bold text-ink">
-                  {String(i + 1).padStart(2, '0')} · {t.h}
-                </h4>
-                <p>{t.p}</p>
-              </section>
-            ))}
-          </div>
-        </motion.div>
-      </motion.div>
-    )}
-  </AnimatePresence>
-);
-
-/* ================================================================== */
 /*  Footer                                                            */
 /* ================================================================== */
 
-const Footer = ({ onOpenTerms, onOpenA11y }) => (
+const Footer = () => (
   <footer className="bg-ink px-5 py-16 sm:px-8">
     <div className="mx-auto max-w-6xl">
       <div className="flex flex-col gap-8 border-b border-white/10 pb-10 sm:flex-row sm:items-end sm:justify-between">
@@ -808,38 +783,21 @@ const Footer = ({ onOpenTerms, onOpenA11y }) => (
             <span dir="ltr" className="font-semibold">@courtcheck_il</span>
           </a>
         </div>
-        <div className="flex flex-wrap items-center gap-6 text-sm">
-          <button
-            onClick={onOpenTerms}
-            className="font-medium text-ball underline-offset-4 transition-colors hover:underline"
-          >
-            תקנון ותנאי שימוש
-          </button>
-          <button
-            onClick={onOpenA11y}
-            className="font-medium text-ball underline-offset-4 transition-colors hover:underline"
-          >
-            הצהרת נגישות
-          </button>
-          <a
-            href="/privacy"
-            className="font-medium text-ball underline-offset-4 transition-colors hover:underline"
-          >
-            מדיניות פרטיות
-          </a>
-          <a href="#top" className="text-bone/60 transition-colors hover:text-bone">
-            חזרה למעלה ↑
-          </a>
-        </div>
+        <nav aria-label="מידע משפטי" className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm">
+          <a href="/terms" className="font-medium text-ball underline-offset-4 hover:underline">תקנון ותנאי רכישה</a>
+          <a href="/cancel" className="rounded-full border border-ball px-4 py-1.5 font-semibold text-ball hover:bg-ball hover:text-ink">ביטול עסקה</a>
+          <a href="/privacy" className="font-medium text-ball underline-offset-4 hover:underline">מדיניות פרטיות</a>
+          <a href="/accessibility" className="font-medium text-ball underline-offset-4 hover:underline">הצהרת נגישות</a>
+          <a href="#top" className="text-bone/70 hover:text-bone">חזרה למעלה ↑</a>
+        </nav>
       </div>
 
-      <p className="mt-8 max-w-3xl text-xs leading-relaxed text-bone/45">
-        החברה/האתר אינם נושאים בכל אחריות לנזק ישיר או עקיף, כולל שבר, נפילה, נזק למכשיר
-        הסלולרי, לגוף או לרכוש צד שלישי שנגרם במהלך או כתוצאה מהשימוש במוצר. השימוש במוצר,
-        ברשת ובסביבת המגרש הינו באחריות המלאה של המשתמש בלבד. ביטול עסקה בהתאם לחוק הגנת
-        הצרכן, התשמ"א‑1981 — תוך 14 ימים מקבלת המוצר, באריזתו המקורית וללא שימוש.
+      <p className="mt-8 max-w-3xl text-xs leading-relaxed text-bone/70">
+        יש להתקין את המוצר לפי הוראות השימוש ולוודא שהוא נעול היטב על הרשת לפני כל שימוש. ניתן לבטל עסקה תוך 14
+        ימים מקבלת המוצר (אזרחים ותיקים, אנשים עם מוגבלות ועולים חדשים — עד 4 חודשים), בהתאם לחוק הגנת הצרכן
+        ובכפוף ל<a href="/terms" className="underline">תקנון</a>.
       </p>
-      <div className="mt-6 text-xs text-bone/40">© 2026 NETCAM · כל הזכויות שמורות</div>
+      <div className="mt-6 text-xs text-bone/70">© 2026 NETCAM · כל הזכויות שמורות</div>
     </div>
   </footer>
 );
@@ -921,11 +879,14 @@ const StickyBar = () => {
 /* ================================================================== */
 
 export default function App() {
-  const [termsOpen, setTermsOpen] = useState(false);
-  const [a11yOpen, setA11yOpen] = useState(false);
   return (
+    <MotionConfig reducedMotion="user">
     <div dir="rtl" className="min-h-screen bg-olive p-2.5 font-sans text-ink sm:p-4">
+      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:right-4 focus:top-4 focus:z-[200] focus:rounded-xl focus:bg-ink focus:px-4 focus:py-2 focus:text-bone">
+        דלג לתוכן הראשי
+      </a>
       <div className="overflow-hidden rounded-panel bg-bone">
+        <main>
         <Hero />
         <OrdersCounter />
         <TrustStrip />
@@ -935,11 +896,11 @@ export default function App() {
         <HawkEye />
         <Reviews />
         <Faq />
-        <Footer onOpenTerms={() => setTermsOpen(true)} onOpenA11y={() => setA11yOpen(true)} />
+        </main>
+        <Footer />
       </div>
       <StickyBar />
-      <TermsModal open={termsOpen} onClose={() => setTermsOpen(false)} />
-      <AccessibilityStatementModal open={a11yOpen} onClose={() => setA11yOpen(false)} />
     </div>
+    </MotionConfig>
   );
 }

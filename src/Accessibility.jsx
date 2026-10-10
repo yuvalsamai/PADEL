@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Accessibility, X, Plus, Minus, RotateCcw } from 'lucide-react';
 
 /* ==========================================================================
@@ -6,13 +6,6 @@ import { Accessibility, X, Plus, Minus, RotateCcw } from 'lucide-react';
    regulations (תקנות שוויון זכויות לאנשים עם מוגבלות, ת"י 5568 / WCAG 2.0 AA).
    Pure client-side, no external services. Preferences persist per browser.
    ========================================================================== */
-
-// 👉 Fill these with your real accessibility-coordinator details.
-export const A11Y_CONTACT = {
-  business: 'NETCAM',
-  email: 'yuvalsamai@gmail.com',
-  phone: '', // e.g. '050-0000000'
-};
 
 const STORE_KEY = 'cc_a11y';
 const DEFAULTS = {
@@ -47,75 +40,6 @@ function apply(s) {
   document.body.style.filter = filters.join(' ');
 }
 
-/* ---- Accessibility statement (הצהרת נגישות) ---- */
-
-const Row = ({ children }) => <p className="mb-3">{children}</p>;
-
-export const AccessibilityStatementModal = ({ open, onClose }) => {
-  if (!open) return null;
-  const { business, email, phone } = A11Y_CONTACT;
-  return (
-    <div
-      onClick={onClose}
-      className="fixed inset-0 z-[120] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        dir="rtl"
-        role="dialog"
-        aria-label="הצהרת נגישות"
-        className="relative max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-3xl bg-white p-7 text-ink/80 shadow-2xl sm:p-9"
-      >
-        <button
-          onClick={onClose}
-          aria-label="סגור"
-          className="absolute left-5 top-5 flex h-9 w-9 items-center justify-center rounded-full bg-black/5 text-ink hover:bg-black/10"
-        >
-          <X size={18} />
-        </button>
-        <h3 className="mb-5 text-2xl font-black text-ink">הצהרת נגישות</h3>
-        <div className="text-sm leading-relaxed">
-          <Row>
-            אתר {business} רואה חשיבות רבה במתן שירות שוויוני לכלל הלקוחות ובשיפור חוויית
-            הגלישה עבור אנשים עם מוגבלות. אנו פועלים ככל האפשר להנגשת האתר בהתאם
-            לתקנות שוויון זכויות לאנשים עם מוגבלות (התאמות נגישות לשירות), התשע"ג-2013,
-            ולתקן הישראלי ת"י 5568 המבוסס על הנחיות WCAG 2.0 ברמה AA.
-          </Row>
-          <Row>
-            <b>אמצעי הנגישות באתר:</b> באתר מותקן תפריט נגישות (הלחצן בפינת המסך) המאפשר,
-            בין היתר: הגדלה והקטנה של גודל הטקסט, ניגודיות גבוהה, גווני אפור, הדגשת
-            קישורים, גופן קריא, סמן עכבר מוגדל ועצירת אנימציות. ניתן לאפס את ההגדרות
-            בכל עת.
-          </Row>
-          <Row>
-            <b>התאמות נוספות:</b> האתר תומך בניווט מקלדת, בקורא מסך, ובמבנה כותרות
-            סמנטי. אנו ממשיכים לשפר את הנגישות באופן שוטף.
-          </Row>
-          <Row>
-            <b>הסתייגות:</b> ייתכן שחלקים מסוימים באתר טרם הונגשו במלואם או שנמצאים
-            בתהליך הנגשה. אם נתקלתם בקושי או בתקלת נגישות, נשמח שתפנו אלינו ונטפל
-            בכך בהקדם.
-          </Row>
-          <Row>
-            <b>פרטי רכז/ת הנגישות:</b>
-            <br />
-            שם העסק: {business}
-            <br />
-            דוא"ל: <a className="text-moss underline" href={`mailto:${email}`}>{email}</a>
-            {phone ? (
-              <>
-                <br />
-                טלפון: <a className="text-moss underline" href={`tel:${phone}`} dir="ltr">{phone}</a>
-              </>
-            ) : null}
-          </Row>
-          <Row>הצהרה זו עודכנה לאחרונה בחודש הפעלת האתר ותתעדכן מעת לעת.</Row>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 /* ---- The floating widget ---- */
 
 const Toggle = ({ active, onClick, children }) => (
@@ -132,8 +56,23 @@ const Toggle = ({ active, onClick, children }) => (
 
 export default function AccessibilityWidget() {
   const [open, setOpen] = useState(false);
-  const [showStatement, setShowStatement] = useState(false);
   const [s, setS] = useState(load);
+  const launcherRef = useRef(null);
+  const panelRef = useRef(null);
+
+  // Esc closes the panel and returns focus to the launcher; focus moves into the panel on open.
+  useEffect(() => {
+    if (!open) return;
+    panelRef.current?.querySelector('button')?.focus();
+    const onKey = (e) => {
+      if (e.key === 'Escape') {
+        setOpen(false);
+        launcherRef.current?.focus();
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open]);
 
   useEffect(() => {
     apply(s);
@@ -154,6 +93,7 @@ export default function AccessibilityWidget() {
     <div id="a11y-widget" dir="rtl">
       {/* Launcher button */}
       <button
+        ref={launcherRef}
         onClick={() => setOpen((v) => !v)}
         aria-label="תפריט נגישות"
         aria-expanded={open}
@@ -165,6 +105,7 @@ export default function AccessibilityWidget() {
       {/* Panel */}
       {open && (
         <div
+          ref={panelRef}
           role="dialog"
           aria-label="אפשרויות נגישות"
           className="fixed bottom-20 right-4 z-[110] w-[min(92vw,340px)] rounded-2xl border border-black/10 bg-white p-4 text-ink shadow-2xl"
@@ -203,16 +144,15 @@ export default function AccessibilityWidget() {
             <RotateCcw size={15} /> איפוס הגדרות
           </button>
 
-          <button
-            onClick={() => setShowStatement(true)}
-            className="mt-2 w-full rounded-xl py-2 text-center text-sm font-semibold text-moss hover:underline"
+          <a
+            href="/accessibility"
+            className="mt-2 block w-full rounded-xl py-2 text-center text-sm font-semibold text-ink underline-offset-4 hover:underline"
           >
             הצהרת נגישות
-          </button>
+          </a>
         </div>
       )}
 
-      <AccessibilityStatementModal open={showStatement} onClose={() => setShowStatement(false)} />
     </div>
   );
 }

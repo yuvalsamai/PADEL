@@ -41,7 +41,7 @@ export default function ThankYou() {
           </a>
         </header>
 
-        <div className="flex flex-1 flex-col items-center justify-center px-5 pb-16 text-center">
+        <main className="flex flex-1 flex-col items-center justify-center px-5 pb-16 text-center">
           {state === 'checking' ? (
             <p className="text-lg text-bone/60">מאמת את התשלום…</p>
           ) : (
@@ -114,6 +114,14 @@ export default function ThankYou() {
                 </div>
               )}
 
+              {!failed && (
+                <p className="mt-6 max-w-md text-sm leading-relaxed text-bone/70">
+                  ניתן לבטל את העסקה תוך 14 ימים מקבלת המוצר (אזרחים ותיקים, אנשים עם מוגבלות ועולים חדשים — עד 4
+                  חודשים) דרך <a href="/cancel" className="text-ball underline">טופס ביטול עסקה</a>. פרטי העסק, תנאי
+                  המשלוח והביטול המלאים מופיעים ב<a href="/terms" className="text-ball underline">תקנון</a>.
+                </p>
+              )}
+
               <a
                 href="/"
                 className="mt-9 inline-flex items-center gap-2 rounded-full bg-ball px-7 py-3 font-semibold text-ink transition-colors hover:bg-white"
@@ -122,7 +130,7 @@ export default function ThankYou() {
               </a>
             </>
           )}
-        </div>
+        </main>
       </div>
     </div>
   );

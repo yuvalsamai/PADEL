@@ -13,7 +13,7 @@ export default function NotFound() {
         </header>
 
         {/* center */}
-        <div className="flex flex-1 flex-col items-center justify-center px-5 pb-16 text-center">
+        <main className="flex flex-1 flex-col items-center justify-center px-5 pb-16 text-center">
           <div className="font-display text-[26vw] font-black leading-none tracking-tight text-ball sm:text-[200px]">
             OUT
           </div>
@@ -29,8 +29,8 @@ export default function NotFound() {
             חזרה לדף הבית
           </a>
 
-          <div className="mt-4 font-mono text-sm text-bone/40">404</div>
-        </div>
+          <div className="mt-4 font-mono text-sm text-bone/70">404</div>
+        </main>
       </div>
     </div>
   );

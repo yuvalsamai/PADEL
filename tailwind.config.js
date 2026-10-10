@@ -8,7 +8,7 @@ export default {
         ink: '#0D0D0D',
         court: '#141414',
         pine: '#1E1E1E',
-        moss: '#6B7280',
+        moss: '#5B6170',
         olive: '#0D0D0D',
         oliveDark: '#1A1A1A',
         bone: '#F6F7F5',
