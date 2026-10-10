@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { supabase, supabaseEnabled } from '../lib/supabase.js';
 import { colorFromProduct } from '../lib/colors.js';
+import Logo from '../Logo.jsx';
 
 /* ================================================================== */
 /*  Small UI helpers                                                  */
@@ -117,7 +118,7 @@ const Login = () => {
     <div dir="rtl" className="flex min-h-screen items-center justify-center bg-ink px-5">
       <form onSubmit={submit} className="w-full max-w-sm rounded-3xl bg-court p-8 ring-1 ring-white/10">
         <h1 className="font-display text-2xl font-black text-bone">כניסת מנהל</h1>
-        <p className="mt-1 text-sm text-bone/60">COURTCHECK · אזור מאובטח</p>
+        <p className="mt-1 text-sm text-bone/60">NETCAM · אזור מאובטח</p>
 
         <div className="mt-6 space-y-4">
           <Field
@@ -279,7 +280,7 @@ const RecordModal = ({ table, record, onClose, onSaved }) => {
       if (v !== undefined) payload[f.key] = v;
     }
     // Single-product store: stamp the product name automatically on new orders.
-    if (table === 'orders' && !isEdit) payload.product = 'תושבת CourtCheck';
+    if (table === 'orders' && !isEdit) payload.product = 'תושבת NETCAM';
     const { error } = isEdit
       ? await supabase.from(table).update(payload).eq('id', record.id)
       : await supabase.from(table).insert(payload);
@@ -546,7 +547,7 @@ const OrdersView = ({ orders, shipments, customers, onChanged, onDelete }) => {
       shipment?.tracking_number || '',
       fmtDate(order.created_at),
     ]);
-    downloadCSV(`courtcheck-orders-${new Date().toISOString().slice(0, 10)}.csv`, headers, data);
+    downloadCSV(`netcam-orders-${new Date().toISOString().slice(0, 10)}.csv`, headers, data);
   };
 
   const setPayment = async (order, value) => {
@@ -1030,7 +1031,7 @@ const Dashboard = ({ session }) => {
       <header className="border-b border-white/10 bg-court">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
           <div className="flex items-center gap-3">
-            <img src="/LOGO-removebg-preview.png" alt="CourtCheck" className="h-8 w-auto" />
+            <Logo className="text-xl text-bone" />
             <span className="rounded-full bg-white/10 px-3 py-1 text-xs text-bone/70">אדמין</span>
           </div>
           <div className="flex items-center gap-3">

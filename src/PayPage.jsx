@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { track } from './lib/analytics.js';
 import { COLORS, DEFAULT_COLOR } from './lib/colors.js';
 import { findZip, hasPlacesKey, loadPlaces, parseAddress } from './lib/googlePlaces.js';
+import Logo from './Logo.jsx';
 
 /* Collects the customer details we want on record (full name, phone, email,
    full shipping address + postal code) and forwards them to the backend, which
@@ -245,8 +246,8 @@ export default function PayPage() {
   return (
     <div className="flex h-screen flex-col bg-bone">
       <header className="flex items-center justify-between border-b border-white/10 bg-court px-5 py-3">
-        <a href="/" aria-label="CourtCheck" className="inline-flex items-center">
-          <img src="/LOGO-removebg-preview.png" alt="CourtCheck" className="h-9 w-auto" />
+        <a href="/" aria-label="NETCAM" className="inline-flex items-center">
+          <Logo className="text-xl text-bone" />
         </a>
         <a
           href="/"
@@ -259,7 +260,7 @@ export default function PayPage() {
       {url ? (
         <iframe
           src={url}
-          title="תשלום מאובטח - CourtCheck"
+          title="תשלום מאובטח - NETCAM"
           className="w-full flex-1 border-0 bg-white"
           allow="payment"
         />

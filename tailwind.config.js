@@ -4,7 +4,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        // CourtCheck brand: black · white · lime-green
+        // NETCAM brand: black · white · lime-green
         ink: '#0D0D0D',
         court: '#141414',
         pine: '#1E1E1E',

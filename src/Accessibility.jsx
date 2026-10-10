@@ -9,7 +9,7 @@ import { Accessibility, X, Plus, Minus, RotateCcw } from 'lucide-react';
 
 // 👉 Fill these with your real accessibility-coordinator details.
 export const A11Y_CONTACT = {
-  business: 'CourtCheck',
+  business: 'NETCAM',
   email: 'yuvalsamai@gmail.com',
   phone: '', // e.g. '050-0000000'
 };

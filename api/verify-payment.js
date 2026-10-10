@@ -12,7 +12,7 @@ async function notifyTelegram({ name, email, phone, address, product, amount, or
   if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) return;
 
   const lines = [
-    '🎾 *הזמנה חדשה - CourtCheck*',
+    '🎾 *הזמנה חדשה - NETCAM*',
     '',
     `👤 שם: ${name || '—'}`,
     `📱 טלפון: ${phone || '—'}`,
@@ -138,7 +138,7 @@ export default async function handler(req, res) {
         tran_id: tranId,
         customer_id: customerId,
         customer_name: name,
-        product: 'תושבת CourtCheck',
+        product: 'תושבת NETCAM',
         quantity: 1,
         amount,
         status: 'paid',

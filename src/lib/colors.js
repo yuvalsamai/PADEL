@@ -1,6 +1,6 @@
 // Product color options. The chosen color is stored in orders.product, e.g.
-// "תושבת CourtCheck · כחול", so no schema change is needed.
-export const PRODUCT_NAME = 'תושבת CourtCheck';
+// "תושבת NETCAM · כחול", so no schema change is needed.
+export const PRODUCT_NAME = 'תושבת NETCAM';
 
 export const COLORS = [
   { key: 'black', he: 'שחור', en: 'Black', hex: '#111111' },

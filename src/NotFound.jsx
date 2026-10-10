@@ -1,4 +1,5 @@
 import React from 'react';
+import Logo from './Logo.jsx';
 
 export default function NotFound() {
   return (
@@ -6,8 +7,8 @@ export default function NotFound() {
       <div className="relative flex min-h-[calc(100vh-20px)] flex-col overflow-hidden rounded-panel bg-court sm:min-h-[calc(100vh-32px)]">
         {/* header */}
         <header className="p-5 sm:p-8">
-          <a href="/" aria-label="CourtCheck" className="inline-flex items-center">
-            <img src="/LOGO-removebg-preview.png" alt="CourtCheck" className="h-12 w-auto drop-shadow-lg sm:h-14" />
+          <a href="/" aria-label="NETCAM" className="inline-flex items-center">
+            <Logo className="text-2xl text-bone sm:text-3xl" />
           </a>
         </header>
 

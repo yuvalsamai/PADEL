@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowUpLeft, Plus, X, Menu, Instagram } from 'lucide-react';
 import { AccessibilityStatementModal } from './Accessibility.jsx';
+import Logo from './Logo.jsx';
 
 /* Hero background photo. Drop the supplied image at public/hero.jpg to swap it in;
    a court-toned gradient shows until then. */
@@ -206,8 +207,8 @@ const Nav = () => {
   const [openMenu, setOpenMenu] = useState(false);
   return (
     <div className="flex w-full items-center justify-between gap-3 border-b border-white/30 bg-bone/60 px-5 py-3 shadow-lg shadow-black/10 backdrop-blur-xl sm:px-8 lg:px-10">
-      <a href="#top" aria-label="CourtCheck" className="inline-flex items-center">
-        <img src="/LOGO-removebg-preview.png" alt="CourtCheck" className="h-12 w-auto sm:h-14 lg:h-16" />
+      <a href="#top" aria-label="NETCAM" className="inline-flex items-center">
+        <Logo className="text-2xl text-ink sm:text-3xl lg:text-4xl" />
       </a>
 
       {/* desktop pill */}
@@ -291,7 +292,7 @@ const HeroMedia = () => {
             className="h-full w-full object-cover"
           />
         ) : (
-          <img src="/product.webp" alt="תושבת CourtCheck" className="h-full w-full object-cover" />
+          <img src="/product.webp" alt="תושבת NETCAM" className="h-full w-full object-cover" />
         )}
       </div>
     </div>
@@ -430,7 +431,7 @@ const Features = () => (
             src="/feature.webp"
             loading="lazy"
             decoding="async"
-            alt="תושבת CourtCheck ננעלת על עמוד הרשת ומצלמת משחק פאדל"
+            alt="תושבת NETCAM ננעלת על עמוד הרשת ומצלמת משחק פאדל"
             className="aspect-[16/9] w-full object-cover"
           />
         </div>
@@ -447,7 +448,7 @@ const steps = [
   {
     n: '01',
     title: 'מחברים',
-    desc: 'מחברים את COURTCHECK לרשת.',
+    desc: 'מחברים את NETCAM לרשת.',
   },
   {
     n: '02',
@@ -513,7 +514,7 @@ const Showcase = () => (
             src="/STUND.webp"
             loading="lazy"
             decoding="async"
-            alt="תושבת CourtCheck ננעלת על עמוד הרשת ומחזיקה את הטלפון"
+            alt="תושבת NETCAM ננעלת על עמוד הרשת ומחזיקה את הטלפון"
             className="aspect-[16/9] w-full object-cover"
           />
         </div>
@@ -537,7 +538,7 @@ const HawkEye = () => (
         </h2>
         <p className="mt-6 max-w-md text-lg leading-relaxed text-bone/75">
           במקום לריב על סנטימטרים, פשוט מריצים את ההקלטה אחורה. הזווית הגבוהה והיציבה
-          של COURTCHECK הופכת כל נקודה שנויה במחלוקת להכרעה של שנייה.
+          של NETCAM הופכת כל נקודה שנויה במחלוקת להכרעה של שנייה.
         </p>
         <a
           href="/pay"
@@ -790,7 +791,7 @@ const Footer = ({ onOpenTerms, onOpenA11y }) => (
       <div className="flex flex-col gap-8 border-b border-white/10 pb-10 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <span className="inline-flex items-center rounded-2xl bg-bone px-4 py-3">
-            <img src="/LOGO-removebg-preview.png" alt="CourtCheck" className="h-11 w-auto" />
+            <Logo className="text-2xl text-ink" />
           </span>
 
           <p className="mt-3 max-w-sm text-lg text-bone/70">
@@ -838,7 +839,7 @@ const Footer = ({ onOpenTerms, onOpenA11y }) => (
         ברשת ובסביבת המגרש הינו באחריות המלאה של המשתמש בלבד. ביטול עסקה בהתאם לחוק הגנת
         הצרכן, התשמ"א‑1981 — תוך 14 ימים מקבלת המוצר, באריזתו המקורית וללא שימוש.
       </p>
-      <div className="mt-6 text-xs text-bone/40">© 2026 COURTCHECK · כל הזכויות שמורות</div>
+      <div className="mt-6 text-xs text-bone/40">© 2026 NETCAM · כל הזכויות שמורות</div>
     </div>
   </footer>
 );
@@ -896,7 +897,7 @@ const StickyBar = () => {
             dir="rtl"
             className="fixed bottom-6 left-6 z-[70] hidden w-72 rounded-3xl border border-white/10 bg-ink/95 p-5 shadow-2xl backdrop-blur-md lg:block"
           >
-            <div className="flex items-center gap-2 text-sm font-medium text-ball">🎾 תושבת CourtCheck</div>
+            <div className="flex items-center gap-2 text-sm font-medium text-ball">🎾 תושבת NETCAM</div>
             <div className="mt-2 flex items-baseline gap-2">
               <span className="text-sm text-bone/50 line-through">₪119.90</span>
               <span className="font-display text-3xl font-black leading-none text-bone">₪89</span>

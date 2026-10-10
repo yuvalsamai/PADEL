@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import Logo from './Logo.jsx';
 
 export default function ThankYou() {
   // 'checking' | 'ok' | 'failed'
@@ -35,8 +36,8 @@ export default function ThankYou() {
     <div dir="rtl" className="min-h-screen bg-olive p-2.5 font-sans text-ink sm:p-4">
       <div className="flex min-h-[calc(100vh-20px)] flex-col overflow-hidden rounded-panel bg-court sm:min-h-[calc(100vh-32px)]">
         <header className="p-5 sm:p-8">
-          <a href="/" aria-label="CourtCheck" className="inline-flex items-center">
-            <img src="/LOGO-removebg-preview.png" alt="CourtCheck" className="h-12 w-auto drop-shadow-lg sm:h-14" />
+          <a href="/" aria-label="NETCAM" className="inline-flex items-center">
+            <Logo className="text-2xl text-bone sm:text-3xl" />
           </a>
         </header>
 
@@ -86,7 +87,7 @@ export default function ThankYou() {
                     )}
                     <div className="flex justify-between gap-4">
                       <dt className="text-bone/60">מוצר</dt>
-                      <dd className="font-medium text-bone">תושבת CourtCheck</dd>
+                      <dd className="font-medium text-bone">תושבת NETCAM</dd>
                     </div>
                     {details.quantity != null && (
                       <div className="flex justify-between gap-4">

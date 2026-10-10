@@ -1,5 +1,5 @@
 -- ==========================================================================
--- CourtCheck admin — Supabase schema + Row Level Security
+-- NETCAM admin — Supabase schema + Row Level Security
 -- Run this in the Supabase SQL editor (Dashboard → SQL → New query).
 -- ==========================================================================
 

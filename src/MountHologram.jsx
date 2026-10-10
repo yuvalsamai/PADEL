@@ -49,7 +49,7 @@ function RoundedBox({ size = [1, 1, 1], position = [0, 0, 0], rotation = [0, 0, 
   );
 }
 
-/* The full COURTCHECK mount: a wide fence-clamp base carrying a central phone slot */
+/* The full NETCAM mount: a wide fence-clamp base carrying a central phone slot */
 function MountModel() {
   const group = useRef();
   useFrame((state, delta) => {

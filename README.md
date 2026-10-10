@@ -1,10 +1,10 @@
-# COURTCHECK — Landing Page
+# NETCAM — Landing Page
 
 A high-end, RTL (Hebrew) single-page landing for a premium Padel & Tennis phone mount.
 Built with **React + Vite**, **Tailwind CSS**, **Framer Motion**, and **Lucide React**.
 
 ## Design
-- CourtCheck brand palette: black · white · lime-green accents
+- NETCAM brand palette: black · white · lime-green accents
 - Glassmorphism cards, neon ambient grid, and glow lighting
 - Simulated auto-rotating 3D mount viewer (CSS 3D + Framer Motion) with floating hotspot callouts
 
@@ -17,7 +17,7 @@ Built with **React + Vite**, **Tailwind CSS**, **Framer Motion**, and **Lucide R
 6. Sticky mobile quick-buy bar
 
 ## Brand assets
-- **Logo**: `public/LOGO-removebg-preview.png` (transparent), shown in the header and footer. It is the only logo used across the site. The browser favicon is `public/favicon.svg`.
+- **Logo**: the NETCAM wordmark is the `Logo` component (`src/Logo.jsx`) — a lime lens mark plus the name in the surrounding text color. The browser favicon (`public/favicon.svg`) uses the same mark.
 - **Product photo**: the showcase section uses `public/STUND.png` (the mount on the net). Until the file is committed, a dark placeholder shows.
 
 ## Getting started
