@@ -430,12 +430,7 @@ export default function PayPage() {
               <p role="alert" className="mt-4 rounded-xl bg-red-100 px-4 py-3 text-sm text-red-800">{error}</p>
             )}
 
-            <div className="mt-4 rounded-xl bg-bone2/60 p-3 text-xs leading-relaxed text-ink/70">
-              המחיר הסופי כולל משלוח עד הדלת. אספקה תוך 7–12 ימי עסקים. ניתן לבטל את העסקה תוך 14 ימים מקבלת
-              המוצר, בהתאם ל<a href="/terms#cancel" target="_blank" rel="noopener" className="underline">תקנון</a>.
-            </div>
-
-            <label className="mt-3 flex items-start gap-2.5 text-sm text-ink/80">
+            <label className="mt-4 flex items-start gap-2.5 text-sm text-ink/80">
               <input
                 type="checkbox"
                 required
