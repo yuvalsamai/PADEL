@@ -33,7 +33,7 @@ export default function ThankYou() {
           const key = `cc_fb_purchase_${det.order || ''}`;
           let seen = false;
           try { seen = !!sessionStorage.getItem(key); sessionStorage.setItem(key, '1'); } catch { /* ignore */ }
-          if (!seen && !d.duplicate && det.amount) {
+          if (!seen && det.amount) {
             fbEvent('Purchase', { value: det.amount, currency: 'ILS', num_items: det.quantity || 1 }, det.order ? { eventID: det.order } : undefined);
           }
         }
