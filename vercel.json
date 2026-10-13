@@ -1,4 +1,28 @@
 {
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "padel-yuvi11.vercel.app"
+        }
+      ],
+      "destination": "https://netcamsport.co.il/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "padel-three-theta.vercel.app"
+        }
+      ],
+      "destination": "https://netcamsport.co.il/:path*",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     {
       "source": "/(.+)",
