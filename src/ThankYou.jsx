@@ -125,13 +125,6 @@ export default function ThankYou() {
                 </div>
               )}
 
-              {!failed && (
-                <p className="mt-6 max-w-md text-sm leading-relaxed text-bone/70">
-                  ניתן לבטל את העסקה תוך 14 ימים מקבלת המוצר (אזרחים ותיקים, אנשים עם מוגבלות ועולים חדשים — עד 4
-                  חודשים) דרך <a href="/cancel" className="text-ball underline">טופס ביטול עסקה</a>. פרטי העסק, תנאי
-                  המשלוח והביטול המלאים מופיעים ב<a href="/terms" className="text-ball underline">תקנון</a>.
-                </p>
-              )}
 
               <a
                 href="/"
