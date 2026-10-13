@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /YUVAL
+Disallow: /pay
+Disallow: /thank-you
+
+Sitemap: https://netcamsport.co.il/sitemap.xml

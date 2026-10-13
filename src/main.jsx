@@ -1,6 +1,6 @@
 import React, { Suspense, lazy } from 'react'
 import ReactDOM from 'react-dom/client'
-import App from './App.jsx'
+import LandingRoot from './LandingRoot.jsx'
 import './index.css'
 import { trackPageview } from './lib/analytics.js'
 import AccessibilityWidget from './Accessibility.jsx'
@@ -38,44 +38,50 @@ if (route !== 'admin') {
   initMetaPixel()
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    {route === 'admin' ? (
-      <Suspense fallback={null}>
-        <Admin />
-      </Suspense>
-    ) : route === 'pay' ? (
-      <Suspense fallback={null}>
-        <PayPage />
-      </Suspense>
-    ) : route === 'thankyou' ? (
-      <Suspense fallback={null}>
-        <ThankYou />
-      </Suspense>
-    ) : route === 'privacy' ? (
-      <Suspense fallback={null}>
-        <Privacy />
-      </Suspense>
-    ) : route === 'terms' ? (
-      <Suspense fallback={null}>
-        <Terms />
-      </Suspense>
-    ) : route === 'cancel' ? (
-      <Suspense fallback={null}>
-        <Cancel />
-      </Suspense>
-    ) : route === 'accessibility' ? (
-      <Suspense fallback={null}>
-        <AccessibilityStatement />
-      </Suspense>
-    ) : route === 'notfound' ? (
-      <Suspense fallback={null}>
-        <NotFound />
-      </Suspense>
-    ) : (
-      <App />
-    )}
-    {route !== 'admin' && <AccessibilityWidget />}
-    {route !== 'admin' && <CookieBanner />}
-  </React.StrictMode>,
-)
+const rootEl = document.getElementById('root')
+
+if (route === 'landing') {
+  // The home page is pre-rendered at build time — hydrate it instead of re-rendering.
+  if (rootEl.hasChildNodes()) ReactDOM.hydrateRoot(rootEl, <LandingRoot />)
+  else ReactDOM.createRoot(rootEl).render(<LandingRoot />)
+} else {
+  ReactDOM.createRoot(rootEl).render(
+    <React.StrictMode>
+      {route === 'admin' ? (
+        <Suspense fallback={null}>
+          <Admin />
+        </Suspense>
+      ) : route === 'pay' ? (
+        <Suspense fallback={null}>
+          <PayPage />
+        </Suspense>
+      ) : route === 'thankyou' ? (
+        <Suspense fallback={null}>
+          <ThankYou />
+        </Suspense>
+      ) : route === 'privacy' ? (
+        <Suspense fallback={null}>
+          <Privacy />
+        </Suspense>
+      ) : route === 'terms' ? (
+        <Suspense fallback={null}>
+          <Terms />
+        </Suspense>
+      ) : route === 'cancel' ? (
+        <Suspense fallback={null}>
+          <Cancel />
+        </Suspense>
+      ) : route === 'accessibility' ? (
+        <Suspense fallback={null}>
+          <AccessibilityStatement />
+        </Suspense>
+      ) : (
+        <Suspense fallback={null}>
+          <NotFound />
+        </Suspense>
+      )}
+      {route !== 'admin' && <AccessibilityWidget />}
+      {route !== 'admin' && <CookieBanner />}
+    </React.StrictMode>,
+  )
+}

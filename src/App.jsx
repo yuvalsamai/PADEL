@@ -771,7 +771,7 @@ const Footer = () => (
           </span>
 
           <p className="mt-3 max-w-sm text-lg text-bone/70">
-            עין הנץ שלך על המגרש. צלם, נתח והכרע.
+            המשחק שלך במצלמה. צלם, נתח והכרע.
           </p>
           <a
             href={INSTAGRAM_URL}
