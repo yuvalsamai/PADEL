@@ -5,6 +5,7 @@ import './index.css'
 import { trackPageview } from './lib/analytics.js'
 import AccessibilityWidget from './Accessibility.jsx'
 import CookieBanner from './CookieBanner.jsx'
+import { initMetaPixel } from './lib/metaPixel.js'
 
 const Privacy = lazy(() => import('./Privacy.jsx'))
 const Terms = lazy(() => import('./Terms.jsx'))
@@ -32,7 +33,10 @@ const route =
   : 'notfound'
 
 // Record a first-party pageview for every public page (skip the admin panel).
-if (route !== 'admin') trackPageview()
+if (route !== 'admin') {
+  trackPageview()
+  initMetaPixel()
+}
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { getConsent, setConsent } from './lib/consent.js';
 
-/* Cookie / browser-storage notice. The site uses no advertising or third-party
-   tracking cookies — only strictly necessary storage plus optional first-party
-   statistics. Visitors can accept or limit to necessary storage, and reopen this
+/* Cookie / browser-storage notice. Strictly necessary storage always; first-party
+   statistics and the Meta Pixel (advertising cookies) only after "אישור". Visitors can accept or limit to necessary storage, and reopen this
    from the footer ("הגדרות עוגיות"). */
 export default function CookieBanner() {
   const [show, setShow] = useState(false);
@@ -30,8 +29,8 @@ export default function CookieBanner() {
       className="fixed inset-x-3 bottom-3 z-[100] mx-auto max-w-2xl rounded-2xl border border-white/10 bg-ink/95 p-4 text-bone shadow-2xl backdrop-blur-md"
     >
       <p className="text-sm leading-relaxed text-bone/80">
-        האתר שומר בדפדפן מידע הכרחי לתפעולו (כמו העדפות נגישות). באישורכם נשמור גם מזהה אנונימי לסטטיסטיקת
-        ביקורים. אין באתר עוגיות פרסום או מעקב של צד שלישי.{' '}
+        האתר שומר בדפדפן מידע הכרחי לתפעולו (כמו העדפות נגישות). באישורכם נשתמש גם בעוגיות לסטטיסטיקת ביקורים
+        ולמדידת פרסום (Meta Pixel).{' '}
         <a href="/privacy#cookies" className="text-ball underline underline-offset-2">מדיניות פרטיות</a>
       </p>
       <div className="mt-3 flex flex-col gap-2 sm:flex-row-reverse sm:justify-start">

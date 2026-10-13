@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Logo from './Logo.jsx';
+import { fbEvent } from './lib/metaPixel.js';
 
 export default function ThankYou() {
   // 'checking' | 'ok' | 'failed'
@@ -25,7 +26,17 @@ export default function ThankYou() {
       .then((r) => r.json())
       .then((d) => {
         setState(d.ok ? 'ok' : 'failed');
-        if (d.ok) setDetails({ ...fromUrl, ...(d.details || {}) });
+        if (d.ok) {
+          const det = { ...fromUrl, ...(d.details || {}) };
+          setDetails(det);
+          // Report the sale to Meta once per order (a refresh of this page must not double-count).
+          const key = `cc_fb_purchase_${det.order || ''}`;
+          let seen = false;
+          try { seen = !!sessionStorage.getItem(key); sessionStorage.setItem(key, '1'); } catch { /* ignore */ }
+          if (!seen && !d.duplicate && det.amount) {
+            fbEvent('Purchase', { value: det.amount, currency: 'ILS', num_items: det.quantity || 1 }, det.order ? { eventID: det.order } : undefined);
+          }
+        }
       })
       .catch(() => setState('failed'));
   }, []);

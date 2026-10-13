@@ -3,6 +3,7 @@ import { track } from './lib/analytics.js';
 import { COLORS, DEFAULT_COLOR } from './lib/colors.js';
 import { findZip, hasPlacesKey, loadPlaces, parseAddress } from './lib/googlePlaces.js';
 import Logo from './Logo.jsx';
+import { fbEvent } from './lib/metaPixel.js';
 
 /* Collects the customer details we want on record (full name, phone, email,
    full shipping address + postal code) and forwards them to the backend, which
@@ -215,6 +216,7 @@ export default function PayPage() {
     setError('');
     setLoading(true);
     track('begin_checkout'); // funnel step: submitted details, heading to Hyp
+    fbEvent('InitiateCheckout', { value: total, currency: 'ILS', num_items: qty });
 
     // Split the full name into first / last for Hyp's ClientName / ClientLName.
     const trimmed = form.fullName.trim();
