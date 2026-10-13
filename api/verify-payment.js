@@ -2,6 +2,7 @@
 // the order in Supabase. Runs server-side only (uses the service-role key).
 
 import { createClient } from '@supabase/supabase-js';
+import { sendOrderEmail } from './_orderEmail.js';
 
 const HYP_BASE = 'https://pay.hyp.co.il/p/';
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://uwmydcfhedcquktxqsis.supabase.co';
@@ -185,6 +186,22 @@ export default async function handler(req, res) {
 
     // Fire a Telegram notification (best-effort — never blocks the buyer's success).
     await notifyTelegram({ name, email, phone, address, product: orderRow?.product, amount, order, tranId, orderId });
+
+    // Order-confirmation email to the buyer (once — duplicates returned earlier).
+    let toEmail = email;
+    if (!toEmail && customerId) {
+      const { data: c } = await supabase.from('customers').select('email').eq('id', customerId).maybeSingle();
+      toEmail = c?.email ?? null;
+    }
+    await sendOrderEmail({
+      to: toEmail,
+      name,
+      order,
+      product: orderRow?.product || 'תושבת NETCAM',
+      quantity,
+      amount,
+      address,
+    });
 
     return res.status(200).json({ ok: true, details: { ...details, quantity, address } });
   } catch (e) {
