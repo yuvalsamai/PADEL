@@ -111,3 +111,9 @@ end $$;
 --
 -- Also recommended: Authentication → Providers/Settings → disable
 -- "Allow new users to sign up", so no one else can create an account at all.
+
+-- ---- Order-confirmation email tracking (shown in the admin orders table) ---
+alter table public.orders add column if not exists email_status text check (email_status in ('sent','failed','skipped'));
+alter table public.orders add column if not exists email_sent_at timestamptz;
+alter table public.orders add column if not exists email_error text;
+alter table public.orders add column if not exists email_id text;

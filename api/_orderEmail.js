@@ -76,9 +76,11 @@ function render({ name, order, product, quantity, amount, address }) {
   return { html, text };
 }
 
-export async function sendOrderEmail({ to, ...order }) {
+// Returns { status: 'sent' | 'failed' | 'skipped', id?, error? } — never throws.
+export async function sendOrderEmail({ to, subjectPrefix = '', ...order }) {
   const { RESEND_API_KEY, ORDER_EMAIL_FROM } = process.env;
-  if (!RESEND_API_KEY || !to) return { sent: false, reason: 'not configured or no recipient' };
+  if (!RESEND_API_KEY) return { status: 'skipped', error: 'RESEND_API_KEY is not set' };
+  if (!to) return { status: 'skipped', error: 'no customer email' };
   const { html, text } = render(order);
   try {
     const r = await fetch('https://api.resend.com/emails', {
@@ -88,14 +90,34 @@ export async function sendOrderEmail({ to, ...order }) {
         from: ORDER_EMAIL_FROM || 'NETCAM <orders@netcamsport.co.il>',
         to: [to],
         reply_to: BUSINESS.email || undefined,
-        subject: `אישור הזמנה ${order.order || ''} · NETCAM`.trim(),
+        subject: `${subjectPrefix}אישור הזמנה ${order.order || ''} · NETCAM`.replace(/\s+/g, ' ').trim(),
         html,
         text,
       }),
     });
-    return { sent: r.ok, status: r.status };
+    const data = await r.json().catch(() => ({}));
+    if (r.ok) return { status: 'sent', id: data.id || null };
+    return { status: 'failed', error: `${r.status}: ${data.message || data.name || 'Resend error'}` };
   } catch (e) {
-    return { sent: false, reason: String(e) };
+    return { status: 'failed', error: String(e) };
+  }
+}
+
+// Stores the outcome on the order so the admin panel can show it.
+export async function recordEmailResult(supabase, orderId, result) {
+  if (!orderId) return;
+  try {
+    await supabase
+      .from('orders')
+      .update({
+        email_status: result.status,
+        email_sent_at: result.status === 'sent' ? new Date().toISOString() : null,
+        email_error: result.error ? String(result.error).slice(0, 300) : null,
+        email_id: result.id || null,
+      })
+      .eq('id', orderId);
+  } catch {
+    /* tracking must never break the payment flow */
   }
 }
 

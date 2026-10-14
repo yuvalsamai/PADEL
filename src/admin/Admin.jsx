@@ -483,7 +483,58 @@ function supplierBlock({ order, shipment, phone, email }) {
   ].join('\n');
 }
 
+async function adminEmailCall(payload) {
+  const { data } = await supabase.auth.getSession();
+  const r = await fetch('/api/admin-email', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${data.session?.access_token || ''}` },
+    body: JSON.stringify(payload),
+  });
+  return r.json().catch(() => ({ status: 'failed', error: `HTTP ${r.status}` }));
+}
+
+const EmailStatus = ({ order, onResend, busy }) => {
+  const st = order.email_status;
+  const badge =
+    st === 'sent' ? { t: 'נשלח ✓', c: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40', tip: `נשלח ${fmtDate(order.email_sent_at)}` }
+    : st === 'failed' ? { t: 'נכשל ✗', c: 'bg-rose-500/20 text-rose-300 border-rose-500/40', tip: order.email_error || '' }
+    : st === 'skipped' ? { t: 'לא נשלח', c: 'bg-amber-500/20 text-amber-200 border-amber-500/40', tip: order.email_error || '' }
+    : { t: '—', c: 'border-white/10 text-bone/60', tip: 'אין מידע (הזמנה לפני הפעלת המיילים)' };
+  return (
+    <div className="flex items-center gap-2">
+      <span title={badge.tip} className={`rounded-lg border px-2 py-1 text-xs font-semibold ${badge.c}`}>{badge.t}</span>
+      {st !== 'sent' && order.status !== 'pending' && (
+        <button
+          onClick={onResend}
+          disabled={busy}
+          className="rounded-lg border border-white/15 px-2 py-1 text-xs text-bone/80 hover:bg-white/10 disabled:opacity-50"
+        >
+          {busy ? 'שולח…' : 'שלח שוב'}
+        </button>
+      )}
+    </div>
+  );
+};
+
 const OrdersView = ({ orders, shipments, customers, onChanged, onDelete }) => {
+  const [emailBusy, setEmailBusy] = useState(null); // order id or 'test'
+  const sendTestEmail = async () => {
+    setEmailBusy('test');
+    const r = await adminEmailCall({ action: 'test' });
+    setEmailBusy(null);
+    window.alert(
+      r.status === 'sent'
+        ? `מייל בדיקה נשלח ל-${r.to}. בדוק את תיבת הדואר (וגם ספאם).`
+        : `השליחה לא הצליחה: ${r.error || 'שגיאה לא ידועה'}`,
+    );
+  };
+  const resendEmail = async (order) => {
+    setEmailBusy(order.id);
+    const r = await adminEmailCall({ action: 'resend', orderId: order.id });
+    setEmailBusy(null);
+    if (r.status !== 'sent') window.alert(`השליחה לא הצליחה: ${r.error || 'שגיאה לא ידועה'}`);
+    onChanged();
+  };
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all'); // shipment status filter
 
@@ -585,6 +636,13 @@ const OrdersView = ({ orders, shipments, customers, onChanged, onDelete }) => {
           ))}
         </select>
         <button
+          onClick={sendTestEmail}
+          disabled={emailBusy === 'test'}
+          className="rounded-xl border border-white/15 px-4 py-2.5 text-sm font-medium text-bone hover:bg-white/10 disabled:opacity-50"
+        >
+          {emailBusy === 'test' ? 'שולח…' : '✉ שלח מייל בדיקה'}
+        </button>
+        <button
           onClick={exportCsv}
           className="rounded-xl border border-white/15 px-4 py-2.5 text-sm font-medium text-bone hover:bg-white/10"
         >
@@ -597,7 +655,7 @@ const OrdersView = ({ orders, shipments, customers, onChanged, onDelete }) => {
       <table className="w-full min-w-[900px] text-right text-sm">
         <thead className="bg-pine text-bone/60">
           <tr>
-            {['מס׳ הזמנה', 'שם לקוח', 'כתובת', 'צבע', 'כמות', 'סכום', 'סטטוס תשלום', 'סטטוס משלוח', 'מספר מעקב', 'תאריך הזמנה'].map((h) => (
+            {['מס׳ הזמנה', 'שם לקוח', 'כתובת', 'צבע', 'כמות', 'סכום', 'סטטוס תשלום', 'מייל אישור', 'סטטוס משלוח', 'מספר מעקב', 'תאריך הזמנה'].map((h) => (
               <th key={h} className="whitespace-nowrap px-4 py-3 font-medium">{h}</th>
             ))}
             <th className="px-4 py-3" />
@@ -605,7 +663,7 @@ const OrdersView = ({ orders, shipments, customers, onChanged, onDelete }) => {
         </thead>
         <tbody className="divide-y divide-white/5">
           {rows.length === 0 ? (
-            <tr><td colSpan={11} className="px-4 py-10 text-center text-bone/50">אין הזמנות להצגה</td></tr>
+            <tr><td colSpan={12} className="px-4 py-10 text-center text-bone/50">אין הזמנות להצגה</td></tr>
           ) : (
             rows.map(({ order, shipment, seq, phone, email }) => (
               <tr key={order.id} className="text-bone/90">
@@ -642,6 +700,11 @@ const OrdersView = ({ orders, shipments, customers, onChanged, onDelete }) => {
                       </select>
                     );
                   })()}
+                </td>
+
+                {/* Confirmation email */}
+                <td className="whitespace-nowrap px-4 py-3">
+                  <EmailStatus order={order} busy={emailBusy === order.id} onResend={() => resendEmail(order)} />
                 </td>
 
                 {/* Shipment status */}

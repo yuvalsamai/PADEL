@@ -6,7 +6,7 @@
 // confirmation email; the other one sees it as a duplicate. Runs server-side only.
 
 import { createClient } from '@supabase/supabase-js';
-import { sendOrderEmail } from './_orderEmail.js';
+import { recordEmailResult, sendOrderEmail } from './_orderEmail.js';
 
 const HYP_BASE = 'https://pay.hyp.co.il/p/';
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://uwmydcfhedcquktxqsis.supabase.co';
@@ -174,7 +174,8 @@ export async function processPayment(rawQuery) {
 
     // Telegram alert + confirmation email (both best-effort, never block the buyer).
     await notifyTelegram({ name, email: email || customerEmail, phone, address, product, amount, order, tranId, orderId });
-    await sendOrderEmail({ to: email || customerEmail, name, order, product, quantity, amount, address });
+    const emailResult = await sendOrderEmail({ to: email || customerEmail, name, order, product, quantity, amount, address });
+    await recordEmailResult(supabase, orderId, emailResult);
 
     return { status: 200, body: { ok: true, details: { ...details, quantity, address } } };
   } catch (e) {
