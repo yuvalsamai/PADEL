@@ -1,65 +1,86 @@
 // Order-confirmation email (sent once, when a payment is first verified).
-// Doubles as the written disclosure Israeli law requires for distance sales:
-// business details, what was bought, delivery time and how to cancel.
+// Kept short and upbeat; the footer links to the terms and the cancellation
+// form (the legal minimum for the written distance-sale confirmation) without
+// spelling the cancellation terms out in the body.
 // Uses Resend (https://resend.com). No-op unless RESEND_API_KEY is set; never throws.
 // Files starting with "_" in /api are helpers, not endpoints.
-import { BUSINESS } from '../src/lib/business.js';
+import { BUSINESS, INSTAGRAM_HANDLE, INSTAGRAM_URL } from '../src/lib/business.js';
 
 const SITE = 'https://netcamsport.co.il';
+const LIME = '#A6D720';
+const INK = '#0D0D0D';
 
 const esc = (v) =>
   String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
-function row(label, value) {
+function row(label, value, strong = false) {
   if (value == null || value === '') return '';
-  return `<tr><td style="padding:6px 0;color:#5B6170;white-space:nowrap;vertical-align:top">${esc(label)}</td>
-    <td style="padding:6px 12px 6px 0;color:#0D0D0D;font-weight:600">${esc(value)}</td></tr>`;
+  return `<tr>
+    <td style="padding:10px 0;color:#6B7280;font-size:14px;white-space:nowrap;vertical-align:top;border-bottom:1px solid #EEF0EC">${esc(label)}</td>
+    <td style="padding:10px 16px 10px 0;color:${INK};font-size:${strong ? '18px' : '14px'};font-weight:${strong ? '800' : '600'};text-align:left;border-bottom:1px solid #EEF0EC">${esc(value)}</td>
+  </tr>`;
 }
 
 function render({ name, order, product, quantity, amount, address }) {
   const b = BUSINESS;
   const first = (name || '').trim().split(/\s+/)[0];
+  // Business identity line (no personal email); hidden parts stay hidden until filled in.
   const business = [
     b.legalName ? `${b.legalName} (${b.brand})` : b.brand,
     b.businessType && b.businessId ? `${b.businessType} ${b.businessId}` : '',
     b.address,
-    b.phone ? `טלפון ${b.phone}` : '',
-    b.email,
   ].filter(Boolean).map(esc).join(' · ');
 
-  const html = `<!doctype html><html lang="he" dir="rtl"><body style="margin:0;background:#F6F7F5;font-family:Arial,Helvetica,sans-serif">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F6F7F5;padding:24px 12px"><tr><td align="center">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:16px;overflow:hidden" dir="rtl">
-  <tr><td style="background:#0D0D0D;padding:20px 24px;text-align:right">
-    <img src="${SITE}/email-logo.png" alt="NETCAM" width="120" style="display:block;height:auto;border:0">
+  const html = `<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>אישור הזמנה</title></head>
+<body style="margin:0;padding:0;background:#EEF0EC;font-family:Arial,Helvetica,sans-serif;-webkit-text-size-adjust:100%">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#EEF0EC;padding:28px 12px"><tr><td align="center">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" dir="rtl" style="max-width:560px;background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 6px 24px rgba(0,0,0,0.06)">
+
+  <tr><td style="background:${INK};padding:28px 24px 24px;text-align:center">
+    <img src="${SITE}/email-logo.png" alt="NETCAM" width="132" style="display:inline-block;height:auto;border:0">
   </td></tr>
-  <tr><td style="padding:28px 24px 8px;text-align:right">
-    <h1 style="margin:0 0 8px;font-size:24px;color:#0D0D0D">תודה על ההזמנה${first ? `, ${esc(first)}` : ''}!</h1>
-    <p style="margin:0;font-size:15px;line-height:1.6;color:#333">התשלום התקבל וההזמנה שלך בטיפול. נשלח לך מספר מעקב ברגע שהמשלוח יוצא.</p>
+  <tr><td style="background:${LIME};height:6px;line-height:6px;font-size:0">&nbsp;</td></tr>
+
+  <tr><td style="padding:32px 28px 8px;text-align:center">
+    <div style="display:inline-block;width:56px;height:56px;line-height:56px;border-radius:50%;background:${LIME};color:${INK};font-size:30px;font-weight:900">&#10003;</div>
+    <h1 style="margin:18px 0 6px;font-size:26px;line-height:1.25;color:${INK};font-weight:900">תודה על ההזמנה${first ? `, ${esc(first)}` : ''}!</h1>
+    <p style="margin:0;font-size:16px;line-height:1.6;color:#374151">התשלום התקבל וההזמנה שלך כבר בדרך להכנה 🎾</p>
   </td></tr>
-  <tr><td style="padding:16px 24px;text-align:right">
-    <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;font-size:14px;border-top:1px solid #ECEEEA;border-bottom:1px solid #ECEEEA">
+
+  <tr><td style="padding:22px 28px 6px">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F8F9F6;border-radius:14px;padding:4px 18px">
       ${row('מספר הזמנה', order)}
       ${row('מוצר', product)}
       ${row('כמות', quantity)}
       ${row('כתובת למשלוח', address)}
-      ${row('סה״כ שולם', amount != null ? `₪${amount}` : '')}
+      ${row('סה״כ שולם', amount != null ? `₪${amount}` : '', true)}
     </table>
   </td></tr>
-  <tr><td style="padding:4px 24px 8px;text-align:right;font-size:14px;line-height:1.7;color:#333">
-    <p style="margin:0 0 10px"><b>משלוח:</b> חינם עד הדלת, תוך 7–12 ימי עסקים.</p>
-    <p style="margin:0 0 10px"><b>ביטול עסקה:</b> ניתן לבטל תוך 14 ימים מקבלת המוצר (אזרחים ותיקים, אנשים עם מוגבלות ועולים חדשים — עד 4 חודשים), דרך
-      <a href="${SITE}/cancel" style="color:#0D0D0D">טופס ביטול עסקה</a> או בתשובה למייל זה. ההחזר יבוצע תוך 14 ימים, בניכוי דמי ביטול של 5% או 100 ₪ (הנמוך מביניהם); ללא דמי ביטול במוצר פגום.
-      התנאים המלאים ב<a href="${SITE}/terms" style="color:#0D0D0D">תקנון</a>.</p>
+
+  <tr><td style="padding:14px 28px 4px;text-align:center">
+    <p style="margin:0;font-size:15px;color:${INK}"><b>🚚 משלוח חינם עד הדלת</b> · תוך 7–12 ימי עסקים</p>
   </td></tr>
-  <tr><td style="padding:16px 24px 24px;text-align:right;font-size:12px;line-height:1.6;color:#5B6170;border-top:1px solid #ECEEEA">
-    ${business}
+
+  <tr><td style="padding:24px 28px 30px;text-align:center">
+    <p style="margin:0 0 4px;font-size:18px;font-weight:800;color:${INK}">יש לכם שאלות?</p>
+    <p style="margin:0 0 16px;font-size:15px;color:#374151">מוזמנים לפנות אלינו באינסטגרם</p>
+    <a href="${INSTAGRAM_URL}" style="display:inline-block;background:${INK};color:#ffffff;text-decoration:none;font-weight:700;font-size:15px;padding:13px 26px;border-radius:999px">
+      <span style="color:${LIME}">&#9679;</span>&nbsp; <span dir="ltr">${esc(INSTAGRAM_HANDLE)}</span>
+    </a>
   </td></tr>
+
+  <tr><td style="padding:16px 24px 20px;text-align:center;border-top:1px solid #EEF0EC;font-size:12px;line-height:1.7;color:#6B7280">
+    ${business}<br>
+    <a href="${SITE}/terms" style="color:#6B7280;text-decoration:underline">תקנון האתר</a>
+    &nbsp;·&nbsp;
+    <a href="${SITE}/cancel" style="color:#6B7280;text-decoration:underline">ביטול עסקה</a>
+  </td></tr>
+
 </table></td></tr></table></body></html>`;
 
   const text = [
     `תודה על ההזמנה${first ? `, ${first}` : ''}!`,
-    'התשלום התקבל וההזמנה שלך בטיפול.',
+    'התשלום התקבל וההזמנה שלך כבר בדרך להכנה.',
     '',
     order && `מספר הזמנה: ${order}`,
     product && `מוצר: ${product}`,
@@ -67,10 +88,12 @@ function render({ name, order, product, quantity, amount, address }) {
     address && `כתובת למשלוח: ${address}`,
     amount != null && `סה״כ שולם: ₪${amount}`,
     '',
-    'משלוח: חינם עד הדלת, תוך 7–12 ימי עסקים.',
-    `ביטול עסקה: תוך 14 ימים מקבלת המוצר (אזרחים ותיקים, אנשים עם מוגבלות ועולים חדשים — עד 4 חודשים) דרך ${SITE}/cancel או בתשובה למייל זה. תקנון: ${SITE}/terms`,
+    'משלוח חינם עד הדלת, תוך 7–12 ימי עסקים.',
     '',
-    business.replace(/&[^;]+;/g, ''),
+    `יש לכם שאלות? מוזמנים לפנות אלינו באינסטגרם: ${INSTAGRAM_URL}`,
+    '',
+    [b.legalName ? `${b.legalName} (${b.brand})` : b.brand, b.businessType && b.businessId ? `${b.businessType} ${b.businessId}` : '', b.address].filter(Boolean).join(' · '),
+    `תקנון: ${SITE}/terms · ביטול עסקה: ${SITE}/cancel`,
   ].filter((l) => l !== false && l != null).join('\n');
 
   return { html, text };
