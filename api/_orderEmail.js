@@ -71,6 +71,7 @@ function render({ name, order, product, quantity, amount, address }) {
 
   <tr><td style="padding:16px 24px 20px;text-align:center;border-top:1px solid #EEF0EC;font-size:12px;line-height:1.7;color:#6B7280">
     ${business}<br>
+    זהו מייל אוטומטי ואין להשיב אליו.<br>
     <a href="${SITE}/terms" style="color:#6B7280;text-decoration:underline">תקנון האתר</a>
     &nbsp;·&nbsp;
     <a href="${SITE}/cancel" style="color:#6B7280;text-decoration:underline">ביטול עסקה</a>
@@ -93,6 +94,7 @@ function render({ name, order, product, quantity, amount, address }) {
     `יש לכם שאלות? מוזמנים לפנות אלינו באינסטגרם: ${INSTAGRAM_URL}`,
     '',
     [b.legalName ? `${b.legalName} (${b.brand})` : b.brand, b.businessType && b.businessId ? `${b.businessType} ${b.businessId}` : '', b.address].filter(Boolean).join(' · '),
+    'זהו מייל אוטומטי ואין להשיב אליו.',
     `תקנון: ${SITE}/terms · ביטול עסקה: ${SITE}/cancel`,
   ].filter((l) => l !== false && l != null).join('\n');
 
@@ -110,9 +112,9 @@ export async function sendOrderEmail({ to, subjectPrefix = '', ...order }) {
       method: 'POST',
       headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        from: ORDER_EMAIL_FROM || 'NETCAM <orders@netcamsport.co.il>',
+        // No-reply by design: customer service is via Instagram (see the email body).
+        from: ORDER_EMAIL_FROM || 'NETCAM <no-reply@netcamsport.co.il>',
         to: [to],
-        reply_to: BUSINESS.email || undefined,
         subject: `${subjectPrefix}אישור הזמנה ${order.order || ''} · NETCAM`.replace(/\s+/g, ' ').trim(),
         html,
         text,
