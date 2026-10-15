@@ -5,6 +5,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { DEFAULT_COLOR, PRODUCT_NAME, colorByKey } from '../src/lib/colors.js';
+import { quote } from '../src/lib/pricing.js';
 
 const HYP_BASE = 'https://pay.hyp.co.il/p/';
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://uwmydcfhedcquktxqsis.supabase.co';
@@ -12,7 +13,7 @@ const SUPABASE_URL = process.env.SUPABASE_URL || 'https://uwmydcfhedcquktxqsis.s
 // Best-effort: store the checkout details as a pending order keyed by order_ref.
 // verify-payment finishes it (status → paid) on a confirmed completion redirect.
 // Never throws — the buyer must reach the payment page even if the DB write fails.
-async function recordPending({ order, amount, quantity, product, name, email, cell, address, street, city, zip, region }) {
+async function recordPending({ order, amount, quantity, product, name, email, cell, address, street, city, zip, region, meta }) {
   const { SUPABASE_SERVICE_ROLE_KEY } = process.env;
   if (!SUPABASE_SERVICE_ROLE_KEY) return;
 
@@ -41,6 +42,12 @@ async function recordPending({ order, amount, quantity, product, name, email, ce
         quantity: quantity || 1,
         amount: Number(amount) || null,
         status: 'pending',
+        // Meta Conversions API: only for buyers who accepted marketing cookies.
+        meta_consent: !!meta?.consent,
+        fbp: meta?.consent ? meta.fbp : null,
+        fbc: meta?.consent ? meta.fbc : null,
+        client_ip: meta?.consent ? meta.ip : null,
+        client_ua: meta?.consent ? meta.ua : null,
       })
       .select('id')
       .single();
@@ -82,12 +89,11 @@ export default async function handler(req, res) {
   const unitPrice = testAllowed ? Number(requested) : Number(PRODUCT_PRICE);
 
   // Quantity is clamped to 1..10 server-side; total is derived, never trusted.
-  const qty = Math.min(10, Math.max(1, Math.floor(Number(src.quantity)) || 1));
+  const { qty, total } = quote(unitPrice, src.quantity);
   const color = colorByKey(src.color) || colorByKey(DEFAULT_COLOR);
   const product = `${PRODUCT_NAME} · ${color.he}`;
-  // Quantity discount: 1→0%, then 2×qty+1 (2→5%, 3→7% … 10→21%).
-  const discountPct = qty < 2 ? 0 : 2 * qty + 1;
-  const amount = String(Math.round(unitPrice * qty * (1 - discountPct / 100)));
+  // Quantity pricing (2 for ₪149, volume discount above) — shared with the checkout page.
+  const amount = String(total);
 
   const order = String(src.order || `CC-${Date.now()}`);
 
@@ -154,6 +160,15 @@ export default async function handler(req, res) {
       city: src.city ? String(src.city) : null,
       zip: src.zip ? String(src.zip) : null,
       region: src.region ? String(src.region) : null,
+      meta: src.meta?.consent
+        ? {
+            consent: true,
+            fbp: src.meta.fbp ? String(src.meta.fbp).slice(0, 120) : null,
+            fbc: src.meta.fbc ? String(src.meta.fbc).slice(0, 300) : null,
+            ip: String(req.headers['x-forwarded-for'] || '').split(',')[0].trim() || null,
+            ua: req.headers['user-agent'] ? String(req.headers['user-agent']).slice(0, 400) : null,
+          }
+        : { consent: false },
     });
 
     // Append the response verbatim (order preserved) to the payment-page base.

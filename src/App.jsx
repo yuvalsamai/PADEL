@@ -11,7 +11,8 @@ const HERO_IMG = '/hero.webp';
 /* Optional hero video — shown in the product column; falls back to the spinning
    product photo if it can't load. Keep the file small (ideally < 8MB) so it
    doesn't slow the page. */
-const HERO_VIDEO = '/FDown.vn_Instagram_Video_Downloader_2653.mp4';
+const HERO_VIDEO = '/netcam-hero.mp4';
+const HERO_POSTER = '/netcam-hero-poster.webp';
 
 /* ================================================================== */
 /*  Orders counter (social proof)                                     */
@@ -199,7 +200,6 @@ const navLinks = [
   { label: 'איך זה עובד', href: '#how' },
   { label: 'המוצר', href: '#product' },
   { label: 'עין הנץ', href: '#hawkeye' },
-  { label: 'ביקורות', href: '#reviews' },
   { label: 'שאלות', href: '#faq' },
 ];
 
@@ -313,6 +313,7 @@ const HeroMedia = () => {
             <video
               ref={videoRef}
               src={HERO_VIDEO}
+              poster={HERO_POSTER}
               autoPlay
               muted
               loop
@@ -383,18 +384,23 @@ const Hero = () => (
             transition={{ duration: 0.7, delay: 0.25 }}
             className="flex w-full flex-col justify-between gap-6 rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur-md sm:max-w-sm"
           >
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-3">
               <div>
                 <div className="flex items-baseline gap-2">
                   <span className="text-sm text-bone/50 line-through">₪119.90</span>
-                  <span className="font-display text-xl font-black text-ball">₪89</span>
+                  <span className="font-display text-2xl font-black text-ball">₪89</span>
                 </div>
                 <div className="text-xs font-medium text-bone/80">מחיר מבצע · משלוח חינם עד הדלת</div>
               </div>
-              <a href="/pay" className="group" aria-label="להזמנה">
-                <ArrowChip />
-              </a>
+              <span className="rounded-full bg-ball/15 px-3 py-1 text-xs font-bold text-ball">2 ב-₪149</span>
             </div>
+            <a
+              href="/pay"
+              className="group flex w-full items-center justify-center gap-2 rounded-full bg-ball py-4 text-lg font-black text-ink shadow-lg shadow-ball/20 transition-transform hover:scale-[1.02]"
+            >
+              להזמנה · ₪89
+              <ArrowUpLeft size={20} strokeWidth={2.75} className="transition-transform group-hover:-translate-x-0.5 group-hover:-translate-y-0.5" />
+            </a>
           </motion.div>
         </div>
 
@@ -593,76 +599,6 @@ const HawkEye = () => (
 );
 
 /* ================================================================== */
-/*  Reviews / testimonials                                            */
-/* ================================================================== */
-
-const reviews = [
-  {
-    name: 'דניאל כהן',
-    role: 'שחקן פאדל, תל אביב',
-    initials: 'ד״כ',
-    text: 'סוף סוף אין יותר ויכוחים על הקווים. מריצים אחורה ורואים בדיוק איפה נחת הכדור. שווה כל שקל.',
-  },
-  {
-    name: 'מאיה לוי',
-    role: 'מאמנת טניס',
-    initials: 'מ״ל',
-    text: 'אני מצלמת את כל האימונים מלמעלה ומראה לשחקנים בדיוק מה לתקן. ההתקנה על הרשת לוקחת שתי שניות.',
-  },
-  {
-    name: 'איתי ברק',
-    role: 'חובב פאדל',
-    initials: 'א״ב',
-    text: 'הסרטונים יוצאים ברמה של שידור. כל הקבוצה שלנו כבר קנתה. יציב לגמרי גם בראלי אגרסיבי.',
-  },
-];
-
-const Stars = () => (
-  <div className="flex gap-0.5" role="img" aria-label="דירוג 5 מתוך 5">
-    {Array.from({ length: 5 }).map((_, i) => (
-      <span key={i} className="text-ball">★</span>
-    ))}
-  </div>
-);
-
-const Reviews = () => (
-  <section id="reviews" className="bg-bone px-5 py-20 sm:px-8 sm:py-24">
-    <div className="mx-auto max-w-6xl">
-      <Reveal className="max-w-2xl">
-        <Eyebrow className="text-moss">מה אומרים על המגרש</Eyebrow>
-        <h2 className="mt-4 font-display text-4xl font-black leading-tight tracking-tight text-ink sm:text-5xl">
-          שחקנים כבר לא משחקים בלי זה.
-        </h2>
-      </Reveal>
-
-      <div className="mt-14 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        {reviews.map((r, i) => (
-          <Reveal key={r.name} delay={(i % 3) * 0.08}>
-            <figure className="flex h-full flex-col justify-between rounded-3xl bg-chalk p-6 ring-1 ring-ink/5">
-              <div>
-                <Stars />
-                <blockquote className="mt-4 text-[15px] leading-relaxed text-ink/70">
-                  “{r.text}”
-                </blockquote>
-              </div>
-              <figcaption className="mt-6 flex items-center gap-3">
-                <span className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-ball text-sm font-black text-ink">
-                  {r.initials}
-                </span>
-                <span>
-                  <span className="block font-display font-bold text-ink">{r.name}</span>
-                  <span className="block text-xs text-ink/60">{r.role}</span>
-                </span>
-              </figcaption>
-            </figure>
-          </Reveal>
-        ))}
-      </div>
-    </div>
-  </section>
-);
-
-/* ================================================================== */
 /*  FAQ                                                               */
 /* ================================================================== */
 
@@ -811,7 +747,7 @@ const Footer = () => (
 const StickyBar = () => {
   const [show, setShow] = useState(false);
   useEffect(() => {
-    const onScroll = () => setShow(window.scrollY > 620);
+    const onScroll = () => setShow(window.scrollY > 380);
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
@@ -842,7 +778,7 @@ const StickyBar = () => {
                 whileTap={{ scale: 0.98 }}
                 className="flex flex-1 items-center justify-center gap-2 rounded-full bg-ball py-3 text-sm font-bold text-ink"
               >
-                הזמן עכשיו <ArrowUpLeft size={16} strokeWidth={2.5} />
+                להזמנה · ₪89 <ArrowUpLeft size={16} strokeWidth={2.5} />
               </motion.a>
             </div>
           </motion.div>
@@ -867,7 +803,7 @@ const StickyBar = () => {
               href="/pay"
               className="mt-4 flex items-center justify-center gap-2 rounded-full bg-ball py-3 font-bold text-ink transition-colors hover:bg-white"
             >
-              הזמן עכשיו <ArrowUpLeft size={18} strokeWidth={2.5} />
+              להזמנה · ₪89 <ArrowUpLeft size={18} strokeWidth={2.5} />
             </a>
           </motion.div>
         </React.Fragment>
@@ -896,7 +832,6 @@ export default function App() {
         <Steps />
         <Showcase />
         <HawkEye />
-        <Reviews />
         <Faq />
         </main>
         <Footer />

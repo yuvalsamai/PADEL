@@ -2,8 +2,8 @@
 // the visitor clicks "אישור" in the cookie banner (consent === 'all') — on page
 // load if they already accepted, or the moment they accept.
 import { getConsent } from './consent.js';
+import { PIXEL_ID } from './meta.js';
 
-const PIXEL_ID = '1260216646282482';
 let loaded = false;
 const pending = [];
 
@@ -39,6 +39,17 @@ export function initMetaPixel() {
       window.fbq?.('consent', 'revoke'); // withdrawn mid-visit: stop sending
     }
   });
+}
+
+// Meta's browser id cookies, forwarded to the server so Conversions API events
+// match this visitor. Only meaningful after consent (the pixel sets them).
+export function metaBrowserIds() {
+  if (getConsent() !== 'all') return { consent: false };
+  const cookie = (k) => document.cookie.split('; ').find((c) => c.startsWith(`${k}=`))?.split('=')[1] || null;
+  let fbc = cookie('_fbc');
+  const fbclid = new URLSearchParams(window.location.search).get('fbclid');
+  if (!fbc && fbclid) fbc = `fb.1.${Date.now()}.${fbclid}`;
+  return { consent: true, fbp: cookie('_fbp'), fbc };
 }
 
 // Standard event, e.g. fbEvent('Purchase', { value: 89, currency: 'ILS' }, { eventID }).

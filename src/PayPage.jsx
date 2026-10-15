@@ -3,7 +3,9 @@ import { track } from './lib/analytics.js';
 import { COLORS, DEFAULT_COLOR } from './lib/colors.js';
 import { findZip, hasPlacesKey, loadPlaces, parseAddress } from './lib/googlePlaces.js';
 import Logo from './Logo.jsx';
-import { fbEvent } from './lib/metaPixel.js';
+import { fbEvent, metaBrowserIds } from './lib/metaPixel.js';
+import { quote } from './lib/pricing.js';
+import { CONTENT } from './lib/meta.js';
 
 /* Collects the customer details we want on record (full name, phone, email,
    full shipping address + postal code) and forwards them to the backend, which
@@ -179,15 +181,18 @@ export default function PayPage() {
   const [qty, setQty] = useState(1);
   const [color, setColor] = useState(DEFAULT_COLOR);
   const [agreed, setAgreed] = useState(false);
+
+  // Funnel: reached the checkout page.
+  useEffect(() => {
+    fbEvent('InitiateCheckout', { ...CONTENT, value: Number(amount) || 89, currency: 'ILS', num_items: 1 });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const [url, setUrl] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const unit = Number(amount) || 0;
-  // Quantity discount: 1→0%, then 2×qty+1 (2→5%, 3→7% … 10→21%).
-  const discountPct = qty < 2 ? 0 : 2 * qty + 1;
-  const fullTotal = unit * qty;
-  const total = Math.round(fullTotal * (1 - discountPct / 100));
+  // Same pricing as the server (2 for ₪149, volume discount above).
+  const { full: fullTotal, total, savings } = quote(unit, qty);
 
   const update = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
 
@@ -216,7 +221,7 @@ export default function PayPage() {
     setError('');
     setLoading(true);
     track('begin_checkout'); // funnel step: submitted details, heading to Hyp
-    fbEvent('InitiateCheckout', { value: total, currency: 'ILS', num_items: qty });
+    fbEvent('AddPaymentInfo', { ...CONTENT, value: total, currency: 'ILS', num_items: qty });
 
     // Split the full name into first / last for Hyp's ClientName / ClientLName.
     const trimmed = form.fullName.trim();
@@ -232,6 +237,7 @@ export default function PayPage() {
           amount,
           quantity: qty,
           color,
+          meta: metaBrowserIds(),
           testToken: token,
           clientName,
           clientLName,
@@ -411,19 +417,25 @@ export default function PayPage() {
               </div>
             </div>
 
-            {discountPct > 0 ? (
+            {savings > 0 ? (
               <div className="mt-2 flex items-center justify-between rounded-xl bg-moss/10 px-4 py-2 text-sm font-semibold text-moss">
-                <span>🎉 הנחת כמות</span>
-                <span>-{discountPct}%</span>
+                <span>🎉 {qty === 2 ? '2 ב-₪149' : 'הנחת כמות'}</span>
+                <span>חסכת ₪{savings}</span>
               </div>
             ) : (
-              <p className="mt-2 px-1 text-xs text-ink/60">קנו יותר וחסכו — עד 21% הנחה על 10 יחידות</p>
+              <button
+                type="button"
+                onClick={() => setQty(2)}
+                className="mt-2 w-full rounded-xl border border-dashed border-ink/25 px-4 py-2 text-sm font-semibold text-ink hover:bg-ink/5"
+              >
+                🎾 קונים זוג? 2 ב-₪149 בלבד — לחצו להוספה
+              </button>
             )}
 
             <div className="mt-2 flex items-center justify-between px-1 text-sm">
               <span className="text-ink/60">סה״כ לתשלום</span>
               <span className="flex items-baseline gap-2">
-                {discountPct > 0 && <span className="text-sm text-ink/60 line-through">₪{fullTotal}</span>}
+                {savings > 0 && <span className="text-sm text-ink/60 line-through">₪{fullTotal}</span>}
                 <span className="font-display text-xl font-black text-ink">₪{total}</span>
               </span>
             </div>

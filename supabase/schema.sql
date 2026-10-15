@@ -117,3 +117,11 @@ alter table public.orders add column if not exists email_status text check (emai
 alter table public.orders add column if not exists email_sent_at timestamptz;
 alter table public.orders add column if not exists email_error text;
 alter table public.orders add column if not exists email_id text;
+
+-- ---- Meta Conversions API (only filled for buyers who accepted cookies) ----
+alter table public.orders add column if not exists meta_consent boolean default false;
+alter table public.orders add column if not exists fbp text;
+alter table public.orders add column if not exists fbc text;
+alter table public.orders add column if not exists client_ip text;
+alter table public.orders add column if not exists client_ua text;
+alter table public.orders add column if not exists meta_capi_status text;

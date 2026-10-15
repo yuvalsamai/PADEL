@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Logo from './Logo.jsx';
 import { fbEvent } from './lib/metaPixel.js';
+import { CONTENT } from './lib/meta.js';
 
 export default function ThankYou() {
   // 'checking' | 'ok' | 'failed'
@@ -34,7 +35,7 @@ export default function ThankYou() {
           let seen = false;
           try { seen = !!sessionStorage.getItem(key); sessionStorage.setItem(key, '1'); } catch { /* ignore */ }
           if (!seen && det.amount) {
-            fbEvent('Purchase', { value: det.amount, currency: 'ILS', num_items: det.quantity || 1 }, det.order ? { eventID: det.order } : undefined);
+            fbEvent('Purchase', { ...CONTENT, value: det.amount, currency: 'ILS', num_items: det.quantity || 1 }, det.order ? { eventID: det.order } : undefined);
           }
         }
       })

@@ -5,7 +5,8 @@ import './index.css'
 import { trackPageview } from './lib/analytics.js'
 import AccessibilityWidget from './Accessibility.jsx'
 import CookieBanner from './CookieBanner.jsx'
-import { initMetaPixel } from './lib/metaPixel.js'
+import { fbEvent, initMetaPixel } from './lib/metaPixel.js'
+import { CONTENT } from './lib/meta.js'
 
 const Privacy = lazy(() => import('./Privacy.jsx'))
 const Terms = lazy(() => import('./Terms.jsx'))
@@ -36,6 +37,7 @@ const route =
 if (route !== 'admin') {
   trackPageview()
   initMetaPixel()
+  if (route === 'landing') fbEvent('ViewContent', { ...CONTENT, value: 89, currency: 'ILS' })
 }
 
 const rootEl = document.getElementById('root')

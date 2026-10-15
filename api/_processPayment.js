@@ -7,6 +7,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { recordEmailResult, sendOrderEmail } from './_orderEmail.js';
+import { sendCapiPurchase } from './_metaCapi.js';
 
 const HYP_BASE = 'https://pay.hyp.co.il/p/';
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://uwmydcfhedcquktxqsis.supabase.co';
@@ -101,7 +102,7 @@ export async function processPayment(rawQuery) {
         .update({ tran_id: tranId, amount, status: 'paid' })
         .eq('order_ref', order)
         .eq('status', 'pending')
-        .select('id, customer_id, customer_name, product, quantity');
+        .select('id, customer_id, customer_name, product, quantity, meta_consent, fbp, fbc, client_ip, client_ua');
       orderRow = claimed?.[0] || null;
       if (orderRow && !orderRow.customer_name && name) {
         await supabase.from('orders').update({ customer_name: name }).eq('id', orderRow.id);
@@ -157,9 +158,10 @@ export async function processPayment(rawQuery) {
       phone = cust?.phone ?? null;
       customerEmail = cust?.email ?? null;
     }
+    let ship = null;
     if (orderId) {
-      const { data: ship } = await supabase
-        .from('shipments').select('address').eq('order_id', orderId).limit(1).maybeSingle();
+      ({ data: ship } = await supabase
+        .from('shipments').select('address, city, zip').eq('order_id', orderId).limit(1).maybeSingle());
       address = ship?.address ?? null;
     }
     const quantity = orderRow?.quantity ?? 1;
@@ -176,6 +178,21 @@ export async function processPayment(rawQuery) {
     await notifyTelegram({ name, email: email || customerEmail, phone, address, product, amount, order, tranId, orderId });
     const emailResult = await sendOrderEmail({ to: email || customerEmail, name, order, product, quantity, amount, address });
     await recordEmailResult(supabase, orderId, emailResult);
+
+    // Purchase → Meta Conversions API (only with the buyer's cookie consent).
+    if (orderRow?.meta_consent) {
+      const capi = await sendCapiPurchase({
+        order, amount, quantity,
+        email: email || customerEmail, phone, name: name || orderRow.customer_name,
+        city: ship?.city, zip: ship?.zip, customerId,
+        fbp: orderRow.fbp, fbc: orderRow.fbc, ip: orderRow.client_ip, ua: orderRow.client_ua,
+      });
+      try {
+        await supabase.from('orders')
+          .update({ meta_capi_status: capi.status === 'failed' ? `failed: ${capi.error}`.slice(0, 300) : capi.status })
+          .eq('id', orderId);
+      } catch { /* ignore */ }
+    }
 
     return { status: 200, body: { ok: true, details: { ...details, quantity, address } } };
   } catch (e) {
