@@ -14,113 +14,6 @@ const HERO_IMG = '/hero.webp';
 const HERO_VIDEO = '/netcam-hero.mp4';
 const HERO_POSTER = '/netcam-hero-poster.webp';
 
-/* ================================================================== */
-/*  Orders counter (social proof)                                     */
-/*  Starts at 127 and grows every day by a deterministic 2–8, so all  */
-/*  visitors see the same number and it climbs on its own — no DB.     */
-/* ================================================================== */
-const COUNTER_START = 63;
-const COUNTER_START_DATE = new Date('2026-09-12T00:00:00');
-
-function ordersCount() {
-  const dayMs = 86400000;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const start = new Date(COUNTER_START_DATE);
-  start.setHours(0, 0, 0, 0);
-  let days = Math.floor((today - start) / dayMs);
-  if (days < 0) days = 0;
-
-  let total = COUNTER_START;
-  for (let d = 1; d <= days; d++) {
-    // Deterministic pseudo-random 2..8 from the day index.
-    const x = Math.sin(d * 999.13) * 10000;
-    const frac = x - Math.floor(x);
-    total += 2 + Math.floor(frac * 7);
-  }
-  return total;
-}
-
-// Animates from 0 up to `target` once, when it first scrolls into view.
-const useCountUp = (target, duration = 1400) => {
-  const [display, setDisplay] = useState(0);
-  const ref = React.useRef(null);
-  const started = React.useRef(false);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const run = () => {
-      if (started.current) return;
-      started.current = true;
-      const start = performance.now();
-      const from = 0;
-      const tick = (now) => {
-        const p = Math.min(1, (now - start) / duration);
-        const eased = 1 - Math.pow(1 - p, 3); // easeOutCubic
-        setDisplay(Math.round(from + (target - from) * eased));
-        if (p < 1) requestAnimationFrame(tick);
-      };
-      requestAnimationFrame(tick);
-    };
-    const io = new IntersectionObserver(
-      (entries) => entries.forEach((e) => e.isIntersecting && run()),
-      { threshold: 0.4 },
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, [target, duration]);
-
-  // If the target changes after the animation (e.g. live update), snap to it.
-  useEffect(() => {
-    if (started.current) setDisplay(target);
-  }, [target]);
-
-  return [display, ref];
-};
-
-const OrdersCounter = () => {
-  const baseline = ordersCount();
-  const [live, setLive] = useState(0); // real paid orders from the DB
-
-  useEffect(() => {
-    let cancelled = false;
-    const fetchCount = () => {
-      fetch('/api/orders-count')
-        .then((r) => r.json())
-        .then((d) => !cancelled && typeof d.count === 'number' && setLive(d.count))
-        .catch(() => {});
-    };
-    fetchCount();
-    // Poll so a fresh purchase bumps the number without a page reload.
-    const id = setInterval(fetchCount, 30000);
-    return () => {
-      cancelled = true;
-      clearInterval(id);
-    };
-  }, []);
-
-  const count = baseline + live;
-  const [display, ref] = useCountUp(count);
-  return (
-    <section className="bg-ink px-5 py-9 sm:py-11">
-      <div ref={ref} className="mx-auto flex max-w-3xl flex-col items-center gap-2.5 text-center">
-        <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1">
-          <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-ball opacity-75" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-ball" />
-          </span>
-          <span className="text-[0.65rem] font-medium uppercase tracking-[0.18em] text-bone/70">בזמן אמת</span>
-        </span>
-        <div className="font-display text-4xl font-black leading-none text-ball sm:text-5xl">
-          {display.toLocaleString('he-IL')}
-        </div>
-        <div className="font-display text-lg font-bold text-bone sm:text-xl">הזמנות שבוצעו</div>
-      </div>
-    </section>
-  );
-};
-
 /* Trust badges — reused on the landing page and (compact) on checkout. */
 export const TRUST_ITEMS = [
   { icon: '🔒', label: 'תשלום מאובטח · Hyp' },
@@ -826,7 +719,6 @@ export default function App() {
       <div className="overflow-hidden rounded-panel bg-bone">
         <main>
         <Hero />
-        <OrdersCounter />
         <TrustStrip />
         <Features />
         <Steps />
