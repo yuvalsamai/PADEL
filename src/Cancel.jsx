@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { LegalLayout, Section } from './legal/LegalLayout.jsx';
-import { BUSINESS } from './lib/business.js';
+import { BUSINESS, INSTAGRAM_HANDLE, INSTAGRAM_URL } from './lib/business.js';
 
 /* Online cancellation channel (/cancel). Israeli law requires that a sale made
    through a website can also be cancelled through it, via a prominent link. */
@@ -34,7 +34,7 @@ export default function Cancel() {
       setState({
         status: 'error',
         ref: '',
-        error: `לא הצלחנו לשלוח את הבקשה. אפשר לשלוח אותה בדוא״ל ל-${b.email}${b.phone ? ` או בטלפון ${b.phone}` : ''}.`,
+        error: `לא הצלחנו לשלוח את הבקשה. אפשר לשלוח אותה בהודעה באינסטגרם ${INSTAGRAM_HANDLE}${b.phone ? ` או בטלפון ${b.phone}` : ''}.`,
       });
     }
   };
@@ -97,7 +97,10 @@ export default function Cancel() {
 
       <Section h="דרכים נוספות לביטול">
         <p>
-          דוא״ל: <a href={`mailto:${b.email}`} dir="ltr" className="underline">{b.email}</a>
+          בהודעה באינסטגרם:{' '}
+          <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" dir="ltr" className="font-semibold underline">
+            {INSTAGRAM_HANDLE}
+          </a>
           {b.phone ? <> · טלפון: <a href={`tel:${b.phone}`} dir="ltr" className="underline">{b.phone}</a></> : null}
           {b.address ? <> · בדואר לכתובת: {b.address}</> : null}
         </p>

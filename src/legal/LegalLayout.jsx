@@ -52,7 +52,6 @@ export function BusinessDetails() {
   const b = BUSINESS;
   const rows = [
     ['שם העסק', b.legalName ? `${b.legalName} (${b.brand})` : b.brand],
-    ['סוג העסק', b.businessType],
     ['מספר עוסק', b.businessId],
     ['כתובת', b.address],
     ['טלפון', b.phone && <a href={`tel:${b.phone}`} dir="ltr" className="underline">{b.phone}</a>],
