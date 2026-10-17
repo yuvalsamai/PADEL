@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Logo from './Logo.jsx';
 import { fbEvent } from './lib/metaPixel.js';
 import { CONTENT } from './lib/meta.js';
+import { INSTAGRAM_HANDLE, INSTAGRAM_URL } from './lib/business.js';
 
 export default function ThankYou() {
   // 'checking' | 'ok' | 'failed'
@@ -9,6 +10,7 @@ export default function ThankYou() {
   const [details, setDetails] = useState(null);
 
   useEffect(() => {
+    document.title = 'תודה על ההזמנה · NETCAM';
     const search = window.location.search; // Hyp completion params (order preserved)
     if (!search || !search.includes('CCode=')) {
       // Reached directly without payment params — just show a generic confirmation.
@@ -78,7 +80,7 @@ export default function ThankYou() {
               <p className="mt-5 max-w-md text-lg leading-relaxed text-bone/80">
                 {failed
                   ? 'לא הצלחנו לאמת את התשלום. אם חויבת, פנה אלינו ונבדוק מיד.'
-                  : 'התשלום התקבל בהצלחה. הזמנתך נקלטה במערכת ותישלח אליך בהקדם — נעדכן אותך במספר מעקב.'}
+                  : 'התשלום התקבל בהצלחה וההזמנה שלך כבר בדרך להכנה. משלוח חינם עד הדלת, תוך 7–12 ימי עסקים.'}
               </p>
 
               {!failed && details && (
@@ -121,15 +123,26 @@ export default function ThankYou() {
                     )}
                   </dl>
                   {details.email && (
-                    <p className="mt-4 text-xs text-bone/50">אישור נשלח לכתובת {details.email}</p>
+                    <p className="mt-4 text-xs text-bone/70">אישור הזמנה נשלח לכתובת {details.email}</p>
                   )}
                 </div>
               )}
 
 
+              {!failed && (
+                <a
+                  href={INSTAGRAM_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-8 inline-flex items-center gap-2 rounded-full border border-white/20 px-5 py-2.5 text-sm text-bone/90 hover:border-ball hover:text-ball"
+                >
+                  יש שאלה? אנחנו זמינים באינסטגרם <span dir="ltr" className="font-semibold">{INSTAGRAM_HANDLE}</span>
+                </a>
+              )}
+
               <a
                 href="/"
-                className="mt-9 inline-flex items-center gap-2 rounded-full bg-ball px-7 py-3 font-semibold text-ink transition-colors hover:bg-white"
+                className="mt-6 inline-flex items-center gap-2 rounded-full bg-ball px-7 py-3 font-semibold text-ink transition-colors hover:bg-white"
               >
                 חזרה לדף הבית
               </a>

@@ -7,8 +7,8 @@ export default function Logo({ dark = false, className = '' }) {
     <img
       src={dark ? '/netcam-logo-dark.webp' : '/netcam-logo.webp'}
       alt="NETCAM"
-      width="900"
-      height="591"
+      width="420"
+      height="276"
       className={`w-auto select-none ${className}`}
       draggable={false}
     />

@@ -97,7 +97,7 @@ export default function AccessibilityWidget() {
         onClick={() => setOpen((v) => !v)}
         aria-label="תפריט נגישות"
         aria-expanded={open}
-        className="fixed bottom-24 left-3 z-[110] flex h-11 w-11 items-center justify-center rounded-full bg-moss text-white shadow-lg ring-2 ring-white/70 transition hover:scale-105 focus:outline-none focus-visible:ring-4 focus-visible:ring-moss/40 lg:bottom-6 lg:left-6"
+        className="fixed bottom-24 left-3 z-[110] flex h-11 w-11 lg:left-auto lg:right-6 items-center justify-center rounded-full bg-moss text-white shadow-lg ring-2 ring-white/70 transition hover:scale-105 focus:outline-none focus-visible:ring-4 focus-visible:ring-moss/40 lg:bottom-6"
       >
         <Accessibility size={22} />
       </button>
@@ -108,7 +108,7 @@ export default function AccessibilityWidget() {
           ref={panelRef}
           role="dialog"
           aria-label="אפשרויות נגישות"
-          className="fixed bottom-40 left-3 z-[110] lg:bottom-20 lg:left-6 w-[min(92vw,340px)] rounded-2xl border border-black/10 bg-white p-4 text-ink shadow-2xl"
+          className="fixed bottom-40 left-3 z-[110] lg:bottom-20 lg:left-auto lg:right-6 w-[min(92vw,340px)] rounded-2xl border border-black/10 bg-white p-4 text-ink shadow-2xl"
         >
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-lg font-black">נגישות</h2>

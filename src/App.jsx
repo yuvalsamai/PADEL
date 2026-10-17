@@ -5,8 +5,8 @@ import Logo from './Logo.jsx';
 import { openConsentSettings } from './lib/consent.js';
 import { INSTAGRAM_HANDLE, INSTAGRAM_URL } from './lib/business.js';
 
-/* Hero background photo. Drop the supplied image at public/hero.jpg to swap it in;
-   a court-toned gradient shows until then. */
+/* Hero background photo (public/hero.webp);
+   a court-toned gradient shows behind it while it loads. */
 const HERO_IMG = '/hero.webp';
 /* Optional hero video — shown in the product column; falls back to the spinning
    product photo if it can't load. Keep the file small (ideally < 8MB) so it
@@ -344,16 +344,11 @@ const Features = () => (
       <div className="mt-14 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {features.map((f, i) => (
           <Reveal key={f.title} delay={(i % 4) * 0.07}>
-            <div className="group flex h-full flex-col justify-between rounded-3xl bg-chalk p-6 shadow-[0_1px_0_rgba(0,0,0,0.04)] ring-1 ring-ink/5 transition-all duration-300 hover:-translate-y-1 hover:ring-ink/15">
+            <div className="flex h-full flex-col justify-between rounded-3xl bg-chalk p-6 shadow-[0_1px_0_rgba(0,0,0,0.04)] ring-1 ring-ink/5">
               <div className="mb-10 flex items-center justify-between">
                 <span className="rounded-full bg-ball/70 px-3 py-1 text-xs font-semibold text-ink">
                   {f.tag}
                 </span>
-                <ArrowUpLeft
-                  size={18}
-                  className="text-stone transition-colors group-hover:text-ink"
-                  strokeWidth={2.5}
-                />
               </div>
               <div>
                 <h3 className="font-display text-xl font-bold text-ink">{f.title}</h3>
@@ -430,7 +425,7 @@ const Steps = () => (
 
 /* ================================================================== */
 /*  Product showcase — real photo of the mount on the net            */
-/*  Drop the image at public/STUND.png                                */
+/*  Product photo: public/STUND.webp                                  */
 /* ================================================================== */
 
 const Showcase = () => (
@@ -624,9 +619,8 @@ const Footer = () => (
       </div>
 
       <p className="mt-8 max-w-3xl text-xs leading-relaxed text-bone/70">
-        יש להתקין את המוצר לפי הוראות השימוש ולוודא שהוא נעול היטב על הרשת לפני כל שימוש. ניתן לבטל עסקה תוך 14
-        ימים מקבלת המוצר (אזרחים ותיקים, אנשים עם מוגבלות ועולים חדשים — עד 4 חודשים), בהתאם לחוק הגנת הצרכן
-        ובכפוף ל<a href="/terms" className="underline">תקנון</a>.
+        יש להתקין את המוצר לפי הוראות השימוש ולוודא שהוא נעול היטב על הרשת לפני כל שימוש. השימוש באתר ובמוצר
+        כפוף ל<a href="/terms" className="underline">תקנון</a>.
       </p>
       <div className="mt-6 text-xs text-bone/70">© 2026 NETCAM · כל הזכויות שמורות</div>
     </div>
@@ -640,7 +634,10 @@ const Footer = () => (
 const StickyBar = () => {
   const [show, setShow] = useState(false);
   useEffect(() => {
-    const onScroll = () => setShow(window.scrollY > 380);
+    const onScroll = () => {
+      const nearBottom = window.innerHeight + window.scrollY > document.documentElement.scrollHeight - 420;
+      setShow(window.scrollY > 380 && !nearBottom);
+    };
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
   }, []);

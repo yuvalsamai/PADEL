@@ -184,6 +184,7 @@ export default function PayPage() {
 
   // Funnel: reached the checkout page.
   useEffect(() => {
+    document.title = 'הזמנה · NETCAM';
     fbEvent('InitiateCheckout', { ...CONTENT, value: Number(amount) || 89, currency: 'ILS', num_items: 1 });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const [url, setUrl] = useState('');
@@ -286,6 +287,25 @@ export default function PayPage() {
             <p className="mt-2 text-sm text-ink/60">
               מלאו את הפרטים ותועברו לדף תשלום מאובטח להזנת פרטי האשראי.
             </p>
+
+            {/* What you're buying */}
+            <div className="mt-5 flex items-center gap-4 rounded-2xl bg-bone2/60 p-3">
+              <img
+                src="/product.webp"
+                alt="תושבת NETCAM"
+                width="64"
+                height="64"
+                className="h-16 w-16 flex-shrink-0 rounded-xl bg-white object-contain p-1"
+              />
+              <div className="min-w-0 flex-1">
+                <div className="font-display font-bold text-ink">תושבת NETCAM לרשת המגרש</div>
+                <div className="text-xs text-ink/70">🚚 משלוח חינם עד הדלת · 7–12 ימי עסקים</div>
+              </div>
+              <div className="text-left">
+                <div className="font-display text-xl font-black text-ink">₪{total}</div>
+                {qty > 1 && <div className="text-xs text-ink/60">{qty} יח׳</div>}
+              </div>
+            </div>
 
             {/* Color */}
             <fieldset className="mt-6">

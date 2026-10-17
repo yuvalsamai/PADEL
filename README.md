@@ -18,7 +18,7 @@ Built with **React + Vite**, **Tailwind CSS**, **Framer Motion**, and **Lucide R
 
 ## Brand assets
 - **Logo**: `public/netcam-logo.webp` (light backgrounds) and `public/netcam-logo-dark.webp` (dark backgrounds), rendered by `src/Logo.jsx`. Favicon: `public/favicon.png` / `apple-touch-icon.png` (the tennis ball from the logo).
-- **Product photo**: the showcase section uses `public/STUND.png` (the mount on the net). Until the file is committed, a dark placeholder shows.
+- **Product photo**: the showcase section uses `public/STUND.webp` (the mount on the net).
 
 ## Getting started
 ```bash
