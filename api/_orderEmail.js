@@ -36,10 +36,10 @@ function render({ name, order, product, quantity, amount, address }) {
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#EEF0EC;padding:28px 12px"><tr><td align="center">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" dir="rtl" style="max-width:560px;background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 6px 24px rgba(0,0,0,0.06)">
 
-  <tr><td style="background:${INK};padding:28px 24px 24px;text-align:center">
-    <img src="${SITE}/email-logo.png" alt="NETCAM" width="132" style="display:inline-block;height:auto;border:0">
+  <tr><td bgcolor="${INK}" style="background:${INK};background-color:${INK};padding:18px 24px 14px;text-align:center">
+    <img src="${SITE}/email-logo-v2.png" alt="NETCAM" width="168" style="display:inline-block;width:168px;height:auto;border:0;background:${INK}">
   </td></tr>
-  <tr><td style="background:${LIME};height:6px;line-height:6px;font-size:0">&nbsp;</td></tr>
+  <tr><td bgcolor="${LIME}" style="background:${LIME};background-color:${LIME};height:6px;line-height:6px;font-size:0">&nbsp;</td></tr>
 
   <tr><td style="padding:32px 28px 8px;text-align:center">
     <div style="display:inline-block;width:56px;height:56px;line-height:56px;border-radius:50%;background:${LIME};color:${INK};font-size:30px;font-weight:900">&#10003;</div>
