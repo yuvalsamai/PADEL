@@ -54,7 +54,7 @@ async function recordPending({ order, amount, quantity, product, name, email, ce
       .single();
 
     if (newOrder?.id) {
-      await supabase.from('shipments').insert({
+      const { error: shipErr } = await supabase.from('shipments').insert({
         order_id: newOrder.id,
         address: address || null,
         street: street || null,
@@ -63,6 +63,12 @@ async function recordPending({ order, amount, quantity, product, name, email, ce
         region: region || null,
         status: 'pending',
       });
+      // Never lose the address: if the detailed insert fails (e.g. a missing
+      // column), store at least the full address line.
+      if (shipErr) {
+        console.error('shipments insert failed, retrying with address only:', shipErr.message);
+        await supabase.from('shipments').insert({ order_id: newOrder.id, address: address || null, status: 'pending' });
+      }
     }
   } catch {
     /* ignore — never block the payment flow on a DB write */
