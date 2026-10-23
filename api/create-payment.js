@@ -6,6 +6,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { DEFAULT_COLOR, PRODUCT_NAME, colorByKey } from '../src/lib/colors.js';
 import { quote } from '../src/lib/pricing.js';
+import { BUSINESS } from '../src/lib/business.js';
 
 const HYP_BASE = 'https://pay.hyp.co.il/p/';
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://uwmydcfhedcquktxqsis.supabase.co';
@@ -114,10 +115,17 @@ export default async function handler(req, res) {
     // come back garbled ("gibberish") on the receipt and the completion params.
     UTF8: 'True',
     UTF8out: 'True',
-    // NOTE: `sendemail` is intentionally omitted. It triggers a *transaction
-    // confirmation* email on top of the receipt/invoice (sent by Hyp's invoicing
-    // module), which double-mailed the buyer. We keep only the receipt.
+    // NOTE: `sendemail` is intentionally omitted — it sends a separate *transaction
+    // confirmation* email. The receipt itself comes from Hyp's invoicing module
+    // (Hyp Invoice / EZcount), which only emails the customer when SendHesh=True
+    // and an `email` is passed (set below).
+    SendHesh: 'True',
+    // What the receipt's details line says, e.g. "תושבת NETCAM · שחור × 2".
+    heshDesc: `${product}${qty > 1 ? ` × ${qty}` : ''}`,
+    'EZ.lang': 'he',
   });
+  // VAT-exempt business (עוסק זעיר / פטור): no VAT on the document.
+  if (BUSINESS.vatIncluded === false) params.set('EZ.vat', '0');
 
   // Optional customer fields
   for (const [k, hypKey] of [
