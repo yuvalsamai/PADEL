@@ -504,6 +504,9 @@ export default function PayPage() {
               <span>🔒 תשלום מאובטח · Hyp</span>
               <span>🚚 משלוח חינם</span>
             </div>
+            <p className="mt-2 text-center text-xs text-ink/60">
+              התשלום מתבצע בדף המאובטח של Hyp, העומדת בתקן PCI DSS. פרטי האשראי אינם נשמרים אצלנו.
+            </p>
 
             <p className="mt-4 text-center text-xs text-ink/60">
               פרטי האשראי מוזנים בדף מאובטח של Hyp ואינם נשמרים אצלנו.
