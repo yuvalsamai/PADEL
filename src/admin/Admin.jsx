@@ -354,6 +354,7 @@ const RecordModal = ({ table, record, onClose, onSaved }) => {
 
 const TABS = [
   { key: 'orders', label: 'הזמנות' },
+  { key: 'abandoned', label: 'עגלות נטושות' },
   { key: 'customers', label: 'לקוחות' },
   { key: 'analytics', label: 'אנליטיקס' },
 ];
@@ -793,6 +794,126 @@ const OrdersView = ({ orders, shipments, customers, onChanged, onDelete }) => {
 };
 
 /* ================================================================== */
+/*  Abandoned carts (orders that reached checkout but were never paid) */
+/* ================================================================== */
+
+// A pending order younger than this may still be on the payment page.
+const IN_PAYMENT_MS = 30 * 60 * 1000;
+
+const sinceLabel = (v) => {
+  const mins = Math.floor((Date.now() - new Date(v)) / 60000);
+  if (mins < 60) return `לפני ${mins} דק׳`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `לפני ${hrs} שע׳`;
+  return `לפני ${Math.floor(hrs / 24)} ימים`;
+};
+
+const AbandonedView = ({ orders, shipments, customers, onChanged, onDelete }) => {
+  const rows = useMemo(() => {
+    const shipByOrder = new Map();
+    for (const s of shipments) if (!shipByOrder.has(s.order_id)) shipByOrder.set(s.order_id, s);
+    const byCustomer = new Map((customers || []).map((c) => [c.id, c]));
+    return [...orders]
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+      .map((o) => ({ order: o, shipment: shipByOrder.get(o.id) || null, customer: byCustomer.get(o.customer_id) || null }));
+  }, [orders, shipments, customers]);
+
+  // Only for a payment that went through in Hyp but never reached the site.
+  const markPaid = async (order) => {
+    if (!window.confirm('לסמן כשולם? עשה זאת רק אם וידאת ב-Hyp שהעסקה אכן עברה.')) return;
+    const { error } = await supabase.from('orders').update({ status: 'paid' }).eq('id', order.id);
+    if (!error) onChanged();
+    else window.alert(error.message);
+  };
+
+  return (
+    <div className="space-y-3">
+      <p className="text-sm text-bone/60">
+        לקוחות שמילאו פרטים והגיעו לדף התשלום אבל לא שילמו. הזמנה שתשולם תעבור אוטומטית ללשונית ״הזמנות״.
+      </p>
+      <div className="overflow-x-auto rounded-2xl ring-1 ring-white/10">
+        <table className="w-full min-w-[900px] text-right text-sm">
+          <thead className="bg-pine text-bone/60">
+            <tr>
+              {['שם לקוח', 'טלפון', 'אימייל', 'כתובת', 'צבע', 'כמות', 'סכום', 'מצב', 'נוצר'].map((h) => (
+                <th key={h} className="whitespace-nowrap px-4 py-3 font-medium">{h}</th>
+              ))}
+              <th className="px-4 py-3" />
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-white/5">
+            {rows.length === 0 ? (
+              <tr><td colSpan={10} className="px-4 py-10 text-center text-bone/50">אין עגלות נטושות</td></tr>
+            ) : (
+              rows.map(({ order, shipment, customer }) => {
+                const phone = customer?.phone || '';
+                const waPhone = intlPhone(phone).replace(/\D/g, '');
+                const fresh = Date.now() - new Date(order.created_at) < IN_PAYMENT_MS;
+                const color = colorFromProduct(order.product);
+                return (
+                  <tr key={order.id} className="text-bone/90">
+                    <td className="whitespace-nowrap px-4 py-3">{order.customer_name || '—'}</td>
+                    <td className="whitespace-nowrap px-4 py-3" dir="ltr">
+                      {phone ? <a href={`tel:${phone}`} className="hover:text-ball">{phone}</a> : '—'}
+                    </td>
+                    <td className="max-w-[180px] truncate px-4 py-3" dir="ltr" title={customer?.email || ''}>{customer?.email || '—'}</td>
+                    <td className="max-w-[200px] truncate px-4 py-3" title={shipment?.address || ''}>{shipment?.address || '—'}</td>
+                    <td className="whitespace-nowrap px-4 py-3">
+                      {color ? (
+                        <span className="inline-flex items-center gap-1.5">
+                          <span className="h-3 w-3 rounded-full ring-1 ring-white/30" style={{ backgroundColor: color.hex }} />
+                          {color.he}
+                        </span>
+                      ) : '—'}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3">{order.quantity ?? 1}</td>
+                    <td className="whitespace-nowrap px-4 py-3">{order.amount != null ? `₪${order.amount}` : '—'}</td>
+                    <td className="whitespace-nowrap px-4 py-3">
+                      <span className={`inline-block rounded-full px-2.5 py-1 text-xs font-semibold ${fresh ? 'bg-amber-400/15 text-amber-300' : 'bg-white/10 text-bone/70'}`}>
+                        {fresh ? 'בתהליך תשלום' : 'נטושה'}
+                      </span>
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3 text-bone/70" title={fmtDate(order.created_at)}>{sinceLabel(order.created_at)}</td>
+                    <td className="whitespace-nowrap px-4 py-3 text-left">
+                      <div className="flex items-center justify-end gap-1">
+                        {waPhone && (
+                          <a
+                            href={`https://wa.me/${waPhone}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="rounded-lg px-2 py-1 text-xs text-emerald-300 hover:bg-white/10"
+                            title="פתח שיחת וואטסאפ עם הלקוח"
+                          >
+                            וואטסאפ
+                          </a>
+                        )}
+                        <button
+                          onClick={() => markPaid(order)}
+                          className="rounded-lg px-2 py-1 text-xs text-ball hover:bg-white/10"
+                          title="רק אם התשלום עבר ב-Hyp ולא נקלט באתר"
+                        >
+                          סמן כשולם
+                        </button>
+                        <button
+                          onClick={() => onDelete(order)}
+                          className="rounded-lg px-2 py-1 text-xs text-rose-400 hover:bg-rose-400/10"
+                        >
+                          מחיקה
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+/* ================================================================== */
 /*  Analytics (first-party tracking)                                  */
 /* ================================================================== */
 
@@ -1016,8 +1137,25 @@ const Dashboard = ({ session }) => {
   }, []);
 
   const handleDelete = async (row) => {
-    if (!window.confirm('למחוק את הרשומה?')) return;
-    const { error: delErr } = await supabase.from(tab).delete().eq('id', row.id);
+    if (!window.confirm('למחוק את הרשומה לצמיתות? לא ניתן לשחזר אותה.')) return;
+    const table = tab === 'abandoned' ? 'orders' : tab;
+    const { error: delErr } = await supabase.from(table).delete().eq('id', row.id);
+    if (delErr) setError(delErr.message);
+    else load();
+  };
+
+  // Wipe every row shown in the current tab (orders / abandoned carts / customers).
+  // Deleting orders also deletes their shipments (FK cascade).
+  const handleDeleteAll = async () => {
+    const what = {
+      orders: { table: 'orders', rows: data.orders.filter((o) => o.status !== 'pending'), label: 'ההזמנות' },
+      abandoned: { table: 'orders', rows: data.orders.filter((o) => o.status === 'pending'), label: 'העגלות הנטושות' },
+      customers: { table: 'customers', rows: data.customers, label: 'הלקוחות' },
+    }[tab];
+    if (!what || what.rows.length === 0) return;
+    if (!window.confirm(`למחוק את כל ${what.label} (${what.rows.length})? המחיקה היא לצמיתות ולא ניתן לשחזר אותה.`)) return;
+    if (!window.confirm(`אישור אחרון — למחוק לצמיתות את כל ${what.label}?`)) return;
+    const { error: delErr } = await supabase.from(what.table).delete().in('id', what.rows.map((r) => r.id));
     if (delErr) setError(delErr.message);
     else load();
   };
@@ -1085,6 +1223,10 @@ const Dashboard = ({ session }) => {
     [],
   );
 
+  // Orders still 'pending' never completed payment — they live in the abandoned tab.
+  const paidOrders = data.orders.filter((o) => o.status !== 'pending');
+  const abandonedOrders = data.orders.filter((o) => o.status === 'pending');
+
   const totalRevenue = data.orders
     .filter((o) => o.status === 'paid' || o.status === 'shipped' || o.status === 'delivered')
     .reduce((s, o) => s + (Number(o.amount) || 0), 0);
@@ -1111,7 +1253,7 @@ const Dashboard = ({ session }) => {
 
       <main className="mx-auto max-w-6xl px-5 py-8">
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          <StatCard label="הזמנות" value={data.orders.length} />
+          <StatCard label="הזמנות" value={paidOrders.length} />
           <StatCard label="משלוחים פעילים" value={data.shipments.filter((s) => s.status !== 'delivered' && s.status !== 'cancelled').length} />
           <StatCard label="לקוחות" value={data.customers.length} />
           <StatCard label="הכנסות" value={`₪${totalRevenue.toLocaleString('he-IL')}`} />
@@ -1128,16 +1270,25 @@ const Dashboard = ({ session }) => {
                 }`}
               >
                 {t.label}
+                {t.key === 'abandoned' && abandonedOrders.length > 0 && ` (${abandonedOrders.length})`}
               </button>
             ))}
           </div>
           <div className="flex gap-2">
-            {tab !== 'analytics' && (
+            {tab !== 'analytics' && tab !== 'abandoned' && (
               <button
                 onClick={() => setAdding(true)}
                 className="rounded-xl bg-ball px-4 py-2 text-sm font-semibold text-ink transition hover:bg-white"
               >
                 + הוספה
+              </button>
+            )}
+            {tab !== 'analytics' && (
+              <button
+                onClick={handleDeleteAll}
+                className="rounded-xl border border-rose-400/40 px-4 py-2 text-sm text-rose-300 hover:bg-rose-400/10"
+              >
+                🗑 מחיקת הכל
               </button>
             )}
             <button onClick={load} className="rounded-xl border border-white/15 px-4 py-2 text-sm hover:bg-white/10">
@@ -1158,7 +1309,9 @@ const Dashboard = ({ session }) => {
           ) : tab === 'analytics' ? (
             <Analytics events={data.analytics} orders={data.orders} onReset={handleResetStats} />
           ) : tab === 'orders' ? (
-            <OrdersView orders={data.orders} shipments={data.shipments} customers={data.customers} onChanged={load} onDelete={handleDelete} />
+            <OrdersView orders={paidOrders} shipments={data.shipments} customers={data.customers} onChanged={load} onDelete={handleDelete} />
+          ) : tab === 'abandoned' ? (
+            <AbandonedView orders={abandonedOrders} shipments={data.shipments} customers={data.customers} onChanged={load} onDelete={handleDelete} />
           ) : (
             <Table columns={columns[tab]} rows={data[tab]} onEdit={setEditing} onDelete={handleDelete} />
           )}
