@@ -126,3 +126,6 @@ alter table public.orders add column if not exists fbc text;
 alter table public.orders add column if not exists client_ip text;
 alter table public.orders add column if not exists client_ua text;
 alter table public.orders add column if not exists meta_capi_status text;
+
+-- Internal note the admin can attach to an order (never shown to the buyer).
+alter table public.orders add column if not exists admin_note text;

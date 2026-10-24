@@ -561,6 +561,7 @@ const OrdersView = ({ orders, shipments, customers, onChanged, onDelete }) => {
   };
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all'); // shipment status filter
+  const [dateFilter, setDateFilter] = useState('all'); // order date: today / week / month / all
 
   const allRows = useMemo(() => {
     // One shipment per order (latest wins if duplicates exist).
@@ -603,12 +604,13 @@ const OrdersView = ({ orders, shipments, customers, onChanged, onDelete }) => {
       }
       // Shipment status filter.
       if (statusFilter !== 'all' && (shipment?.status || 'pending') !== statusFilter) return false;
+      if (!inPeriod(order, dateFilter)) return false;
       return true;
     });
-  }, [allRows, query, statusFilter]);
+  }, [allRows, query, statusFilter, dateFilter]);
 
   const exportCsv = () => {
-    const headers = ['מס׳ הזמנה', 'שם לקוח', 'טלפון', 'כתובת', 'צבע', 'כמות', 'סכום', 'סטטוס תשלום', 'סטטוס משלוח', 'מספר מעקב', 'תאריך הזמנה'];
+    const headers = ['מס׳ הזמנה', 'שם לקוח', 'טלפון', 'כתובת', 'צבע', 'כמות', 'סכום', 'סטטוס תשלום', 'סטטוס משלוח', 'מספר מעקב', 'תאריך הזמנה', 'הערה'];
     const data = rows.map(({ order, shipment, seq, phone }) => [
       seq,
       order.customer_name || '',
@@ -621,6 +623,7 @@ const OrdersView = ({ orders, shipments, customers, onChanged, onDelete }) => {
       SHIP_LABEL[shipment?.status || 'pending'] || '',
       shipment?.tracking_number || '',
       fmtDate(order.created_at),
+      order.admin_note || '',
     ]);
     downloadCSV(`netcam-orders-${new Date().toISOString().slice(0, 10)}.csv`, headers, data);
   };
@@ -639,6 +642,24 @@ const OrdersView = ({ orders, shipments, customers, onChanged, onDelete }) => {
     if (!error) onChanged();
     else window.alert(error.message);
   };
+
+  // Internal note (admin only, never shown to the buyer). Saved on blur.
+  const saveNote = async (order, value) => {
+    const v = value.trim();
+    if (v === (order.admin_note || '')) return;
+    const { error } = await supabase.from('orders').update({ admin_note: v || null }).eq('id', order.id);
+    if (!error) onChanged();
+    else window.alert(error.message);
+  };
+  const noteField = (order, cls) => (
+    <textarea
+      defaultValue={order.admin_note || ''}
+      placeholder="הערה פנימית…"
+      rows={1}
+      onBlur={(e) => saveNote(order, e.target.value)}
+      className={`${cls} resize-y rounded-lg border border-white/10 bg-pine px-2 py-1.5 text-xs text-bone placeholder-bone/40 outline-none focus:border-ball`}
+    />
+  );
 
   const colorChip = (order) => {
     const c = colorFromProduct(order.product);
@@ -761,6 +782,15 @@ const OrdersView = ({ orders, shipments, customers, onChanged, onDelete }) => {
             <option key={o.v} value={o.v} style={{ color: '#0D0D0D', background: '#fff' }}>{o.l}</option>
           ))}
         </select>
+        <select
+          value={dateFilter}
+          onChange={(e) => setDateFilter(e.target.value)}
+          className="rounded-xl border border-white/10 bg-pine px-3 py-2.5 text-sm text-bone outline-none focus:border-ball"
+        >
+          {PERIODS.map((p) => (
+            <option key={p.k} value={p.k} style={{ color: '#0D0D0D', background: '#fff' }}>{p.k === 'all' ? 'כל התאריכים' : p.l}</option>
+          ))}
+        </select>
         <button
           onClick={sendTestEmail}
           disabled={emailBusy === 'test'}
@@ -819,6 +849,7 @@ const OrdersView = ({ orders, shipments, customers, onChanged, onDelete }) => {
                     {trackingField(order, shipment, 'w-full')}
                   </div>
                 </div>
+                {noteField(order, 'w-full')}
                 <div className="border-t border-white/10 pt-2">{rowActions(row)}</div>
               </div>
             );
@@ -828,10 +859,10 @@ const OrdersView = ({ orders, shipments, customers, onChanged, onDelete }) => {
 
       {/* Desktop: table */}
       <div className="hidden overflow-x-auto rounded-2xl ring-1 ring-white/10 md:block">
-      <table className="w-full min-w-[900px] text-right text-sm">
+      <table className="w-full min-w-[1040px] text-right text-sm">
         <thead className="bg-pine text-bone/60">
           <tr>
-            {['מס׳ הזמנה', 'שם לקוח', 'כתובת', 'צבע', 'כמות', 'סכום', 'סטטוס תשלום', 'מייל אישור', 'סטטוס משלוח', 'מספר מעקב', 'תאריך הזמנה'].map((h) => (
+            {['מס׳ הזמנה', 'שם לקוח', 'כתובת', 'צבע', 'כמות', 'סכום', 'סטטוס תשלום', 'מייל אישור', 'סטטוס משלוח', 'מספר מעקב', 'הערה', 'תאריך הזמנה'].map((h) => (
               <th key={h} className="whitespace-nowrap px-4 py-3 font-medium">{h}</th>
             ))}
             <th className="px-4 py-3" />
@@ -839,7 +870,7 @@ const OrdersView = ({ orders, shipments, customers, onChanged, onDelete }) => {
         </thead>
         <tbody className="divide-y divide-white/5">
           {rows.length === 0 ? (
-            <tr><td colSpan={12} className="px-4 py-10 text-center text-bone/50">אין הזמנות להצגה</td></tr>
+            <tr><td colSpan={13} className="px-4 py-10 text-center text-bone/50">אין הזמנות להצגה</td></tr>
           ) : (
             rows.map((row) => {
               const { order, shipment, seq } = row;
@@ -857,6 +888,7 @@ const OrdersView = ({ orders, shipments, customers, onChanged, onDelete }) => {
                   </td>
                   <td className="whitespace-nowrap px-4 py-3">{shipSelect(order, shipment)}</td>
                   <td className="whitespace-nowrap px-4 py-3">{trackingField(order, shipment)}</td>
+                  <td className="px-4 py-3">{noteField(order, 'w-40')}</td>
                   <td className="whitespace-nowrap px-4 py-3 text-bone/70">{fmtDate(order.created_at)}</td>
                   <td className="whitespace-nowrap px-4 py-3 text-left">{rowActions(row, 'flex-nowrap')}</td>
                 </tr>
@@ -1046,6 +1078,147 @@ const AbandonedView = ({ orders, shipments, customers, onChanged, onDelete }) =>
             )}
           </tbody>
         </table>
+      </div>
+    </div>
+  );
+};
+
+/* ================================================================== */
+/*  Sales by period + Meta ad performance                             */
+/* ================================================================== */
+
+const PERIODS = [
+  { k: 'today', l: 'היום' },
+  { k: 'week', l: 'השבוע' },
+  { k: 'month', l: 'החודש' },
+  { k: 'all', l: 'הכל' },
+];
+const PAID = ['paid', 'shipped', 'delivered'];
+
+// Start of a period in local (Israel) time; the week starts on Sunday.
+function periodStart(k) {
+  if (k === 'all') return null;
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  if (k === 'week') d.setDate(d.getDate() - d.getDay());
+  if (k === 'month') d.setDate(1);
+  return d;
+}
+const inPeriod = (row, k) => {
+  const start = periodStart(k);
+  return !start || new Date(row.created_at) >= start;
+};
+const ymd = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const ils = (n) => `₪${Math.round(n).toLocaleString('he-IL')}`;
+
+async function adminAdsCall(payload) {
+  const { data } = await supabase.auth.getSession();
+  const r = await fetch('/api/admin-ads', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${data.session?.access_token || ''}` },
+    body: JSON.stringify(payload),
+  });
+  return r.json().catch(() => ({ configured: true, error: `HTTP ${r.status}` }));
+}
+
+const Metric = ({ label, value, hint, tone }) => (
+  <div className="rounded-2xl bg-pine/60 p-3 ring-1 ring-white/10 sm:p-4">
+    <p className="text-xs text-bone/50">{label}</p>
+    <p className={`mt-1 text-xl font-bold sm:text-2xl ${tone || 'text-bone'}`}>{value}</p>
+    {hint && <p className="mt-0.5 text-[11px] text-bone/40">{hint}</p>}
+  </div>
+);
+
+const PerformancePanel = ({ orders }) => {
+  const [period, setPeriod] = useState('today');
+  const [ads, setAds] = useState(null);
+  const paid = orders.filter((o) => PAID.includes(o.status));
+
+  const sales = (k) => {
+    const list = paid.filter((o) => inPeriod(o, k));
+    return { count: list.length, revenue: list.reduce((s, o) => s + (Number(o.amount) || 0), 0) };
+  };
+
+  useEffect(() => {
+    let alive = true;
+    setAds(null);
+    const start = periodStart(period);
+    adminAdsCall(start ? { since: ymd(start), until: ymd(new Date()) } : {}).then((r) => alive && setAds(r));
+    return () => { alive = false; };
+  }, [period]);
+
+  const cur = sales(period);
+  const spend = ads?.spend || 0;
+  const roas = spend ? cur.revenue / spend : null;
+  const loadingAds = ads === null;
+  const adsReady = ads && ads.configured && !ads.error;
+
+  return (
+    <div className="mt-6 space-y-4">
+      {/* Sales: today / this week / this month */}
+      <div className="grid grid-cols-3 gap-2 sm:gap-4">
+        {PERIODS.slice(0, 3).map((p) => {
+          const s = sales(p.k);
+          return (
+            <div key={p.k} className="rounded-2xl bg-pine/60 p-3 ring-1 ring-white/10 sm:p-4">
+              <p className="text-xs text-bone/50">{p.l}</p>
+              <p className="mt-1 text-lg font-bold text-bone sm:text-2xl">{ils(s.revenue)}</p>
+              <p className="text-xs text-bone/60">{s.count} הזמנות</p>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Ads vs revenue for the selected period */}
+      <div className="rounded-2xl bg-pine/40 p-4 ring-1 ring-white/10">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="font-semibold text-bone">פרסום מול מכירות</h2>
+          <div className="flex gap-1 rounded-full bg-ink/60 p-1">
+            {PERIODS.map((p) => (
+              <button
+                key={p.k}
+                onClick={() => setPeriod(p.k)}
+                className={`rounded-full px-3 py-1.5 text-xs font-medium ${period === p.k ? 'bg-ball text-ink' : 'text-bone/70 hover:text-bone'}`}
+              >
+                {p.l}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {ads && !ads.configured ? (
+          <p className="mt-3 text-sm text-bone/60">
+            כדי לראות כאן את נתוני הקמפיין יש להגדיר ב-Vercel את <span dir="ltr" className="font-mono">META_ADS_TOKEN</span> — טוקן של Meta עם הרשאת ads_read לחשבון המודעות.
+          </p>
+        ) : ads?.error ? (
+          <p className="mt-3 rounded-xl bg-rose-400/10 px-3 py-2 text-sm text-rose-300">לא הצלחתי למשוך נתונים מ-Meta: {ads.error}</p>
+        ) : null}
+
+        <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
+          <Metric label="הכנסות" value={ils(cur.revenue)} hint={`${cur.count} הזמנות ששולמו`} />
+          <Metric label="הוצאה על פרסום" value={loadingAds ? '…' : adsReady ? ils(spend) : '—'} />
+          <Metric
+            label="החזר על הפרסום (ROAS)"
+            value={loadingAds ? '…' : adsReady && roas !== null ? `×${roas.toFixed(2)}` : '—'}
+            hint="הכנסות ÷ הוצאה"
+            tone={roas === null ? undefined : roas >= 1 ? 'text-emerald-300' : 'text-rose-300'}
+          />
+          <Metric
+            label="נשאר אחרי פרסום"
+            value={loadingAds ? '…' : adsReady ? ils(cur.revenue - spend) : '—'}
+            hint="לפני עלות מוצר ומשלוח"
+          />
+          <Metric label="קליקים לאתר" value={loadingAds ? '…' : adsReady ? ads.clicks.toLocaleString('he-IL') : '—'} />
+          <Metric label="רכישות לפי Meta" value={loadingAds ? '…' : adsReady ? ads.purchases : '—'} />
+          <Metric
+            label="עלות לרכישה"
+            value={loadingAds ? '…' : adsReady && ads.costPerPurchase !== null ? ils(ads.costPerPurchase) : '—'}
+          />
+          <Metric
+            label="עלות לקליק"
+            value={loadingAds ? '…' : adsReady && ads.clicks ? `₪${(spend / ads.clicks).toFixed(2)}` : '—'}
+          />
+        </div>
       </div>
     </div>
   );
@@ -1396,6 +1569,8 @@ const Dashboard = ({ session }) => {
           <StatCard label="לקוחות" value={data.customers.length} />
           <StatCard label="הכנסות" value={`₪${totalRevenue.toLocaleString('he-IL')}`} />
         </div>
+
+        <PerformancePanel orders={data.orders} />
 
         <div className="mt-8 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="flex gap-1 overflow-x-auto rounded-full bg-pine p-1">
