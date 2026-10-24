@@ -187,6 +187,17 @@ export default function PayPage() {
     document.title = 'הזמנה · NETCAM';
     fbEvent('InitiateCheckout', { ...CONTENT, value: Number(amount) || 89, currency: 'ILS', num_items: 1 });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Hyp's helper that lets the Apple Pay button work inside the payment iframe
+  // (needs the domain file in public/.well-known and the domain registered in Hyp).
+  useEffect(() => {
+    const src = 'https://pps.creditguard.co.il/plugins/applePayOnIframe.js';
+    if (document.querySelector(`script[src="${src}"]`)) return;
+    const s = document.createElement('script');
+    s.src = src;
+    s.async = true;
+    document.head.appendChild(s);
+  }, []);
   const [url, setUrl] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
