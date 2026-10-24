@@ -169,8 +169,49 @@ const Login = () => {
 
 const Table = ({ columns, rows, onEdit, onDelete }) => {
   const hasActions = onEdit || onDelete;
+  const actions = (row) => (
+    <div className="flex items-center justify-end gap-1">
+      {onEdit && (
+        <button
+          onClick={() => onEdit(row)}
+          className="rounded-lg px-2 py-1.5 text-xs text-bone/70 hover:bg-white/10 hover:text-bone"
+        >
+          עריכה
+        </button>
+      )}
+      {onDelete && (
+        <button
+          onClick={() => onDelete(row)}
+          className="rounded-lg px-2 py-1.5 text-xs text-rose-400 hover:bg-rose-400/10"
+        >
+          מחיקה
+        </button>
+      )}
+    </div>
+  );
   return (
-    <div className="overflow-x-auto rounded-2xl ring-1 ring-white/10">
+    <>
+    {/* Phone: one card per row, label: value */}
+    <div className="space-y-3 md:hidden">
+      {rows.length === 0 ? (
+        <p className="rounded-2xl px-4 py-10 text-center text-bone/50 ring-1 ring-white/10">אין נתונים להצגה</p>
+      ) : (
+        rows.map((row) => (
+          <div key={row.id} className="rounded-2xl bg-pine/60 p-4 ring-1 ring-white/10">
+            <dl className="space-y-1.5 text-sm">
+              {columns.map((c) => (
+                <div key={c.key} className="flex justify-between gap-3">
+                  <dt className="shrink-0 text-bone/50">{c.label}</dt>
+                  <dd className="min-w-0 truncate text-bone/90">{c.render ? c.render(row) : (row[c.key] ?? '—')}</dd>
+                </div>
+              ))}
+            </dl>
+            {hasActions && <div className="mt-2 border-t border-white/10 pt-2">{actions(row)}</div>}
+          </div>
+        ))
+      )}
+    </div>
+    <div className="hidden overflow-x-auto rounded-2xl ring-1 ring-white/10 md:block">
       <table className="w-full min-w-[640px] text-right text-sm">
         <thead className="bg-pine text-bone/60">
           <tr>
@@ -194,26 +235,7 @@ const Table = ({ columns, rows, onEdit, onDelete }) => {
                   </td>
                 ))}
                 {hasActions && (
-                  <td className="whitespace-nowrap px-4 py-3 text-left">
-                    <div className="flex items-center justify-end gap-1">
-                      {onEdit && (
-                        <button
-                          onClick={() => onEdit(row)}
-                          className="rounded-lg px-2 py-1 text-xs text-bone/70 hover:bg-white/10 hover:text-bone"
-                        >
-                          עריכה
-                        </button>
-                      )}
-                      {onDelete && (
-                        <button
-                          onClick={() => onDelete(row)}
-                          className="rounded-lg px-2 py-1 text-xs text-rose-400 hover:bg-rose-400/10"
-                        >
-                          מחיקה
-                        </button>
-                      )}
-                    </div>
-                  </td>
+                  <td className="whitespace-nowrap px-4 py-3 text-left">{actions(row)}</td>
                 )}
               </tr>
             ))
@@ -221,6 +243,7 @@ const Table = ({ columns, rows, onEdit, onDelete }) => {
         </tbody>
       </table>
     </div>
+    </>
   );
 };
 
@@ -617,19 +640,121 @@ const OrdersView = ({ orders, shipments, customers, onChanged, onDelete }) => {
     else window.alert(error.message);
   };
 
+  const colorChip = (order) => {
+    const c = colorFromProduct(order.product);
+    return c ? (
+      <span className="inline-flex items-center gap-1.5">
+        <span className="h-3 w-3 rounded-full ring-1 ring-white/30" style={{ backgroundColor: c.hex }} />
+        {c.he}
+      </span>
+    ) : '—';
+  };
+
+  // Payment status — green = שולם, red = שגיאה (by selected value).
+  const paySelect = (order) => {
+    const payVal = order.status === 'cancelled' ? 'cancelled' : 'paid';
+    const cls = payVal === 'paid'
+      ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+      : 'bg-rose-500/20 text-rose-300 border-rose-500/40';
+    return (
+      <select
+        value={payVal}
+        onChange={(e) => setPayment(order, e.target.value)}
+        className={`rounded-lg border px-2 py-1.5 text-xs font-semibold outline-none ${cls}`}
+      >
+        {PAY_OPTIONS.map((o) => (
+          <option key={o.v} value={o.v} style={{ color: '#0D0D0D', background: '#fff' }}>{o.l}</option>
+        ))}
+      </select>
+    );
+  };
+
+  const shipSelect = (order, shipment) => (
+    <select
+      value={shipment?.status || 'pending'}
+      onChange={(e) => setShipment(order, shipment, { status: e.target.value })}
+      className="rounded-lg border border-white/20 bg-white/10 px-2 py-1.5 text-xs font-semibold text-bone outline-none"
+    >
+      {SHIP_OPTIONS.map((o) => (
+        <option key={o.v} value={o.v} style={{ color: '#0D0D0D', background: '#fff' }}>{o.l}</option>
+      ))}
+    </select>
+  );
+
+  // Tracking number (editable; links to 17track when set).
+  const trackingField = (order, shipment, inputClass = 'w-32') => (
+    <div className="flex items-center gap-2" dir="ltr">
+      <input
+        defaultValue={shipment?.tracking_number || ''}
+        placeholder="—"
+        onBlur={(e) => {
+          const v = e.target.value.trim();
+          if (v !== (shipment?.tracking_number || '')) setShipment(order, shipment, { tracking_number: v || null });
+        }}
+        className={`${inputClass} rounded-lg border border-white/10 bg-pine px-2 py-1 text-xs text-bone outline-none focus:border-ball`}
+      />
+      {shipment?.tracking_number && (
+        <a
+          href={`https://www.17track.net/en/track?nums=${encodeURIComponent(shipment.tracking_number)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-ball hover:text-white"
+          title="עקוב ב-17track"
+        >
+          ↗
+        </a>
+      )}
+    </div>
+  );
+
+  const rowActions = ({ order, shipment, phone, email }, wrap = 'flex-wrap') => (
+    <div className={`flex ${wrap} items-center justify-end gap-1`}>
+      <button
+        onClick={async () => {
+          const text = supplierBlock({ order, shipment, phone, email });
+          try {
+            await navigator.clipboard.writeText(text);
+            window.alert('הפרטים הועתקו — הדבק לספק בוואטסאפ.');
+          } catch {
+            window.prompt('העתק את הפרטים לספק:', text);
+          }
+        }}
+        className="rounded-lg px-2 py-1.5 text-xs text-ball hover:bg-white/10"
+        title="העתק פרטים לספק (אנגלית)"
+      >
+        📋 ספק
+      </button>
+      <a
+        href={`https://wa.me/?text=${encodeURIComponent(supplierBlock({ order, shipment, phone, email }))}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="rounded-lg px-2 py-1.5 text-xs text-emerald-300 hover:bg-white/10"
+        title="שלח לספק בוואטסאפ"
+      >
+        וואטסאפ
+      </a>
+      <button
+        onClick={() => onDelete(order)}
+        className="rounded-lg px-2 py-1.5 text-xs text-rose-400 hover:bg-rose-400/10"
+      >
+        מחיקה
+      </button>
+    </div>
+  );
+
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3">
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="חיפוש לפי שם או טלפון…"
-          className="w-full max-w-xs rounded-xl border border-white/10 bg-pine px-4 py-2.5 text-sm text-bone placeholder-bone/40 outline-none focus:border-ball"
+          className="w-full rounded-xl border border-white/10 bg-pine px-4 py-2.5 text-sm text-bone placeholder-bone/40 outline-none focus:border-ball sm:max-w-xs"
         />
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="rounded-xl border border-white/10 bg-pine px-3 py-2.5 text-sm text-bone outline-none focus:border-ball"
+          className="flex-1 rounded-xl border border-white/10 bg-pine px-3 py-2.5 text-sm text-bone outline-none focus:border-ball sm:flex-none"
         >
           <option value="all" style={{ color: '#0D0D0D', background: '#fff' }}>כל סטטוסי המשלוח</option>
           {SHIP_OPTIONS.map((o) => (
@@ -639,20 +764,70 @@ const OrdersView = ({ orders, shipments, customers, onChanged, onDelete }) => {
         <button
           onClick={sendTestEmail}
           disabled={emailBusy === 'test'}
-          className="rounded-xl border border-white/15 px-4 py-2.5 text-sm font-medium text-bone hover:bg-white/10 disabled:opacity-50"
+          className="rounded-xl border border-white/15 px-3 py-2.5 text-sm font-medium text-bone hover:bg-white/10 disabled:opacity-50 sm:px-4"
         >
-          {emailBusy === 'test' ? 'שולח…' : '✉ שלח מייל בדיקה'}
+          {emailBusy === 'test' ? 'שולח…' : '✉ מייל בדיקה'}
         </button>
         <button
           onClick={exportCsv}
-          className="rounded-xl border border-white/15 px-4 py-2.5 text-sm font-medium text-bone hover:bg-white/10"
+          className="rounded-xl border border-white/15 px-3 py-2.5 text-sm font-medium text-bone hover:bg-white/10 sm:px-4"
         >
-          ⭳ ייצוא CSV
+          ⭳ CSV
         </button>
         <span className="text-xs text-bone/50">{rows.length} תוצאות</span>
       </div>
 
-      <div className="overflow-x-auto rounded-2xl ring-1 ring-white/10">
+      {/* Phone: one card per order */}
+      <div className="space-y-3 md:hidden">
+        {rows.length === 0 ? (
+          <p className="rounded-2xl px-4 py-10 text-center text-bone/50 ring-1 ring-white/10">אין הזמנות להצגה</p>
+        ) : (
+          rows.map((row) => {
+            const { order, shipment, seq, phone } = row;
+            return (
+              <div key={order.id} className="space-y-3 rounded-2xl bg-pine/60 p-4 ring-1 ring-white/10">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="font-semibold text-bone">#{seq} · {order.customer_name || '—'}</p>
+                    {phone && <a href={`tel:${phone}`} dir="ltr" className="text-sm text-bone/70">{phone}</a>}
+                  </div>
+                  <div className="text-left">
+                    <p className="font-semibold text-bone">{order.amount != null ? `₪${order.amount}` : '—'}</p>
+                    <p className="text-xs text-bone/50">{fmtDate(order.created_at)}</p>
+                  </div>
+                </div>
+                <p className="text-sm text-bone/80">{shipment?.address || '—'}</p>
+                <div className="flex items-center gap-3 text-sm text-bone/80">
+                  {colorChip(order)}
+                  <span>× {order.quantity ?? 1}</span>
+                </div>
+                <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-xs text-bone/60">
+                  <div className="space-y-1">
+                    <p>תשלום</p>
+                    {paySelect(order)}
+                  </div>
+                  <div className="space-y-1">
+                    <p>משלוח</p>
+                    {shipSelect(order, shipment)}
+                  </div>
+                  <div className="space-y-1">
+                    <p>מייל אישור</p>
+                    <EmailStatus order={order} busy={emailBusy === order.id} onResend={() => resendEmail(order)} />
+                  </div>
+                  <div className="space-y-1">
+                    <p>מספר מעקב</p>
+                    {trackingField(order, shipment, 'w-full')}
+                  </div>
+                </div>
+                <div className="border-t border-white/10 pt-2">{rowActions(row)}</div>
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      {/* Desktop: table */}
+      <div className="hidden overflow-x-auto rounded-2xl ring-1 ring-white/10 md:block">
       <table className="w-full min-w-[900px] text-right text-sm">
         <thead className="bg-pine text-bone/60">
           <tr>
@@ -666,125 +841,27 @@ const OrdersView = ({ orders, shipments, customers, onChanged, onDelete }) => {
           {rows.length === 0 ? (
             <tr><td colSpan={12} className="px-4 py-10 text-center text-bone/50">אין הזמנות להצגה</td></tr>
           ) : (
-            rows.map(({ order, shipment, seq, phone, email }) => (
-              <tr key={order.id} className="text-bone/90">
-                <td className="whitespace-nowrap px-4 py-3 font-semibold">#{seq}</td>
-                <td className="whitespace-nowrap px-4 py-3">{order.customer_name || '—'}</td>
-                <td className="max-w-[220px] truncate px-4 py-3" title={shipment?.address || ''}>{shipment?.address || '—'}</td>
-                <td className="whitespace-nowrap px-4 py-3">
-                  {colorFromProduct(order.product) ? (
-                    <span className="inline-flex items-center gap-1.5">
-                      <span className="h-3 w-3 rounded-full ring-1 ring-white/30" style={{ backgroundColor: colorFromProduct(order.product).hex }} />
-                      {colorFromProduct(order.product).he}
-                    </span>
-                  ) : '—'}
-                </td>
-                <td className="whitespace-nowrap px-4 py-3">{order.quantity ?? 1}</td>
-                <td className="whitespace-nowrap px-4 py-3">{order.amount != null ? `₪${order.amount}` : '—'}</td>
-
-                {/* Payment status — green = שולם, red = שגיאה (by selected value) */}
-                <td className="whitespace-nowrap px-4 py-3">
-                  {(() => {
-                    const payVal = order.status === 'cancelled' ? 'cancelled' : 'paid';
-                    const cls = payVal === 'paid'
-                      ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
-                      : 'bg-rose-500/20 text-rose-300 border-rose-500/40';
-                    return (
-                      <select
-                        value={payVal}
-                        onChange={(e) => setPayment(order, e.target.value)}
-                        className={`rounded-lg border px-2 py-1.5 text-xs font-semibold outline-none ${cls}`}
-                      >
-                        {PAY_OPTIONS.map((o) => (
-                          <option key={o.v} value={o.v} style={{ color: '#0D0D0D', background: '#fff' }}>{o.l}</option>
-                        ))}
-                      </select>
-                    );
-                  })()}
-                </td>
-
-                {/* Confirmation email */}
-                <td className="whitespace-nowrap px-4 py-3">
-                  <EmailStatus order={order} busy={emailBusy === order.id} onResend={() => resendEmail(order)} />
-                </td>
-
-                {/* Shipment status */}
-                <td className="whitespace-nowrap px-4 py-3">
-                  <select
-                    value={shipment?.status || 'pending'}
-                    onChange={(e) => setShipment(order, shipment, { status: e.target.value })}
-                    className="rounded-lg border border-white/20 bg-white/10 px-2 py-1.5 text-xs font-semibold text-bone outline-none"
-                  >
-                    {SHIP_OPTIONS.map((o) => (
-                      <option key={o.v} value={o.v} style={{ color: '#0D0D0D', background: '#fff' }}>{o.l}</option>
-                    ))}
-                  </select>
-                </td>
-
-                {/* Tracking number (editable; links to 17track when set) */}
-                <td className="whitespace-nowrap px-4 py-3" dir="ltr">
-                  <div className="flex items-center gap-2">
-                    <input
-                      defaultValue={shipment?.tracking_number || ''}
-                      placeholder="—"
-                      onBlur={(e) => {
-                        const v = e.target.value.trim();
-                        if (v !== (shipment?.tracking_number || '')) setShipment(order, shipment, { tracking_number: v || null });
-                      }}
-                      className="w-32 rounded-lg border border-white/10 bg-pine px-2 py-1 text-xs text-bone outline-none focus:border-ball"
-                    />
-                    {shipment?.tracking_number && (
-                      <a
-                        href={`https://www.17track.net/en/track?nums=${encodeURIComponent(shipment.tracking_number)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-ball hover:text-white"
-                        title="עקוב ב-17track"
-                      >
-                        ↗
-                      </a>
-                    )}
-                  </div>
-                </td>
-
-                <td className="whitespace-nowrap px-4 py-3 text-bone/70">{fmtDate(order.created_at)}</td>
-
-                <td className="whitespace-nowrap px-4 py-3 text-left">
-                  <div className="flex items-center justify-end gap-1">
-                    <button
-                      onClick={async () => {
-                        const text = supplierBlock({ order, shipment, phone, email });
-                        try {
-                          await navigator.clipboard.writeText(text);
-                          window.alert('הפרטים הועתקו — הדבק לספק בוואטסאפ.');
-                        } catch {
-                          window.prompt('העתק את הפרטים לספק:', text);
-                        }
-                      }}
-                      className="rounded-lg px-2 py-1 text-xs text-ball hover:bg-white/10"
-                      title="העתק פרטים לספק (אנגלית)"
-                    >
-                      📋 ספק
-                    </button>
-                    <a
-                      href={`https://wa.me/?text=${encodeURIComponent(supplierBlock({ order, shipment, phone, email }))}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="rounded-lg px-2 py-1 text-xs text-emerald-300 hover:bg-white/10"
-                      title="שלח לספק בוואטסאפ"
-                    >
-                      וואטסאפ
-                    </a>
-                    <button
-                      onClick={() => onDelete(order)}
-                      className="rounded-lg px-2 py-1 text-xs text-rose-400 hover:bg-rose-400/10"
-                    >
-                      מחיקה
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))
+            rows.map((row) => {
+              const { order, shipment, seq } = row;
+              return (
+                <tr key={order.id} className="text-bone/90">
+                  <td className="whitespace-nowrap px-4 py-3 font-semibold">#{seq}</td>
+                  <td className="whitespace-nowrap px-4 py-3">{order.customer_name || '—'}</td>
+                  <td className="max-w-[220px] truncate px-4 py-3" title={shipment?.address || ''}>{shipment?.address || '—'}</td>
+                  <td className="whitespace-nowrap px-4 py-3">{colorChip(order)}</td>
+                  <td className="whitespace-nowrap px-4 py-3">{order.quantity ?? 1}</td>
+                  <td className="whitespace-nowrap px-4 py-3">{order.amount != null ? `₪${order.amount}` : '—'}</td>
+                  <td className="whitespace-nowrap px-4 py-3">{paySelect(order)}</td>
+                  <td className="whitespace-nowrap px-4 py-3">
+                    <EmailStatus order={order} busy={emailBusy === order.id} onResend={() => resendEmail(order)} />
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3">{shipSelect(order, shipment)}</td>
+                  <td className="whitespace-nowrap px-4 py-3">{trackingField(order, shipment)}</td>
+                  <td className="whitespace-nowrap px-4 py-3 text-bone/70">{fmtDate(order.created_at)}</td>
+                  <td className="whitespace-nowrap px-4 py-3 text-left">{rowActions(row, 'flex-nowrap')}</td>
+                </tr>
+              );
+            })
           )}
         </tbody>
       </table>
@@ -831,7 +908,68 @@ const AbandonedView = ({ orders, shipments, customers, onChanged, onDelete }) =>
       <p className="text-sm text-bone/60">
         לקוחות שמילאו פרטים והגיעו לדף התשלום אבל לא שילמו. הזמנה שתשולם תעבור אוטומטית ללשונית ״הזמנות״.
       </p>
-      <div className="overflow-x-auto rounded-2xl ring-1 ring-white/10">
+
+      {/* Phone: one card per cart */}
+      <div className="space-y-3 md:hidden">
+        {rows.length === 0 ? (
+          <p className="rounded-2xl px-4 py-10 text-center text-bone/50 ring-1 ring-white/10">אין עגלות נטושות</p>
+        ) : (
+          rows.map(({ order, shipment, customer }) => {
+            const phone = customer?.phone || '';
+            const waPhone = intlPhone(phone).replace(/\D/g, '');
+            const fresh = Date.now() - new Date(order.created_at) < IN_PAYMENT_MS;
+            const color = colorFromProduct(order.product);
+            return (
+              <div key={order.id} className="space-y-2 rounded-2xl bg-pine/60 p-4 ring-1 ring-white/10">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-semibold text-bone">{order.customer_name || '—'}</p>
+                    {phone && <a href={`tel:${phone}`} dir="ltr" className="block text-right text-sm text-bone/70">{phone}</a>}
+                    {customer?.email && <p dir="ltr" className="truncate text-right text-xs text-bone/50">{customer.email}</p>}
+                  </div>
+                  <div className="shrink-0 text-left">
+                    <p className="font-semibold text-bone">{order.amount != null ? `₪${order.amount}` : '—'}</p>
+                    <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${fresh ? 'bg-amber-400/15 text-amber-300' : 'bg-white/10 text-bone/70'}`}>
+                      {fresh ? 'בתהליך תשלום' : 'נטושה'}
+                    </span>
+                  </div>
+                </div>
+                <p className="text-sm text-bone/80">{shipment?.address || '—'}</p>
+                <div className="flex items-center gap-3 text-sm text-bone/70">
+                  {color && (
+                    <span className="inline-flex items-center gap-1.5">
+                      <span className="h-3 w-3 rounded-full ring-1 ring-white/30" style={{ backgroundColor: color.hex }} />
+                      {color.he}
+                    </span>
+                  )}
+                  <span>× {order.quantity ?? 1}</span>
+                  <span className="mr-auto text-xs text-bone/50">{sinceLabel(order.created_at)}</span>
+                </div>
+                <div className="flex flex-wrap items-center justify-end gap-1 border-t border-white/10 pt-2">
+                  {waPhone && (
+                    <a
+                      href={`https://wa.me/${waPhone}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="rounded-lg px-2 py-1.5 text-xs text-emerald-300 hover:bg-white/10"
+                    >
+                      וואטסאפ
+                    </a>
+                  )}
+                  <button onClick={() => markPaid(order)} className="rounded-lg px-2 py-1.5 text-xs text-ball hover:bg-white/10">
+                    סמן כשולם
+                  </button>
+                  <button onClick={() => onDelete(order)} className="rounded-lg px-2 py-1.5 text-xs text-rose-400 hover:bg-rose-400/10">
+                    מחיקה
+                  </button>
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      <div className="hidden overflow-x-auto rounded-2xl ring-1 ring-white/10 md:block">
         <table className="w-full min-w-[900px] text-right text-sm">
           <thead className="bg-pine text-bone/60">
             <tr>
@@ -1259,13 +1397,13 @@ const Dashboard = ({ session }) => {
           <StatCard label="הכנסות" value={`₪${totalRevenue.toLocaleString('he-IL')}`} />
         </div>
 
-        <div className="mt-8 flex items-center justify-between">
-          <div className="flex gap-1 rounded-full bg-pine p-1">
+        <div className="mt-8 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div className="flex gap-1 overflow-x-auto rounded-full bg-pine p-1">
             {TABS.map((t) => (
               <button
                 key={t.key}
                 onClick={() => setTab(t.key)}
-                className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                className={`shrink-0 whitespace-nowrap rounded-full px-3 py-2 text-sm font-medium transition sm:px-4 ${
                   tab === t.key ? 'bg-ball text-ink' : 'text-bone/70 hover:text-bone'
                 }`}
               >
@@ -1274,7 +1412,7 @@ const Dashboard = ({ session }) => {
               </button>
             ))}
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {tab !== 'analytics' && tab !== 'abandoned' && (
               <button
                 onClick={() => setAdding(true)}
