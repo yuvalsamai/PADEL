@@ -20,67 +20,12 @@ export const TRUST_ITEMS = [
   { icon: '🚚', label: 'משלוח חינם עד הדלת' },
 ];
 
-const TrustStrip = () => (
-  <section className="bg-ink px-5 py-8 sm:py-10">
-    <div className="mx-auto grid max-w-4xl grid-cols-1 gap-4 sm:grid-cols-2">
-      {TRUST_ITEMS.map((t) => (
-        <div
-          key={t.label}
-          className="flex items-center justify-center gap-4 rounded-2xl border border-white/10 bg-white/5 px-6 py-5"
-        >
-          <span className="text-3xl sm:text-4xl" aria-hidden="true">{t.icon}</span>
-          <span className="font-display text-lg font-bold text-bone sm:text-xl">{t.label}</span>
-        </div>
-      ))}
-    </div>
-    <a
-      href={INSTAGRAM_URL}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="group mx-auto mt-4 flex max-w-4xl flex-col items-center justify-center gap-4 rounded-2xl bg-ball px-6 py-6 text-center text-ink shadow-lg shadow-ball/20 transition-transform hover:scale-[1.01] sm:flex-row sm:gap-6 sm:py-7"
-    >
-      <span className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-ink text-ball sm:h-16 sm:w-16">
-        <Instagram size={34} strokeWidth={2.2} />
-      </span>
-      <span>
-        <span className="block font-display text-2xl font-black sm:text-3xl">יש לכם שאלה?</span>
-        <span className="mt-1 block text-lg font-semibold sm:text-xl">
-          אנחנו זמינים לכם בעמוד האינסטגרם שלנו
-        </span>
-        <span dir="ltr" className="mt-1 block text-base font-bold underline decoration-2 underline-offset-4">
-          {INSTAGRAM_HANDLE}
-        </span>
-      </span>
-    </a>
-  </section>
-);
-
 /* ================================================================== */
 /*  Primitives                                                       */
 /* ================================================================== */
 
-const Reveal = ({ children, delay = 0, className = '' }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 22 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true, margin: '-60px' }}
-    transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay }}
-    className={className}
-  >
-    {children}
-  </motion.div>
-);
-
 const Eyebrow = ({ children, className = '' }) => (
   <span className={`text-xs font-medium uppercase tracking-[0.18em] ${className}`}>{children}</span>
-);
-
-const ArrowChip = ({ className = '' }) => (
-  <span
-    className={`inline-flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-ball text-ink transition-transform group-hover:rotate-12 ${className}`}
-  >
-    <ArrowUpLeft size={20} strokeWidth={2.5} />
-  </span>
 );
 
 /* ================================================================== */
@@ -89,19 +34,16 @@ const ArrowChip = ({ className = '' }) => (
 
 const navLinks = [
   { label: 'בית', href: '#top' },
-  { label: 'יתרונות', href: '#features' },
   { label: 'איך זה עובד', href: '#how' },
-  { label: 'המוצר', href: '#product' },
-  { label: 'עין הנץ', href: '#hawkeye' },
   { label: 'שאלות', href: '#faq' },
 ];
 
 const Nav = () => {
   const [openMenu, setOpenMenu] = useState(false);
   return (
-    <header className="flex w-full items-center justify-between gap-3 border-b border-white/30 bg-bone/90 px-5 py-3 shadow-lg shadow-black/10 backdrop-blur-xl sm:px-8 lg:px-10">
+    <header className="relative flex w-full items-center justify-between gap-3 border-b border-white/30 bg-bone/90 px-4 py-1.5 shadow-lg shadow-black/10 backdrop-blur-xl sm:px-8 sm:py-2.5 lg:px-10">
       <a href="#top" aria-label="NETCAM" className="inline-flex items-center">
-        <Logo className="h-14 sm:h-16 lg:h-20" />
+        <Logo className="h-11 sm:h-14 lg:h-16" />
       </a>
 
       {/* desktop pill */}
@@ -144,7 +86,7 @@ const Nav = () => {
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
-            className="absolute inset-x-4 top-20 z-30 flex flex-col gap-1 rounded-3xl border border-white/15 bg-court/95 p-3 backdrop-blur-xl md:hidden"
+            className="absolute inset-x-4 top-full z-30 mt-2 flex flex-col gap-1 rounded-3xl border border-white/15 bg-court/95 p-3 backdrop-blur-xl md:hidden"
           >
             {navLinks.map((l) => (
               <a
@@ -167,12 +109,11 @@ const Nav = () => {
 };
 
 /* ================================================================== */
-/*  Hero                                                              */
+/*  Hero — the whole pitch on the first phone screen                  */
 /* ================================================================== */
 
-/* Hero video (top of the page). Clean — no background glow or poster flash;
-   falls back to a STATIC product image (no animation) if it can't load. */
-const HeroMedia = () => {
+/* Hero video. Falls back to a STATIC product image if it can't load. */
+const HeroMedia = ({ className = '' }) => {
   const [ok, setOk] = useState(true);
   // Moving content needs a pause control (WCAG 2.2.2). Start paused when the
   // visitor prefers reduced motion or turned animations off in the a11y menu.
@@ -199,289 +140,141 @@ const HeroMedia = () => {
     }
   };
   return (
-    <div className="flex items-center justify-center py-6 lg:py-0">
-      <div className="relative w-[min(72%,300px)] overflow-hidden rounded-3xl bg-ink shadow-2xl ring-1 ring-white/10 lg:w-[min(85%,360px)]" style={{ aspectRatio: '9 / 16' }}>
-        {ok ? (
-          <>
-            <video
-              ref={videoRef}
-              src={HERO_VIDEO}
-              poster={HERO_POSTER}
-              autoPlay
-              muted
-              loop
-              playsInline
-              preload="metadata"
-              aria-label="סרטון המחשה: תושבת NETCAM על רשת המגרש מצלמת משחק"
-              onError={() => setOk(false)}
-              className="h-full w-full object-cover"
-            />
-            <button
-              type="button"
-              onClick={toggle}
-              aria-label={playing ? 'עצירת הסרטון' : 'הפעלת הסרטון'}
-              className="absolute bottom-3 left-3 flex h-10 w-10 items-center justify-center rounded-full bg-ink/70 text-bone backdrop-blur hover:bg-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-ball"
-            >
-              {playing ? <Pause size={18} /> : <Play size={18} />}
-            </button>
-          </>
-        ) : (
-          <img src="/product.webp" alt="תושבת NETCAM" className="h-full w-full object-cover" />
-        )}
-      </div>
+    <div className={`relative overflow-hidden rounded-2xl bg-ink shadow-2xl ring-1 ring-white/15 lg:rounded-3xl ${className}`} style={{ aspectRatio: '9 / 16' }}>
+      {ok ? (
+        <>
+          <video
+            ref={videoRef}
+            src={HERO_VIDEO}
+            poster={HERO_POSTER}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            aria-label="סרטון המחשה: תושבת NETCAM על רשת המגרש מצלמת משחק"
+            onError={() => setOk(false)}
+            className="h-full w-full object-cover"
+          />
+          <button
+            type="button"
+            onClick={toggle}
+            aria-label={playing ? 'עצירת הסרטון' : 'הפעלת הסרטון'}
+            className="absolute bottom-2 left-2 flex h-9 w-9 items-center justify-center rounded-full bg-ink/70 text-bone backdrop-blur hover:bg-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-ball"
+          >
+            {playing ? <Pause size={16} /> : <Play size={16} />}
+          </button>
+        </>
+      ) : (
+        <img src="/product.webp" alt="תושבת NETCAM" className="h-full w-full object-cover" />
+      )}
     </div>
   );
 };
 
+const BULLETS = [
+  { icon: '📱', text: 'מתאים לכל טלפון' },
+  { icon: '⚡', text: 'מתלבש על הרשת בשניות' },
+  { icon: '🎾', text: 'פאדל וטניס' },
+  { icon: '🏆', text: 'מכריע כל ויכוח על קו' },
+];
 
 const Hero = () => (
   <section id="top" className="relative isolate overflow-hidden">
-    {/* background photo + court gradient fallback */}
     <div
       className="absolute inset-0 -z-10 bg-court"
       style={{
-        backgroundImage: `linear-gradient(180deg, rgba(17,24,19,0.5) 0%, rgba(17,24,19,0.35) 42%, rgba(17,24,19,0.7) 100%), linear-gradient(270deg, rgba(17,24,19,0.15) 0%, rgba(17,24,19,0.45) 100%), url(${HERO_IMG})`,
+        backgroundImage: `linear-gradient(180deg, rgba(17,24,19,0.72) 0%, rgba(17,24,19,0.6) 50%, rgba(17,24,19,0.85) 100%), url(${HERO_IMG})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
       }}
     />
+    <Nav />
 
-    <div className="flex min-h-[92vh] flex-col">
-      <Nav />
-
-      <div id="main" tabIndex={-1} className="grid flex-1 items-center gap-8 p-5 outline-none sm:p-8 lg:grid-cols-2 lg:p-10">
-        {/* text column — right in RTL */}
-        <div className="flex flex-col justify-center gap-8">
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="max-w-3xl [text-shadow:_0_2px_16px_rgba(0,0,0,0.55)]"
-          >
-            <Eyebrow className="text-bone">מערכת הצילום למגרש · פאדל &amp; טניס</Eyebrow>
-            <h1 className="mt-5 font-display text-5xl font-black leading-[0.98] tracking-tight text-bone sm:text-7xl lg:text-7xl">
-              צלם כל נקודה.
-              <br />
-              שחק חכם יותר.
-            </h1>
-            <p className="mt-6 max-w-lg text-lg font-medium leading-relaxed text-bone">
-              תושבת שמתלבשת בשניות על רשת המגרש ומצלמת בזווית גבוהה ויציבה — לתוכן, לשיפור
-              הטכניקה ולהכרעת כל ויכוח על קו.
-            </p>
-          </motion.div>
-
-          {/* glass insight card */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.25 }}
-            className="flex w-full flex-col justify-between gap-6 rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur-md sm:max-w-sm"
-          >
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-sm text-bone/50 line-through">₪119.90</span>
-                  <span className="font-display text-2xl font-black text-ball">₪89</span>
-                </div>
-                <div className="text-xs font-medium text-bone/80">מחיר מבצע · משלוח חינם עד הדלת</div>
-              </div>
-              <span className="rounded-full bg-ball/15 px-3 py-1 text-xs font-bold text-ball">2 ב-₪149</span>
-            </div>
-            <a
-              href="/pay"
-              className="group flex w-full items-center justify-center gap-2 rounded-full bg-ball py-4 text-lg font-black text-ink shadow-lg shadow-ball/20 transition-transform hover:scale-[1.02]"
-            >
-              להזמנה · ₪89
-              <ArrowUpLeft size={20} strokeWidth={2.75} className="transition-transform group-hover:-translate-x-0.5 group-hover:-translate-y-0.5" />
-            </a>
-          </motion.div>
-        </div>
-
-        {/* product column — left in RTL */}
-        <HeroMedia />
+    {/* Phone: title / bullets + video side by side / price + CTA.
+        Desktop: text column + tall video column. */}
+    <div
+      id="main"
+      tabIndex={-1}
+      className="mx-auto grid max-w-6xl grid-cols-[1fr_minmax(0,36%)] items-center gap-x-4 gap-y-4 px-4 pb-6 pt-4 outline-none sm:px-8 lg:grid-cols-[1fr_340px] lg:gap-x-12 lg:gap-y-6 lg:py-14"
+    >
+      <div className="col-span-2 lg:col-span-1">
+        <Eyebrow className="text-bone/80">תושבת צילום לרשת · NETCAM</Eyebrow>
+        <h1 className="mt-2 font-display text-[2.35rem] font-black leading-[1.02] tracking-tight text-bone sm:text-6xl lg:text-7xl">
+          צלם כל נקודה.
+          <br />
+          שחק חכם יותר.
+        </h1>
       </div>
-    </div>
-  </section>
-);
 
-/* ================================================================== */
-/*  Features                                                          */
-/* ================================================================== */
-
-const features = [
-  {
-    tag: 'תוכן',
-    title: 'תוכן שנראה מקצועי',
-    desc: 'זווית גבוהה ויציבה שמפיקה סרטונים איכותיים לאינסטגרם או לטיקטוק.',
-  },
-  {
-    tag: 'עין הנץ',
-    title: 'השופט החדש שלכם',
-    desc: 'הכדור בפנים או בחוץ? מריצים אחורה את ההקלטה ורואים בדיוק איפה נחת. הכרעה, לא ויכוח.',
-  },
-  {
-    tag: 'טכניקה',
-    title: 'ניתוח ושיפור משחק',
-    desc: 'צופים במשחק מהצד, מזהים טעויות בתנועה ובחבטה, ומשתפרים מנקודה לנקודה.',
-  },
-  {
-    tag: 'מבנה',
-    title: 'התקנה מהירה ויציבות',
-    desc: 'אחיזה קשיחה שמתלבשת על הרשת בשניות ושומרת על זווית צילום יציבה גם בזמן משחק אינטנסיבי.',
-  },
-];
-
-const Features = () => (
-  <section id="features" className="bg-bone px-5 py-20 sm:px-8 sm:py-24">
-    <div className="mx-auto max-w-6xl">
-      <Reveal className="max-w-2xl">
-        <Eyebrow className="text-moss">למה זה נכנס לתיק המחבט</Eyebrow>
-        <h2 className="mt-4 font-display text-4xl font-black leading-tight tracking-tight text-ink sm:text-5xl">
-          כלי אחד. כל משחק נשמר, נבדק ומשתפר.
-        </h2>
-      </Reveal>
-
-      <div className="mt-14 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {features.map((f, i) => (
-          <Reveal key={f.title} delay={(i % 4) * 0.07}>
-            <div className="flex h-full flex-col justify-between rounded-3xl bg-chalk p-6 shadow-[0_1px_0_rgba(0,0,0,0.04)] ring-1 ring-ink/5">
-              <div className="mb-10 flex items-center justify-between">
-                <span className="rounded-full bg-ball/70 px-3 py-1 text-xs font-semibold text-ink">
-                  {f.tag}
-                </span>
-              </div>
-              <div>
-                <h3 className="font-display text-xl font-bold text-ink">{f.title}</h3>
-                <p className="mt-3 text-sm leading-relaxed text-ink/60">{f.desc}</p>
-              </div>
-            </div>
-          </Reveal>
+      <ul className="flex flex-col gap-2.5 self-center text-[15px] font-semibold text-bone sm:text-lg lg:col-start-1 lg:gap-3">
+        {BULLETS.map((b) => (
+          <li key={b.text} className="flex items-center gap-2">
+            <span aria-hidden="true" className="text-lg sm:text-xl">{b.icon}</span>
+            {b.text}
+          </li>
         ))}
-      </div>
+      </ul>
 
-      <Reveal className="mt-6">
-        <div className="overflow-hidden rounded-3xl ring-1 ring-ink/5">
-          <img
-            src="/feature.webp"
-            loading="lazy"
-            decoding="async"
-            alt="תושבת NETCAM ננעלת על עמוד הרשת ומצלמת משחק פאדל"
-            className="aspect-[16/9] w-full object-cover"
-          />
+      <HeroMedia className="w-full lg:col-start-2 lg:row-span-4 lg:row-start-1" />
+
+      <div className="col-span-2 rounded-3xl border border-white/15 bg-white/10 p-4 backdrop-blur-md lg:col-span-1 lg:max-w-md lg:p-5">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-baseline gap-2">
+            <span className="text-sm text-bone/60 line-through">₪119.90</span>
+            <span className="font-display text-3xl font-black text-ball">₪89</span>
+          </div>
+          <span className="rounded-full bg-ball px-3 py-1 text-sm font-black text-ink">2 ב-₪149</span>
         </div>
-      </Reveal>
+        <a
+          href="/pay"
+          className="group mt-3 flex w-full items-center justify-center gap-2 rounded-full bg-ball py-3.5 text-lg font-black text-ink shadow-lg shadow-ball/20 transition-transform hover:scale-[1.02]"
+        >
+          להזמנה
+          <ArrowUpLeft size={20} strokeWidth={2.75} className="transition-transform group-hover:-translate-x-0.5 group-hover:-translate-y-0.5" />
+        </a>
+        <p className="mt-2.5 text-center text-xs font-medium text-bone/80">
+          🚚 משלוח חינם עד הדלת · 7–12 ימי עסקים · 🔒 תשלום מאובטח
+        </p>
+      </div>
     </div>
   </section>
 );
 
 /* ================================================================== */
-/*  How it works — 3 steps                                           */
+/*  Why + how — one short section                                     */
 /* ================================================================== */
 
 const steps = [
-  {
-    n: '01',
-    title: 'מחברים',
-    desc: 'מחברים את NETCAM לרשת.',
-  },
-  {
-    n: '02',
-    title: 'מצלמים',
-    desc: 'מכניסים את הטלפון ומתחילים להקליט.',
-  },
-  {
-    n: '03',
-    title: 'משחקים',
-    desc: 'משחקים. יכולים לצפות במידה ויש מחלוקת על המהלך או סתם נקודה מדהימה.',
-  },
+  { n: '1', title: 'מחברים', desc: 'מלבישים את NETCAM על הרשת.' },
+  { n: '2', title: 'מצלמים', desc: 'מכניסים את הטלפון ולוחצים הקלטה.' },
+  { n: '3', title: 'משחקים', desc: 'ויש מחלוקת? מריצים אחורה ורואים.' },
 ];
 
-const Steps = () => (
-  <section id="how" className="bg-bone2 px-5 py-20 sm:px-8 sm:py-24">
-    <div className="mx-auto max-w-6xl">
-      <Reveal className="max-w-2xl">
-        <Eyebrow className="text-moss">איך זה עובד</Eyebrow>
-        <h2 className="mt-4 font-display text-4xl font-black leading-tight tracking-tight text-ink sm:text-5xl">
-          שלושה שלבים. פחות מדקה.
-        </h2>
-      </Reveal>
-
-      <div className="mt-14 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        {steps.map((s, i) => (
-          <Reveal key={s.n} delay={(i % 3) * 0.08}>
-            <div className="group flex h-full flex-col rounded-3xl bg-chalk p-7 ring-1 ring-ink/5 transition-all duration-300 hover:-translate-y-1 hover:ring-ink/15">
-              <span className="font-display text-5xl font-black leading-none text-ball">
-                {s.n}
-              </span>
-              <h3 className="mt-6 font-display text-2xl font-bold text-ink">{s.title}</h3>
-              <p className="mt-3 text-[15px] leading-relaxed text-ink/60">{s.desc}</p>
-            </div>
-          </Reveal>
+const HowItWorks = () => (
+  <section id="how" className="bg-bone px-4 py-10 sm:px-8 sm:py-16">
+    <div className="mx-auto max-w-5xl">
+      <h2 className="font-display text-3xl font-black leading-tight tracking-tight text-ink sm:text-4xl">
+        שלושה צעדים. פחות מדקה.
+      </h2>
+      <ol className="mt-5 grid grid-cols-3 gap-2 sm:gap-4">
+        {steps.map((s) => (
+          <li key={s.n} className="rounded-2xl bg-chalk p-3 ring-1 ring-ink/5 sm:p-5">
+            <span className="font-display text-3xl font-black leading-none text-moss sm:text-4xl">{s.n}</span>
+            <h3 className="mt-2 font-display text-base font-bold text-ink sm:text-xl">{s.title}</h3>
+            <p className="mt-1 text-xs leading-snug text-ink/60 sm:text-sm">{s.desc}</p>
+          </li>
         ))}
+      </ol>
+      <div className="mt-4 overflow-hidden rounded-2xl ring-1 ring-ink/5 sm:rounded-3xl">
+        <img
+          src="/STUND.webp"
+          loading="lazy"
+          decoding="async"
+          alt="תושבת NETCAM ננעלת על עמוד הרשת ומחזיקה את הטלפון"
+          className="aspect-[16/9] w-full object-cover"
+        />
       </div>
-    </div>
-  </section>
-);
-
-/* ================================================================== */
-/*  Product showcase — real photo of the mount on the net            */
-/*  Product photo: public/STUND.webp                                  */
-/* ================================================================== */
-
-const Showcase = () => (
-  <section id="product" className="bg-ink px-5 py-20 sm:px-8 sm:py-24">
-    <div className="mx-auto max-w-6xl">
-      <Reveal className="max-w-2xl">
-        <Eyebrow className="text-ball">המוצר בפעולה</Eyebrow>
-        <h2 className="mt-4 font-display text-4xl font-black leading-tight tracking-tight text-bone sm:text-5xl">
-          מתלבש על הרשת. מצלם מלמעלה.
-        </h2>
-        <p className="mt-5 max-w-lg text-lg leading-relaxed text-bone/70">
-          אחיזה קשיחה שננעלת על עמוד הרשת תוך שניות ומחזיקה את הטלפון בזווית גבוהה
-          ויציבה — בדיוק מהמקום שממנו רואים כל נקודה.
-        </p>
-      </Reveal>
-
-      <Reveal className="mt-14">
-        <div className="overflow-hidden rounded-3xl bg-pine ring-1 ring-white/10">
-          <img
-            src="/STUND.webp"
-            loading="lazy"
-            decoding="async"
-            alt="תושבת NETCAM ננעלת על עמוד הרשת ומחזיקה את הטלפון"
-            className="aspect-[16/9] w-full object-cover"
-          />
-        </div>
-      </Reveal>
-    </div>
-  </section>
-);
-
-/* ================================================================== */
-/*  Hawk-Eye band                                                     */
-/* ================================================================== */
-
-const HawkEye = () => (
-  <section id="hawkeye" className="bg-court px-5 py-20 sm:px-8 sm:py-28">
-    <div className="mx-auto max-w-3xl">
-      <Reveal>
-        <h2 className="font-display text-4xl font-black leading-[1.05] tracking-tight text-bone sm:text-6xl">
-          הכדור היה על הקו.
-          <br />
-          <span className="text-ball">עכשיו יש הוכחה.</span>
-        </h2>
-        <p className="mt-6 max-w-md text-lg leading-relaxed text-bone/75">
-          במקום לריב על סנטימטרים, פשוט מריצים את ההקלטה אחורה. הזווית הגבוהה והיציבה
-          של NETCAM הופכת כל נקודה שנויה במחלוקת להכרעה של שנייה.
-        </p>
-        <a
-          href="/pay"
-          className="group mt-9 inline-flex items-center gap-3 rounded-full bg-ball py-2 pl-2 pr-6 font-semibold text-ink transition-colors hover:bg-white"
-        >
-          לרכישה מהירה
-          <ArrowChip className="!bg-ink !text-ball" />
-        </a>
-      </Reveal>
     </div>
   </section>
 );
@@ -492,41 +285,37 @@ const HawkEye = () => (
 
 const faqs = [
   {
-    q: 'האם זה מתאים גם לפאדל וגם לטניס?',
-    a: 'בהחלט. התושבת מתוכננת להתלבש על רשת הברזל של מגרשי פאדל ומגרשי טניס כאחד, ומספקת זווית צילום גבוהה ואידיאלית בשני המשחקים.',
+    q: 'לאיזה טלפון זה מתאים?',
+    a: 'התאמה אוניברסלית: המתקן מתאים למגוון רחב של סמארטפונים, לצילום חי או לתיעוד אימונים.',
   },
   {
-    q: 'איך זה עוזר בויכוחים על הקווים?',
-    a: 'המצלמה מתעדת את המשחק מזווית גבוהה ויציבה. כשיש ספק אם הכדור היה בפנים או בחוץ — מריצים את ההקלטה אחורה ורואים איפה נחת הכדור. פחות ויכוחים, יותר משחק.',
+    q: 'האם זה מתאים גם לפאדל וגם לטניס?',
+    a: 'כן. התושבת מתלבשת על רשת מגרשי פאדל וטניס כאחד ונותנת זווית צילום גבוהה ויציבה בשניהם.',
   },
   {
     q: 'תוך כמה זמן המשלוח מגיע?',
-    a: 'המשלוח חינם ומגיע עד הדלת שלך תוך 7–12 ימי עסקים, עם מספר מעקב מלא.',
+    a: 'המשלוח חינם עד הדלת ומגיע תוך 7–12 ימי עסקים, עם מספר מעקב.',
   },
   {
     q: 'ממה עשוי המתקן?',
-    a: 'המתקן מיוצר מ‑PLA 100% — חומר עמיד וחזק, שמתאים לשימוש בכל מזג אוויר.',
-  },
-  {
-    q: 'לאיזה פלאפון מתאים המכשיר?',
-    a: 'התאמה אוניברסלית: המתקן מתאים למגוון רחב של סמארטפונים ומצלמות, לצילום חי או לתיעוד אימונים.',
+    a: 'המתקן מיוצר מ‑PLA 100% — חומר עמיד וחזק שמתאים לשימוש בכל מזג אוויר.',
   },
 ];
 
 const FaqItem = ({ item, isOpen, onToggle }) => (
-  <div className="overflow-hidden rounded-3xl bg-chalk ring-1 ring-ink/5">
+  <div className="overflow-hidden rounded-2xl bg-chalk ring-1 ring-ink/5">
     <button
       onClick={onToggle}
       aria-expanded={isOpen}
-      className="flex w-full items-center justify-between gap-6 px-6 py-5 text-right"
+      className="flex w-full items-center justify-between gap-4 px-4 py-3.5 text-right sm:px-6 sm:py-4"
     >
-      <span className="font-display text-lg font-bold text-ink sm:text-xl">{item.q}</span>
+      <span className="font-display text-base font-bold text-ink sm:text-lg">{item.q}</span>
       <motion.span
         animate={{ rotate: isOpen ? 45 : 0 }}
         transition={{ duration: 0.3 }}
-        className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-ball/70"
+        className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-ball/70"
       >
-        <Plus size={18} className="text-ink" strokeWidth={2.5} />
+        <Plus size={16} className="text-ink" strokeWidth={2.5} />
       </motion.span>
     </button>
     <AnimatePresence initial={false}>
@@ -537,7 +326,7 @@ const FaqItem = ({ item, isOpen, onToggle }) => (
           exit={{ height: 0, opacity: 0 }}
           transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
         >
-          <p className="px-6 pb-6 text-[15px] leading-relaxed text-ink/60">{item.a}</p>
+          <p className="px-4 pb-4 text-sm leading-relaxed text-ink/70 sm:px-6">{item.a}</p>
         </motion.div>
       )}
     </AnimatePresence>
@@ -545,41 +334,51 @@ const FaqItem = ({ item, isOpen, onToggle }) => (
 );
 
 const Faq = () => {
-  const [open, setOpen] = useState(0);
+  const [open, setOpen] = useState(-1);
   return (
-    <section id="faq" className="bg-bone2 px-5 py-20 sm:px-8 sm:py-24">
+    <section id="faq" className="bg-bone2 px-4 py-10 sm:px-8 sm:py-16">
       <div className="mx-auto max-w-3xl">
-        <Reveal>
-          <Eyebrow className="text-moss">שאלות נפוצות</Eyebrow>
-          <h2 className="mt-4 font-display text-4xl font-black tracking-tight text-ink sm:text-5xl">
-            כל מה שרציתם לדעת.
-          </h2>
-          <p className="mb-10 mt-4 text-lg text-ink/70">
-            יש לכם שאלה? אנחנו זמינים לכם{' '}
-            <a
-              href={INSTAGRAM_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 font-semibold text-ink underline decoration-ball decoration-2 underline-offset-4 hover:text-moss"
-            >
-              <Instagram size={18} /> באינסטגרם
-            </a>
-          </p>
-        </Reveal>
-        <div className="space-y-3">
+        <h2 className="font-display text-3xl font-black tracking-tight text-ink sm:text-4xl">שאלות נפוצות</h2>
+        <div className="mt-5 space-y-2">
           {faqs.map((item, i) => (
-            <FaqItem
-              key={item.q}
-              item={item}
-              isOpen={open === i}
-              onToggle={() => setOpen(open === i ? -1 : i)}
-            />
+            <FaqItem key={item.q} item={item} isOpen={open === i} onToggle={() => setOpen(open === i ? -1 : i)} />
           ))}
         </div>
+        <a
+          href={INSTAGRAM_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-4 flex items-center justify-center gap-2 rounded-2xl bg-ink px-4 py-3.5 text-center text-sm font-semibold text-bone hover:bg-court"
+        >
+          <Instagram size={18} className="text-ball" />
+          יש לכם שאלה? כתבו לנו באינסטגרם
+          <span dir="ltr" className="font-bold text-ball">{INSTAGRAM_HANDLE}</span>
+        </a>
       </div>
     </section>
   );
 };
+
+/* ================================================================== */
+/*  Closing offer                                                     */
+/* ================================================================== */
+
+const FinalCta = () => (
+  <section className="bg-court px-4 py-10 text-center sm:px-8 sm:py-14">
+    <h2 className="font-display text-3xl font-black leading-tight text-bone sm:text-5xl">
+      הכדור היה על הקו?
+      <br />
+      <span className="text-ball">עכשיו יש הוכחה.</span>
+    </h2>
+    <a
+      href="/pay"
+      className="mx-auto mt-6 flex max-w-sm items-center justify-center gap-2 rounded-full bg-ball py-3.5 text-lg font-black text-ink hover:bg-white"
+    >
+      להזמנה · 2 ב-₪149 <ArrowUpLeft size={20} strokeWidth={2.75} />
+    </a>
+    <p className="mt-2.5 text-xs text-bone/70">או יחידה אחת ב-₪89 · משלוח חינם עד הדלת</p>
+  </section>
+);
 
 /* ================================================================== */
 /*  Footer                                                            */
@@ -636,7 +435,7 @@ const StickyBar = () => {
   useEffect(() => {
     const onScroll = () => {
       const nearBottom = window.innerHeight + window.scrollY > document.documentElement.scrollHeight - 420;
-      setShow(window.scrollY > 380 && !nearBottom);
+      setShow(window.scrollY > 560 && !nearBottom);
     };
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
@@ -716,12 +515,9 @@ export default function App() {
       <div className="overflow-hidden rounded-panel bg-bone">
         <main>
         <Hero />
-        <TrustStrip />
-        <Features />
-        <Steps />
-        <Showcase />
-        <HawkEye />
+        <HowItWorks />
         <Faq />
+        <FinalCta />
         </main>
         <Footer />
       </div>
