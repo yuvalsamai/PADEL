@@ -1,122 +1,64 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, MotionConfig } from 'framer-motion';
-import { ArrowUpLeft, Plus, X, Menu, Instagram, Pause, Play, Check } from 'lucide-react';
+import { ArrowUpLeft, Plus, Instagram, Pause, Play } from 'lucide-react';
 import Logo from './Logo.jsx';
 import { openConsentSettings } from './lib/consent.js';
 import { INSTAGRAM_HANDLE, INSTAGRAM_URL } from './lib/business.js';
 
-/* Hero background photo (public/hero.webp);
-   a court-toned gradient shows behind it while it loads. */
-const HERO_IMG = '/hero.webp';
-/* Optional hero video — shown in the product column; falls back to the spinning
-   product photo if it can't load. Keep the file small (ideally < 8MB) so it
-   doesn't slow the page. */
+/* Design: a club-tennis spec sheet. Light bone pages, a classic Hebrew serif
+   for the headline and prices only, lime kept for the order button. The one
+   loud moment is the net band: a stitched white net tape over a dark court,
+   with the real "ball in" frame. */
+
 const HERO_VIDEO = '/netcam-hero.mp4';
 const HERO_POSTER = '/netcam-hero-poster.webp';
+const LINE_CALL_IMG = '/hero.webp'; // ball on the line, "BALL IN 0.8 cm"
 
-/* Trust badges — reused on the landing page and (compact) on checkout. */
+/* Trust badges — kept for other pages that may import them. */
 export const TRUST_ITEMS = [
   { label: 'תשלום מאובטח · Hyp' },
   { label: 'משלוח חינם עד הדלת' },
 ];
 
 /* ================================================================== */
-/*  Primitives                                                       */
-/* ================================================================== */
-
-const Eyebrow = ({ children, className = '' }) => (
-  <span className={`text-xs font-medium uppercase tracking-[0.18em] ${className}`}>{children}</span>
-);
-
-/* ================================================================== */
-/*  Nav                                                               */
+/*  Header                                                            */
 /* ================================================================== */
 
 const navLinks = [
-  { label: 'בית', href: '#top' },
   { label: 'איך זה עובד', href: '#how' },
   { label: 'שאלות', href: '#faq' },
 ];
 
-const Nav = () => {
-  const [openMenu, setOpenMenu] = useState(false);
-  return (
-    <header className="relative flex w-full items-center justify-between gap-3 border-b border-white/30 bg-bone/90 px-4 py-1.5 shadow-lg shadow-black/10 backdrop-blur-xl sm:px-8 sm:py-2.5 lg:px-10">
-      <a href="#top" aria-label="NETCAM" className="inline-flex items-center">
-        <Logo className="h-11 sm:h-14 lg:h-16" />
+const Header = () => (
+  <header className="border-b border-ink/10 bg-bone">
+    <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-2 sm:px-8">
+      <a href="#top" aria-label="NETCAM — לראש העמוד" className="inline-flex items-center">
+        <Logo className="h-11 sm:h-14" />
       </a>
-
-      {/* desktop pill */}
-      <nav aria-label="ניווט ראשי" className="hidden items-center gap-1 md:flex">
-        {navLinks.map((l, i) => (
-          <a
-            key={l.href}
-            href={l.href}
-            className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-              i === 0 ? 'bg-ball text-ink' : 'text-ink/70 hover:text-ink'
-            }`}
-          >
+      <nav aria-label="ניווט ראשי" className="flex items-center gap-5 text-sm">
+        {navLinks.map((l) => (
+          <a key={l.href} href={l.href} className="hidden text-moss transition-colors hover:text-ink sm:inline">
             {l.label}
           </a>
         ))}
         <a
           href="/pay"
-          className="rounded-full bg-ink px-4 py-2 text-sm font-semibold text-bone transition-colors hover:bg-court"
+          className="rounded-full border border-ink px-4 py-1.5 font-medium text-ink transition-colors hover:bg-ink hover:text-bone"
         >
-          הזמנה ₪89
+          הזמנה
         </a>
       </nav>
-
-      {/* mobile */}
-      <button
-        onClick={() => setOpenMenu((v) => !v)}
-        className="rounded-full border border-ink/15 bg-ink/5 p-2.5 text-ink md:hidden"
-        aria-label="תפריט"
-        aria-expanded={openMenu}
-        aria-controls="mobile-menu"
-      >
-        {openMenu ? <X size={20} /> : <Menu size={20} />}
-      </button>
-
-      <AnimatePresence>
-        {openMenu && (
-          <motion.nav
-            id="mobile-menu"
-            aria-label="ניווט ראשי"
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            className="absolute inset-x-4 top-full z-30 mt-2 flex flex-col gap-1 rounded-3xl border border-white/15 bg-court/95 p-3 backdrop-blur-xl md:hidden"
-          >
-            {navLinks.map((l) => (
-              <a
-                key={l.href}
-                href={l.href}
-                onClick={() => setOpenMenu(false)}
-                className="rounded-2xl px-4 py-3 text-bone/90 hover:bg-white/10"
-              >
-                {l.label}
-              </a>
-            ))}
-            <a href="/pay" onClick={() => setOpenMenu(false)} className="rounded-2xl bg-ball px-4 py-3 text-center font-semibold text-ink">
-              הזמנה ₪89
-            </a>
-          </motion.nav>
-        )}
-      </AnimatePresence>
-    </header>
-  );
-};
+    </div>
+  </header>
+);
 
 /* ================================================================== */
-/*  Hero — the whole pitch on the first phone screen                  */
+/*  Hero                                                              */
 /* ================================================================== */
 
-/* Hero video. Falls back to a STATIC product image if it can't load. */
+/* Product video with a pause control (WCAG 2.2.2); static photo fallback. */
 const HeroMedia = ({ className = '' }) => {
   const [ok, setOk] = useState(true);
-  // Moving content needs a pause control (WCAG 2.2.2). Start paused when the
-  // visitor prefers reduced motion or turned animations off in the a11y menu.
   const videoRef = React.useRef(null);
   const [playing, setPlaying] = useState(true);
   useEffect(() => {
@@ -140,7 +82,7 @@ const HeroMedia = ({ className = '' }) => {
     }
   };
   return (
-    <div className={`relative overflow-hidden rounded-2xl bg-ink shadow-2xl ring-1 ring-white/15 lg:rounded-3xl ${className}`} style={{ aspectRatio: '9 / 16' }}>
+    <figure className={`relative overflow-hidden rounded-[18px] bg-ink shadow-[0_24px_48px_-24px_rgba(13,13,13,0.45)] ${className}`} style={{ aspectRatio: '9 / 16' }}>
       {ok ? (
         <>
           <video
@@ -152,7 +94,7 @@ const HeroMedia = ({ className = '' }) => {
             loop
             playsInline
             preload="metadata"
-            aria-label="סרטון המחשה: תושבת NETCAM על רשת המגרש מצלמת משחק"
+            aria-label="סרטון: תושבת NETCAM על רשת המגרש מצלמת משחק"
             onError={() => setOk(false)}
             className="h-full w-full object-cover"
           />
@@ -160,78 +102,81 @@ const HeroMedia = ({ className = '' }) => {
             type="button"
             onClick={toggle}
             aria-label={playing ? 'עצירת הסרטון' : 'הפעלת הסרטון'}
-            className="absolute bottom-2 left-2 flex h-9 w-9 items-center justify-center rounded-full bg-ink/70 text-bone backdrop-blur hover:bg-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-ball"
+            className="absolute bottom-2.5 left-2.5 flex h-8 w-8 items-center justify-center rounded-full bg-bone/90 text-ink hover:bg-bone focus:outline-none focus-visible:ring-2 focus-visible:ring-ball"
           >
-            {playing ? <Pause size={16} /> : <Play size={16} />}
+            {playing ? <Pause size={14} /> : <Play size={14} />}
           </button>
         </>
       ) : (
         <img src="/product.webp" alt="תושבת NETCAM" className="h-full w-full object-cover" />
       )}
-    </div>
+    </figure>
   );
 };
 
-const BULLETS = ['מתאים לכל טלפון', 'התקנה על הרשת בשניות', 'פאדל וטניס', 'מכריע כל ויכוח על קו'];
+/* Spec-sheet rows instead of icon bullets. */
+const SPECS = [
+  ['טלפון', 'כל דגם'],
+  ['התקנה', 'שניות, על רשת המגרש'],
+  ['מגרש', 'פאדל · טניס'],
+  ['בשביל', 'תיעוד, שיפור והכרעת קו'],
+];
+
+const Price = ({ className = '' }) => (
+  <div className={`flex items-end justify-between gap-4 ${className}`}>
+    <div className="flex items-baseline gap-2.5">
+      <span className="font-display text-[2.6rem] font-medium leading-none text-ink">₪89</span>
+      <span className="text-sm text-moss line-through">₪119.90</span>
+    </div>
+    <p className="text-sm text-ink">
+      <span className="ml-1.5 inline-block h-2 w-2 rounded-full bg-ball align-middle" aria-hidden="true" />
+      שתי יחידות ב-<span className="font-display text-lg font-medium">₪149</span>
+    </p>
+  </div>
+);
+
+const OrderButton = ({ children = 'להזמנה', className = '' }) => (
+  <a
+    href="/pay"
+    className={`group flex h-14 w-full items-center justify-center gap-2 rounded-full bg-ball text-lg font-semibold text-ink transition-colors hover:bg-ink hover:text-ball focus:outline-none focus-visible:ring-4 focus-visible:ring-ink/30 ${className}`}
+  >
+    {children}
+    <ArrowUpLeft size={19} strokeWidth={2.25} className="transition-transform group-hover:-translate-x-0.5 group-hover:-translate-y-0.5" />
+  </a>
+);
 
 const Hero = () => (
-  <section id="top" className="relative isolate overflow-hidden">
-    <div
-      className="absolute inset-0 -z-10 bg-court"
-      style={{
-        backgroundImage: `linear-gradient(180deg, rgba(17,24,19,0.72) 0%, rgba(17,24,19,0.6) 50%, rgba(17,24,19,0.85) 100%), url(${HERO_IMG})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-      }}
-    />
-    <Nav />
-
-    {/* Phone: title / bullets + video side by side / price + CTA.
-        Desktop: text column + tall video column. */}
+  <section id="top" className="bg-bone">
     <div
       id="main"
       tabIndex={-1}
-      className="mx-auto grid max-w-6xl grid-cols-[1fr_minmax(0,36%)] items-center gap-x-4 gap-y-4 px-4 pb-6 pt-4 outline-none sm:px-8 lg:grid-cols-[1fr_340px] lg:gap-x-12 lg:gap-y-6 lg:py-14"
+      className="mx-auto grid max-w-6xl grid-cols-[1fr_38%] items-center gap-x-5 gap-y-6 px-5 pb-9 pt-6 outline-none sm:px-8 lg:grid-cols-[1fr_360px] lg:gap-x-20 lg:gap-y-10 lg:pb-20 lg:pt-16"
     >
       <div className="col-span-2 lg:col-span-1">
-        <Eyebrow className="text-bone/80">תושבת צילום לרשת · NETCAM</Eyebrow>
-        <h1 className="mt-2 font-display text-[2.35rem] font-black leading-[1.02] tracking-tight text-bone sm:text-6xl lg:text-7xl">
+        <p className="text-xs font-medium text-moss">תושבת צילום לרשת המגרש</p>
+        <h1 className="mt-3 font-display text-[2.7rem] font-medium leading-[1.02] tracking-[-0.01em] text-ink sm:text-6xl lg:text-[5.4rem]">
           צלם כל נקודה.
           <br />
-          שחק חכם יותר.
+          <span className="text-moss">שחק חכם יותר.</span>
         </h1>
       </div>
 
-      <ul className="flex flex-col gap-2.5 self-center text-[14px] font-semibold text-bone sm:text-lg lg:col-start-1 lg:gap-3">
-        {BULLETS.map((text) => (
-          <li key={text} className="flex items-center gap-2.5">
-            <span aria-hidden="true" className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-ball text-ink">
-              <Check size={13} strokeWidth={3.5} />
-            </span>
-            {text}
-          </li>
-        ))}
-      </ul>
-
-      <HeroMedia className="w-full lg:col-start-2 lg:row-span-4 lg:row-start-1" />
-
-      <div className="col-span-2 rounded-3xl border border-white/15 bg-white/10 p-4 backdrop-blur-md lg:col-span-1 lg:max-w-md lg:p-5">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-baseline gap-2">
-            <span className="text-sm text-bone/60 line-through">₪119.90</span>
-            <span className="font-display text-3xl font-black text-ball">₪89</span>
+      <dl className="self-center lg:col-start-1 lg:max-w-md">
+        {SPECS.map(([k, v]) => (
+          <div key={k} className="border-t border-ink/15 py-2.5 first:border-t-0 first:pt-0 lg:flex lg:items-baseline lg:justify-between lg:py-3.5 lg:first:border-t lg:first:pt-3.5">
+            <dt className="text-xs text-moss">{k}</dt>
+            <dd className="text-[15px] font-medium leading-snug text-ink lg:text-base">{v}</dd>
           </div>
-          <span className="rounded-full bg-ball px-3 py-1 text-sm font-black text-ink">2 ב-₪149</span>
-        </div>
-        <a
-          href="/pay"
-          className="group mt-3 flex w-full items-center justify-center gap-2 rounded-full bg-ball py-3.5 text-lg font-black text-ink shadow-lg shadow-ball/20 transition-transform hover:scale-[1.02]"
-        >
-          להזמנה
-          <ArrowUpLeft size={20} strokeWidth={2.75} className="transition-transform group-hover:-translate-x-0.5 group-hover:-translate-y-0.5" />
-        </a>
-        <p className="mt-2.5 text-center text-xs font-medium text-bone/80">
-          משלוח חינם עד הדלת · 7–12 ימי עסקים · תשלום מאובטח
+        ))}
+      </dl>
+
+      <HeroMedia className="w-full lg:col-start-2 lg:row-span-3 lg:row-start-1" />
+
+      <div className="col-span-2 lg:col-span-1 lg:max-w-md">
+        <Price />
+        <OrderButton className="mt-4" />
+        <p className="mt-3 text-center text-xs text-moss lg:text-right">
+          משלוח חינם עד הדלת תוך 7–12 ימי עסקים · תשלום מאובטח
         </p>
       </div>
     </div>
@@ -239,39 +184,84 @@ const Hero = () => (
 );
 
 /* ================================================================== */
-/*  Why + how — one short section                                     */
+/*  How it works — a real 3-step sequence                             */
 /* ================================================================== */
 
 const steps = [
-  { n: '1', title: 'מחברים', desc: 'מלבישים את NETCAM על הרשת.' },
-  { n: '2', title: 'מצלמים', desc: 'מכניסים את הטלפון ולוחצים הקלטה.' },
-  { n: '3', title: 'משחקים', desc: 'ויש מחלוקת? מריצים אחורה ורואים.' },
+  { title: 'מחברים', desc: 'מלבישים את NETCAM על סרט הרשת.' },
+  { title: 'מצלמים', desc: 'מכניסים את הטלפון ולוחצים הקלטה.' },
+  { title: 'משחקים', desc: 'יש מחלוקת? מריצים אחורה ורואים.' },
 ];
 
 const HowItWorks = () => (
-  <section id="how" className="bg-bone px-4 py-10 sm:px-8 sm:py-16">
-    <div className="mx-auto max-w-5xl">
-      <h2 className="font-display text-3xl font-black leading-tight tracking-tight text-ink sm:text-4xl">
-        שלושה צעדים. פחות מדקה.
+  <section id="how" className="bg-chalk px-5 py-12 sm:px-8 lg:py-24">
+    <div className="mx-auto max-w-6xl">
+      <h2 className="font-display text-[2rem] font-medium leading-tight text-ink sm:text-5xl">
+        מהתיק למגרש בפחות מדקה.
       </h2>
-      <ol className="mt-5 grid grid-cols-3 gap-2 sm:gap-4">
-        {steps.map((s) => (
-          <li key={s.n} className="rounded-2xl bg-chalk p-3 ring-1 ring-ink/5 sm:p-5">
-            <span className="font-display text-3xl font-black leading-none text-moss sm:text-4xl">{s.n}</span>
-            <h3 className="mt-2 font-display text-base font-bold text-ink sm:text-xl">{s.title}</h3>
-            <p className="mt-1 text-xs leading-snug text-ink/60 sm:text-sm">{s.desc}</p>
+      <ol className="mt-7 grid grid-cols-3 border-y border-ink/15 lg:mt-10">
+        {steps.map((s, i) => (
+          <li key={s.title} className={`py-4 pl-3 sm:py-6 sm:pl-6 ${i > 0 ? 'border-r border-ink/15 pr-3 sm:pr-6' : ''}`}>
+            <span className="font-display text-sm text-moss">{i + 1}</span>
+            <h3 className="mt-1 text-base font-semibold text-ink sm:text-xl">{s.title}</h3>
+            <p className="mt-1 text-xs leading-snug text-moss sm:text-sm">{s.desc}</p>
           </li>
         ))}
       </ol>
-      <div className="mt-4 overflow-hidden rounded-2xl ring-1 ring-ink/5 sm:rounded-3xl">
-        <img
-          src="/STUND.webp"
-          loading="lazy"
-          decoding="async"
-          alt="תושבת NETCAM ננעלת על עמוד הרשת ומחזיקה את הטלפון"
-          className="aspect-[16/9] w-full object-cover"
-        />
+      <img
+        src="/feature.webp"
+        loading="lazy"
+        decoding="async"
+        alt="תושבת NETCAM על סרט הרשת, עם טלפון שמצלם משחק פאדל"
+        className="mt-6 aspect-[16/10] w-full rounded-[18px] object-cover lg:mt-10 lg:aspect-[16/8]"
+      />
+    </div>
+  </section>
+);
+
+/* ================================================================== */
+/*  The net band — signature                                          */
+/* ================================================================== */
+
+const NetBand = () => (
+  <section aria-labelledby="line-call" className="bg-ink text-bone">
+    {/* net tape: white band, stitched edges */}
+    <div className="bg-[#FAFAF7] py-[5px]" aria-hidden="true">
+      <div className="h-3 border-y border-dashed border-ink/30" />
+    </div>
+    {/* mesh hanging under the tape, fading into the court */}
+    <div
+      aria-hidden="true"
+      className="h-20 lg:h-28"
+      style={{
+        backgroundImage:
+          'repeating-linear-gradient(45deg, rgba(246,247,245,0.16) 0 1px, transparent 1px 16px), repeating-linear-gradient(-45deg, rgba(246,247,245,0.16) 0 1px, transparent 1px 16px)',
+        WebkitMaskImage: 'linear-gradient(to bottom, #000, transparent)',
+        maskImage: 'linear-gradient(to bottom, #000, transparent)',
+      }}
+    />
+    <div className="mx-auto grid max-w-6xl gap-8 px-5 pb-14 sm:px-8 lg:grid-cols-2 lg:items-center lg:gap-16 lg:pb-24">
+      <div>
+        <h2 id="line-call" className="font-display text-[2.2rem] font-medium leading-[1.08] sm:text-6xl">
+          הכדור היה על הקו?
+          <br />
+          <span className="text-ball">עכשיו יש הוכחה.</span>
+        </h2>
+        <p className="mt-4 max-w-md text-[15px] leading-relaxed text-bone/75 sm:text-lg">
+          הטלפון מצלם מגובה הרשת, ממש מעל הקו. במקום להתווכח על סנטימטרים, מריצים את ההקלטה אחורה.
+        </p>
+        <div className="mt-7 max-w-sm">
+          <OrderButton>להזמנה · שתיים ב-₪149</OrderButton>
+          <p className="mt-3 text-center text-xs text-bone/70">או יחידה אחת ב-₪89 · משלוח חינם עד הדלת</p>
+        </div>
       </div>
+      <img
+        src={LINE_CALL_IMG}
+        loading="lazy"
+        decoding="async"
+        alt="כדור טניס נוחת על קו המגרש, עם סימון BALL IN"
+        className="aspect-[4/3] w-full rounded-[18px] object-cover"
+      />
     </div>
   </section>
 );
@@ -286,7 +276,7 @@ const faqs = [
     a: 'התאמה אוניברסלית: המתקן מתאים למגוון רחב של סמארטפונים, לצילום חי או לתיעוד אימונים.',
   },
   {
-    q: 'האם זה מתאים גם לפאדל וגם לטניס?',
+    q: 'זה מתאים גם לפאדל וגם לטניס?',
     a: 'כן. התושבת מתלבשת על רשת מגרשי פאדל וטניס כאחד ונותנת זווית צילום גבוהה ויציבה בשניהם.',
   },
   {
@@ -300,19 +290,15 @@ const faqs = [
 ];
 
 const FaqItem = ({ item, isOpen, onToggle }) => (
-  <div className="overflow-hidden rounded-2xl bg-chalk ring-1 ring-ink/5">
+  <div className="border-b border-ink/15">
     <button
       onClick={onToggle}
       aria-expanded={isOpen}
-      className="flex w-full items-center justify-between gap-4 px-4 py-3.5 text-right sm:px-6 sm:py-4"
+      className="flex w-full items-center justify-between gap-4 py-4 text-right focus:outline-none focus-visible:underline sm:py-5"
     >
-      <span className="font-display text-base font-bold text-ink sm:text-lg">{item.q}</span>
-      <motion.span
-        animate={{ rotate: isOpen ? 45 : 0 }}
-        transition={{ duration: 0.3 }}
-        className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-ball/70"
-      >
-        <Plus size={16} className="text-ink" strokeWidth={2.5} />
+      <span className="text-base font-medium text-ink sm:text-lg">{item.q}</span>
+      <motion.span animate={{ rotate: isOpen ? 45 : 0 }} transition={{ duration: 0.25 }} className="flex-shrink-0 text-ink">
+        <Plus size={18} strokeWidth={1.75} />
       </motion.span>
     </button>
     <AnimatePresence initial={false}>
@@ -321,9 +307,9 @@ const FaqItem = ({ item, isOpen, onToggle }) => (
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: 'auto', opacity: 1 }}
           exit={{ height: 0, opacity: 0 }}
-          transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
         >
-          <p className="px-4 pb-4 text-sm leading-relaxed text-ink/70 sm:px-6">{item.a}</p>
+          <p className="pb-5 text-sm leading-relaxed text-moss sm:text-base">{item.a}</p>
         </motion.div>
       )}
     </AnimatePresence>
@@ -333,98 +319,69 @@ const FaqItem = ({ item, isOpen, onToggle }) => (
 const Faq = () => {
   const [open, setOpen] = useState(-1);
   return (
-    <section id="faq" className="bg-bone2 px-4 py-10 sm:px-8 sm:py-16">
-      <div className="mx-auto max-w-3xl">
-        <h2 className="font-display text-3xl font-black tracking-tight text-ink sm:text-4xl">שאלות נפוצות</h2>
-        <div className="mt-5 space-y-2">
+    <section id="faq" className="bg-bone px-5 py-12 sm:px-8 lg:py-24">
+      <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[1fr_1.4fr] lg:gap-16">
+        <div>
+          <h2 className="font-display text-[2rem] font-medium leading-tight text-ink sm:text-5xl">שאלות נפוצות</h2>
+          <a
+            href={INSTAGRAM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-3 inline-flex items-center gap-2 text-sm text-moss underline-offset-4 hover:text-ink hover:underline"
+          >
+            <Instagram size={16} />
+            שאלה אחרת? כתבו לנו באינסטגרם <span dir="ltr" className="font-medium text-ink">{INSTAGRAM_HANDLE}</span>
+          </a>
+        </div>
+        <div className="border-t border-ink/15">
           {faqs.map((item, i) => (
             <FaqItem key={item.q} item={item} isOpen={open === i} onToggle={() => setOpen(open === i ? -1 : i)} />
           ))}
         </div>
-        <a
-          href={INSTAGRAM_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-4 flex items-center justify-center gap-2 rounded-2xl bg-ink px-4 py-3.5 text-center text-sm font-semibold text-bone hover:bg-court"
-        >
-          <Instagram size={18} className="text-ball" />
-          יש לכם שאלה? כתבו לנו באינסטגרם
-          <span dir="ltr" className="font-bold text-ball">{INSTAGRAM_HANDLE}</span>
-        </a>
       </div>
     </section>
   );
 };
 
 /* ================================================================== */
-/*  Closing offer                                                     */
-/* ================================================================== */
-
-const FinalCta = () => (
-  <section className="bg-court px-4 py-10 text-center sm:px-8 sm:py-14">
-    <h2 className="font-display text-3xl font-black leading-tight text-bone sm:text-5xl">
-      הכדור היה על הקו?
-      <br />
-      <span className="text-ball">עכשיו יש הוכחה.</span>
-    </h2>
-    <a
-      href="/pay"
-      className="mx-auto mt-6 flex max-w-sm items-center justify-center gap-2 rounded-full bg-ball py-3.5 text-lg font-black text-ink hover:bg-white"
-    >
-      להזמנה · 2 ב-₪149 <ArrowUpLeft size={20} strokeWidth={2.75} />
-    </a>
-    <p className="mt-2.5 text-xs text-bone/70">או יחידה אחת ב-₪89 · משלוח חינם עד הדלת</p>
-  </section>
-);
-
-/* ================================================================== */
 /*  Footer                                                            */
 /* ================================================================== */
 
 const Footer = () => (
-  <footer className="bg-ink px-5 py-16 sm:px-8">
+  <footer className="bg-ink px-5 py-12 text-bone sm:px-8 lg:py-16">
     <div className="mx-auto max-w-6xl">
-      <div className="flex flex-col gap-8 border-b border-white/10 pb-10 sm:flex-row sm:items-end sm:justify-between">
+      <div className="flex flex-col gap-8 border-b border-bone/15 pb-8 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <span className="inline-flex items-center rounded-2xl bg-bone px-4 py-3">
-            <Logo className="h-20" />
-          </span>
-
-          <p className="mt-3 max-w-sm text-lg text-bone/70">
-            המשחק שלך במצלמה. צלם, נתח והכרע.
-          </p>
+          <Logo dark className="h-16" />
           <a
             href={INSTAGRAM_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-5 inline-flex items-center gap-2 rounded-full border border-white/15 px-4 py-2 text-sm text-bone/80 transition-colors hover:border-ball hover:text-ball"
+            className="mt-4 inline-flex items-center gap-2 text-sm text-bone/75 hover:text-ball"
           >
-            <Instagram size={18} />
-            <span>יש לכם שאלה? דברו איתנו באינסטגרם</span>
-            <span dir="ltr" className="font-semibold">{INSTAGRAM_HANDLE}</span>
+            <Instagram size={16} />
+            <span dir="ltr">{INSTAGRAM_HANDLE}</span>
           </a>
         </div>
         <nav aria-label="מידע משפטי" className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm">
-          <a href="/terms" className="font-medium text-ball underline-offset-4 hover:underline">תקנון ותנאי רכישה</a>
-          <a href="/cancel" className="rounded-full border border-ball px-4 py-1.5 font-semibold text-ball hover:bg-ball hover:text-ink">ביטול עסקה</a>
-          <a href="/privacy" className="font-medium text-ball underline-offset-4 hover:underline">מדיניות פרטיות</a>
-          <a href="/accessibility" className="font-medium text-ball underline-offset-4 hover:underline">הצהרת נגישות</a>
-          <button type="button" onClick={openConsentSettings} className="font-medium text-ball underline-offset-4 hover:underline">הגדרות עוגיות</button>
-          <a href="#top" className="text-bone/70 hover:text-bone">חזרה למעלה ↑</a>
+          <a href="/terms" className="text-bone/80 underline-offset-4 hover:text-ball hover:underline">תקנון ותנאי רכישה</a>
+          <a href="/cancel" className="rounded-full border border-bone/40 px-4 py-1.5 font-medium text-bone hover:border-ball hover:text-ball">ביטול עסקה</a>
+          <a href="/privacy" className="text-bone/80 underline-offset-4 hover:text-ball hover:underline">מדיניות פרטיות</a>
+          <a href="/accessibility" className="text-bone/80 underline-offset-4 hover:text-ball hover:underline">הצהרת נגישות</a>
+          <button type="button" onClick={openConsentSettings} className="text-bone/80 underline-offset-4 hover:text-ball hover:underline">הגדרות עוגיות</button>
         </nav>
       </div>
-
-      <p className="mt-8 max-w-3xl text-xs leading-relaxed text-bone/70">
+      <p className="mt-6 max-w-3xl text-xs leading-relaxed text-bone/70">
         יש להתקין את המוצר לפי הוראות השימוש ולוודא שהוא נעול היטב על הרשת לפני כל שימוש. השימוש באתר ובמוצר
         כפוף ל<a href="/terms" className="underline">תקנון</a>.
       </p>
-      <div className="mt-6 text-xs text-bone/70">© 2026 NETCAM · כל הזכויות שמורות</div>
+      <div className="mt-4 text-xs text-bone/70">© 2026 NETCAM · כל הזכויות שמורות</div>
     </div>
   </footer>
 );
 
 /* ================================================================== */
-/*  Sticky mobile buy bar                                             */
+/*  Sticky mobile buy bar — appears once the hero button is gone      */
 /* ================================================================== */
 
 const StickyBar = () => {
@@ -432,7 +389,7 @@ const StickyBar = () => {
   useEffect(() => {
     const onScroll = () => {
       const nearBottom = window.innerHeight + window.scrollY > document.documentElement.scrollHeight - 420;
-      setShow(window.scrollY > 560 && !nearBottom);
+      setShow(window.scrollY > 600 && !nearBottom);
     };
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
@@ -441,58 +398,27 @@ const StickyBar = () => {
   return (
     <AnimatePresence>
       {show && (
-        <React.Fragment>
-          {/* Mobile: full-width bottom bar */}
-          <motion.div
-            key="mobile-bar"
-            initial={{ y: 100 }}
-            animate={{ y: 0 }}
-            exit={{ y: 100 }}
-            transition={{ type: 'spring', stiffness: 320, damping: 32 }}
-            className="fixed inset-x-3 bottom-3 z-[70] rounded-full border border-white/10 bg-ink/95 px-3 py-2.5 backdrop-blur-md lg:hidden"
-          >
-            <div className="flex items-center gap-3">
-              <div className="flex-shrink-0 pr-2 text-right">
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-xs text-bone/50 line-through">₪119.90</span>
-                  <span className="font-display text-lg font-black leading-none text-bone">₪89</span>
-                </div>
-                <div className="mt-0.5 text-[0.6rem] text-ball">מחיר מבצע · משלוח חינם עד הדלת</div>
-              </div>
-              <motion.a
-                href="/pay"
-                whileTap={{ scale: 0.98 }}
-                className="flex flex-1 items-center justify-center gap-2 rounded-full bg-ball py-3 text-sm font-bold text-ink"
-              >
-                להזמנה · ₪89 <ArrowUpLeft size={16} strokeWidth={2.5} />
-              </motion.a>
+        <motion.div
+          key="mobile-bar"
+          initial={{ y: 100 }}
+          animate={{ y: 0 }}
+          exit={{ y: 100 }}
+          transition={{ type: 'spring', stiffness: 320, damping: 32 }}
+          className="fixed inset-x-0 bottom-0 z-[70] border-t border-ink/10 bg-bone/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-md lg:hidden"
+        >
+          <div className="flex items-center gap-4">
+            <div className="flex-shrink-0 text-right">
+              <span className="font-display text-2xl font-medium leading-none text-ink">₪89</span>
+              <div className="mt-0.5 text-[11px] text-moss">שתיים ב-₪149</div>
             </div>
-          </motion.div>
-
-          {/* Desktop: floating purchase card, bottom-left */}
-          <motion.div
-            key="desktop-card"
-            initial={{ y: 40, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 40, opacity: 0 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            dir="rtl"
-            className="fixed bottom-6 left-6 z-[70] hidden w-72 rounded-3xl border border-white/10 bg-ink/95 p-5 shadow-2xl backdrop-blur-md lg:block"
-          >
-            <div className="flex items-center gap-2 text-sm font-medium text-ball">תושבת NETCAM</div>
-            <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-sm text-bone/50 line-through">₪119.90</span>
-              <span className="font-display text-3xl font-black leading-none text-bone">₪89</span>
-            </div>
-            <div className="mt-1 text-xs text-bone/70">מחיר מבצע · משלוח חינם עד הדלת</div>
             <a
               href="/pay"
-              className="mt-4 flex items-center justify-center gap-2 rounded-full bg-ball py-3 font-bold text-ink transition-colors hover:bg-white"
+              className="flex h-12 flex-1 items-center justify-center gap-2 rounded-full bg-ball text-base font-semibold text-ink"
             >
-              להזמנה · ₪89 <ArrowUpLeft size={18} strokeWidth={2.5} />
+              להזמנה <ArrowUpLeft size={17} strokeWidth={2.25} />
             </a>
-          </motion.div>
-        </React.Fragment>
+          </div>
+        </motion.div>
       )}
     </AnimatePresence>
   );
@@ -505,21 +431,20 @@ const StickyBar = () => {
 export default function App() {
   return (
     <MotionConfig reducedMotion="user">
-    <div dir="rtl" className="min-h-screen bg-olive p-2.5 font-sans text-ink sm:p-4">
-      <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:right-4 focus:top-4 focus:z-[200] focus:rounded-xl focus:bg-ink focus:px-4 focus:py-2 focus:text-bone">
-        דלג לתוכן הראשי
-      </a>
-      <div className="overflow-hidden rounded-panel bg-bone">
+      <div dir="rtl" className="min-h-screen bg-bone font-sans text-ink">
+        <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:right-4 focus:top-4 focus:z-[200] focus:rounded-xl focus:bg-ink focus:px-4 focus:py-2 focus:text-bone">
+          דלג לתוכן הראשי
+        </a>
+        <Header />
         <main>
-        <Hero />
-        <HowItWorks />
-        <Faq />
-        <FinalCta />
+          <Hero />
+          <HowItWorks />
+          <NetBand />
+          <Faq />
         </main>
         <Footer />
+        <StickyBar />
       </div>
-      <StickyBar />
-    </div>
     </MotionConfig>
   );
 }

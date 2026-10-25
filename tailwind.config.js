@@ -18,8 +18,8 @@ export default {
         stone: '#6B7280',
       },
       fontFamily: {
-        display: ['"Rubik"', 'system-ui', 'sans-serif'],
-        sans: ['"Heebo"', 'system-ui', 'sans-serif'],
+        display: ['"Frank Ruhl Libre"', 'Georgia', 'serif'],
+        sans: ['"IBM Plex Sans Hebrew"', 'system-ui', 'sans-serif'],
       },
       borderRadius: {
         panel: '28px',

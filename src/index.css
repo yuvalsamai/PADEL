@@ -12,9 +12,9 @@ html {
 
 body {
   margin: 0;
-  background-color: #0D0D0D;
+  background-color: #F6F7F5;
   color: #0D0D0D;
-  font-family: 'Heebo', system-ui, sans-serif;
+  font-family: 'IBM Plex Sans Hebrew', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
