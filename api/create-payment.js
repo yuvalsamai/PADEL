@@ -14,7 +14,17 @@ const SUPABASE_URL = process.env.SUPABASE_URL || 'https://uwmydcfhedcquktxqsis.s
 // Best-effort: store the checkout details as a pending order keyed by order_ref.
 // verify-payment finishes it (status → paid) on a confirmed completion redirect.
 // Never throws — the buyer must reach the payment page even if the DB write fails.
-async function recordPending({ order, amount, quantity, product, name, email, cell, address, street, city, zip, region, meta }) {
+// Visit source sent by the browser (utm tags etc.) — keep only known keys, short strings.
+function cleanAttribution(a) {
+  if (!a || typeof a !== 'object') return null;
+  const str = (v) => (typeof v === 'string' ? v.slice(0, 100) : '');
+  return {
+    source: str(a.source), medium: str(a.medium), campaign: str(a.campaign), content: str(a.content),
+    fbclid: a.fbclid === true, referrer: str(a.referrer), landing: str(a.landing),
+  };
+}
+
+async function recordPending({ order, amount, quantity, product, name, email, cell, address, street, city, zip, region, meta, attribution }) {
   const { SUPABASE_SERVICE_ROLE_KEY } = process.env;
   if (!SUPABASE_SERVICE_ROLE_KEY) return;
 
@@ -49,6 +59,7 @@ async function recordPending({ order, amount, quantity, product, name, email, ce
         fbc: meta?.consent ? meta.fbc : null,
         client_ip: meta?.consent ? meta.ip : null,
         client_ua: meta?.consent ? meta.ua : null,
+        attribution,
       })
       .select('id')
       .single();
@@ -174,6 +185,7 @@ export default async function handler(req, res) {
       city: src.city ? String(src.city) : null,
       zip: src.zip ? String(src.zip) : null,
       region: src.region ? String(src.region) : null,
+      attribution: cleanAttribution(src.attribution),
       meta: src.meta?.consent
         ? {
             consent: true,

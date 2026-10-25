@@ -7,6 +7,7 @@ import AccessibilityWidget from './Accessibility.jsx'
 import CookieBanner from './CookieBanner.jsx'
 import { fbEvent, initMetaPixel } from './lib/metaPixel.js'
 import { CONTENT } from './lib/meta.js'
+import { captureAttribution } from './lib/attribution.js'
 
 const Privacy = lazy(() => import('./Privacy.jsx'))
 const Terms = lazy(() => import('./Terms.jsx'))
@@ -35,6 +36,7 @@ const route =
 
 // Record a first-party pageview for every public page (skip the admin panel).
 if (route !== 'admin') {
+  captureAttribution()
   trackPageview()
   initMetaPixel()
   if (route === 'landing') fbEvent('ViewContent', { ...CONTENT, value: 89, currency: 'ILS' })

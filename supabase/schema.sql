@@ -129,3 +129,7 @@ alter table public.orders add column if not exists meta_capi_status text;
 
 -- Internal note the admin can attach to an order (never shown to the buyer).
 alter table public.orders add column if not exists admin_note text;
+
+-- Where the buyer came from (first page of the visit): utm tags, whether the
+-- link carried a Meta click id, and the referring host. Shown in the admin.
+alter table public.orders add column if not exists attribution jsonb;

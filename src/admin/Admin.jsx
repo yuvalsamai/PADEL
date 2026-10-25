@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { supabase, supabaseEnabled } from '../lib/supabase.js';
 import { colorFromProduct } from '../lib/colors.js';
+import { sourceLabel } from '../lib/attribution.js';
 import Logo from '../Logo.jsx';
 
 /* ================================================================== */
@@ -610,7 +611,7 @@ const OrdersView = ({ orders, shipments, customers, onChanged, onDelete }) => {
   }, [allRows, query, statusFilter, dateFilter]);
 
   const exportCsv = () => {
-    const headers = ['מס׳ הזמנה', 'שם לקוח', 'טלפון', 'כתובת', 'צבע', 'כמות', 'סכום', 'סטטוס תשלום', 'סטטוס משלוח', 'מספר מעקב', 'תאריך הזמנה', 'הערה'];
+    const headers = ['מס׳ הזמנה', 'שם לקוח', 'טלפון', 'כתובת', 'צבע', 'כמות', 'סכום', 'סטטוס תשלום', 'סטטוס משלוח', 'מספר מעקב', 'תאריך הזמנה', 'הערה', 'מקור'];
     const data = rows.map(({ order, shipment, seq, phone }) => [
       seq,
       order.customer_name || '',
@@ -624,6 +625,7 @@ const OrdersView = ({ orders, shipments, customers, onChanged, onDelete }) => {
       shipment?.tracking_number || '',
       fmtDate(order.created_at),
       order.admin_note || '',
+      sourceLabel(order.attribution),
     ]);
     downloadCSV(`netcam-orders-${new Date().toISOString().slice(0, 10)}.csv`, headers, data);
   };
@@ -827,6 +829,7 @@ const OrdersView = ({ orders, shipments, customers, onChanged, onDelete }) => {
                   </div>
                 </div>
                 <p className="text-sm text-bone/80">{shipment?.address || '—'}</p>
+                <p className="text-xs text-bone/50">מקור: <span className="text-bone/80">{sourceLabel(order.attribution)}</span></p>
                 <div className="flex items-center gap-3 text-sm text-bone/80">
                   {colorChip(order)}
                   <span>× {order.quantity ?? 1}</span>
@@ -859,10 +862,10 @@ const OrdersView = ({ orders, shipments, customers, onChanged, onDelete }) => {
 
       {/* Desktop: table */}
       <div className="hidden overflow-x-auto rounded-2xl ring-1 ring-white/10 md:block">
-      <table className="w-full min-w-[1040px] text-right text-sm">
+      <table className="w-full min-w-[1160px] text-right text-sm">
         <thead className="bg-pine text-bone/60">
           <tr>
-            {['מס׳ הזמנה', 'שם לקוח', 'כתובת', 'צבע', 'כמות', 'סכום', 'סטטוס תשלום', 'מייל אישור', 'סטטוס משלוח', 'מספר מעקב', 'הערה', 'תאריך הזמנה'].map((h) => (
+            {['מס׳ הזמנה', 'שם לקוח', 'כתובת', 'צבע', 'כמות', 'סכום', 'סטטוס תשלום', 'מייל אישור', 'סטטוס משלוח', 'מספר מעקב', 'הערה', 'מקור', 'תאריך הזמנה'].map((h) => (
               <th key={h} className="whitespace-nowrap px-4 py-3 font-medium">{h}</th>
             ))}
             <th className="px-4 py-3" />
@@ -870,7 +873,7 @@ const OrdersView = ({ orders, shipments, customers, onChanged, onDelete }) => {
         </thead>
         <tbody className="divide-y divide-white/5">
           {rows.length === 0 ? (
-            <tr><td colSpan={13} className="px-4 py-10 text-center text-bone/50">אין הזמנות להצגה</td></tr>
+            <tr><td colSpan={14} className="px-4 py-10 text-center text-bone/50">אין הזמנות להצגה</td></tr>
           ) : (
             rows.map((row) => {
               const { order, shipment, seq } = row;
@@ -889,6 +892,7 @@ const OrdersView = ({ orders, shipments, customers, onChanged, onDelete }) => {
                   <td className="whitespace-nowrap px-4 py-3">{shipSelect(order, shipment)}</td>
                   <td className="whitespace-nowrap px-4 py-3">{trackingField(order, shipment)}</td>
                   <td className="px-4 py-3">{noteField(order, 'w-40')}</td>
+                  <td className="whitespace-nowrap px-4 py-3 text-xs text-bone/70">{sourceLabel(order.attribution)}</td>
                   <td className="whitespace-nowrap px-4 py-3 text-bone/70">{fmtDate(order.created_at)}</td>
                   <td className="whitespace-nowrap px-4 py-3 text-left">{rowActions(row, 'flex-nowrap')}</td>
                 </tr>
@@ -975,6 +979,7 @@ const AbandonedView = ({ orders, shipments, customers, onChanged, onDelete }) =>
                     </span>
                   )}
                   <span>× {order.quantity ?? 1}</span>
+                  <span className="text-xs text-bone/50">{sourceLabel(order.attribution)}</span>
                   <span className="mr-auto text-xs text-bone/50">{sinceLabel(order.created_at)}</span>
                 </div>
                 <div className="flex flex-wrap items-center justify-end gap-1 border-t border-white/10 pt-2">
@@ -1218,6 +1223,33 @@ const PerformancePanel = ({ orders }) => {
             label="עלות לקליק"
             value={loadingAds ? '…' : adsReady && ads.clicks ? `₪${(spend / ads.clicks).toFixed(2)}` : '—'}
           />
+        </div>
+
+        {/* Paid orders in the period, by where the buyer came from */}
+        <div className="mt-4">
+          <p className="mb-2 text-xs text-bone/50">מאיפה הגיעו הקונים</p>
+          {(() => {
+            const bySource = {};
+            for (const o of paid.filter((x) => inPeriod(x, period))) {
+              const k = sourceLabel(o.attribution);
+              bySource[k] = bySource[k] || { count: 0, revenue: 0 };
+              bySource[k].count += 1;
+              bySource[k].revenue += Number(o.amount) || 0;
+            }
+            const list = Object.entries(bySource).sort((a, b) => b[1].revenue - a[1].revenue);
+            return list.length === 0 ? (
+              <p className="text-sm text-bone/40">אין הזמנות בתקופה הזו</p>
+            ) : (
+              <ul className="divide-y divide-white/5 rounded-xl ring-1 ring-white/10">
+                {list.map(([k, v]) => (
+                  <li key={k} className="flex items-center justify-between gap-3 px-3 py-2 text-sm">
+                    <span className="text-bone/80">{k}</span>
+                    <span className="whitespace-nowrap text-bone/60">{v.count} הזמנות · <b className="text-bone">{ils(v.revenue)}</b></span>
+                  </li>
+                ))}
+              </ul>
+            );
+          })()}
         </div>
       </div>
     </div>

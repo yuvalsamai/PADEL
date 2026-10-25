@@ -6,6 +6,7 @@ import Logo from './Logo.jsx';
 import { fbEvent, metaBrowserIds } from './lib/metaPixel.js';
 import { quote } from './lib/pricing.js';
 import { CONTENT } from './lib/meta.js';
+import { getAttribution } from './lib/attribution.js';
 
 /* Collects the customer details we want on record (full name, phone, email,
    full shipping address + postal code) and forwards them to the backend, which
@@ -250,6 +251,7 @@ export default function PayPage() {
           quantity: qty,
           color,
           meta: metaBrowserIds(),
+          attribution: getAttribution(),
           testToken: token,
           clientName,
           clientLName,
