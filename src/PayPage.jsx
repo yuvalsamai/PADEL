@@ -312,7 +312,7 @@ export default function PayPage() {
               />
               <div className="min-w-0 flex-1">
                 <div className="font-display font-bold text-ink">תושבת NETCAM לרשת המגרש</div>
-                <div className="text-xs text-ink/70">🚚 משלוח חינם עד הדלת · 7–12 ימי עסקים</div>
+                <div className="text-xs text-ink/70">משלוח חינם עד הדלת · 7–12 ימי עסקים</div>
               </div>
               <div className="text-left">
                 <div className="font-display text-xl font-black text-ink">₪{total}</div>
@@ -452,7 +452,7 @@ export default function PayPage() {
 
             {savings > 0 ? (
               <div className="mt-2 flex items-center justify-between rounded-xl bg-moss/10 px-4 py-2 text-sm font-semibold text-moss">
-                <span>🎉 {qty === 2 ? '2 ב-₪149' : 'הנחת כמות'}</span>
+                <span>{qty === 2 ? '2 ב-₪149' : 'הנחת כמות'}</span>
                 <span>חסכת ₪{savings}</span>
               </div>
             ) : (
@@ -461,7 +461,7 @@ export default function PayPage() {
                 onClick={() => setQty(2)}
                 className="mt-2 w-full rounded-xl border border-dashed border-ink/25 px-4 py-2 text-sm font-semibold text-ink hover:bg-ink/5"
               >
-                🎾 קונים זוג? 2 ב-₪149 בלבד — לחצו להוספה
+                קונים זוג? 2 ב-₪149 בלבד — לחצו להוספה
               </button>
             )}
 
@@ -503,8 +503,8 @@ export default function PayPage() {
 
             {/* Trust badges */}
             <div className="mt-5 flex items-center justify-center gap-6 text-center text-xs font-medium text-ink/60">
-              <span>🔒 תשלום מאובטח · Hyp</span>
-              <span>🚚 משלוח חינם</span>
+              <span>תשלום מאובטח · Hyp</span>
+              <span>משלוח חינם</span>
             </div>
             <p className="mt-2 text-center text-xs text-ink/60">
               התשלום מתבצע בדף המאובטח של Hyp, העומדת בתקן PCI DSS. פרטי האשראי אינם נשמרים אצלנו.

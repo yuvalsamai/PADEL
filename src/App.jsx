@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, MotionConfig } from 'framer-motion';
-import { ArrowUpLeft, Plus, X, Menu, Instagram, Pause, Play } from 'lucide-react';
+import { ArrowUpLeft, Plus, X, Menu, Instagram, Pause, Play, Check } from 'lucide-react';
 import Logo from './Logo.jsx';
 import { openConsentSettings } from './lib/consent.js';
 import { INSTAGRAM_HANDLE, INSTAGRAM_URL } from './lib/business.js';
@@ -16,8 +16,8 @@ const HERO_POSTER = '/netcam-hero-poster.webp';
 
 /* Trust badges — reused on the landing page and (compact) on checkout. */
 export const TRUST_ITEMS = [
-  { icon: '🔒', label: 'תשלום מאובטח · Hyp' },
-  { icon: '🚚', label: 'משלוח חינם עד הדלת' },
+  { label: 'תשלום מאובטח · Hyp' },
+  { label: 'משלוח חינם עד הדלת' },
 ];
 
 /* ================================================================== */
@@ -172,12 +172,7 @@ const HeroMedia = ({ className = '' }) => {
   );
 };
 
-const BULLETS = [
-  { icon: '📱', text: 'מתאים לכל טלפון' },
-  { icon: '⚡', text: 'מתלבש על הרשת בשניות' },
-  { icon: '🎾', text: 'פאדל וטניס' },
-  { icon: '🏆', text: 'מכריע כל ויכוח על קו' },
-];
+const BULLETS = ['מתאים לכל טלפון', 'התקנה על הרשת בשניות', 'פאדל וטניס', 'מכריע כל ויכוח על קו'];
 
 const Hero = () => (
   <section id="top" className="relative isolate overflow-hidden">
@@ -207,11 +202,13 @@ const Hero = () => (
         </h1>
       </div>
 
-      <ul className="flex flex-col gap-2.5 self-center text-[15px] font-semibold text-bone sm:text-lg lg:col-start-1 lg:gap-3">
-        {BULLETS.map((b) => (
-          <li key={b.text} className="flex items-center gap-2">
-            <span aria-hidden="true" className="text-lg sm:text-xl">{b.icon}</span>
-            {b.text}
+      <ul className="flex flex-col gap-2.5 self-center text-[14px] font-semibold text-bone sm:text-lg lg:col-start-1 lg:gap-3">
+        {BULLETS.map((text) => (
+          <li key={text} className="flex items-center gap-2.5">
+            <span aria-hidden="true" className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-ball text-ink">
+              <Check size={13} strokeWidth={3.5} />
+            </span>
+            {text}
           </li>
         ))}
       </ul>
@@ -234,7 +231,7 @@ const Hero = () => (
           <ArrowUpLeft size={20} strokeWidth={2.75} className="transition-transform group-hover:-translate-x-0.5 group-hover:-translate-y-0.5" />
         </a>
         <p className="mt-2.5 text-center text-xs font-medium text-bone/80">
-          🚚 משלוח חינם עד הדלת · 7–12 ימי עסקים · 🔒 תשלום מאובטח
+          משלוח חינם עד הדלת · 7–12 ימי עסקים · תשלום מאובטח
         </p>
       </div>
     </div>
@@ -482,7 +479,7 @@ const StickyBar = () => {
             dir="rtl"
             className="fixed bottom-6 left-6 z-[70] hidden w-72 rounded-3xl border border-white/10 bg-ink/95 p-5 shadow-2xl backdrop-blur-md lg:block"
           >
-            <div className="flex items-center gap-2 text-sm font-medium text-ball">🎾 תושבת NETCAM</div>
+            <div className="flex items-center gap-2 text-sm font-medium text-ball">תושבת NETCAM</div>
             <div className="mt-2 flex items-baseline gap-2">
               <span className="text-sm text-bone/50 line-through">₪119.90</span>
               <span className="font-display text-3xl font-black leading-none text-bone">₪89</span>

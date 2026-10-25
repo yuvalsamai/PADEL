@@ -44,7 +44,7 @@ function render({ name, order, product, quantity, amount, address }) {
   <tr><td style="padding:32px 28px 8px;text-align:center">
     <div style="display:inline-block;width:56px;height:56px;line-height:56px;border-radius:50%;background:${LIME};color:${INK};font-size:30px;font-weight:900">&#10003;</div>
     <h1 style="margin:18px 0 6px;font-size:26px;line-height:1.25;color:${INK};font-weight:900">תודה על ההזמנה${first ? `, ${esc(first)}` : ''}!</h1>
-    <p style="margin:0;font-size:16px;line-height:1.6;color:#374151">התשלום התקבל וההזמנה שלך כבר בדרך להכנה 🎾</p>
+    <p style="margin:0;font-size:16px;line-height:1.6;color:#374151">התשלום התקבל וההזמנה שלך כבר בדרך להכנה.</p>
   </td></tr>
 
   <tr><td style="padding:22px 28px 6px">
@@ -58,7 +58,7 @@ function render({ name, order, product, quantity, amount, address }) {
   </td></tr>
 
   <tr><td style="padding:14px 28px 4px;text-align:center">
-    <p style="margin:0;font-size:15px;color:${INK}"><b>🚚 משלוח חינם עד הדלת</b> · תוך 7–12 ימי עסקים</p>
+    <p style="margin:0;font-size:15px;color:${INK}"><b>משלוח חינם עד הדלת</b> · תוך 7–12 ימי עסקים</p>
   </td></tr>
 
   <tr><td style="padding:24px 28px 30px;text-align:center">
