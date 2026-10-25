@@ -12,7 +12,7 @@ import { INSTAGRAM_HANDLE, INSTAGRAM_URL } from './lib/business.js';
 
 const HERO_VIDEO = '/netcam-hero.mp4';
 const HERO_POSTER = '/netcam-hero-poster.webp';
-const LINE_CALL_IMG = '/hero.webp'; // ball on the line, "BALL IN 0.8 cm"
+const COURT_IMG = '/hero.webp'; // grass court, ball on the line
 
 /* Trust badges — kept for other pages that may import them. */
 export const TRUST_ITEMS = [
@@ -125,10 +125,10 @@ const SPECS = [
 const Price = ({ className = '' }) => (
   <div className={`flex items-end justify-between gap-4 ${className}`}>
     <div className="flex items-baseline gap-2.5">
-      <span className="font-display text-[2.6rem] font-medium leading-none text-ink">₪89</span>
-      <span className="text-sm text-moss line-through">₪119.90</span>
+      <span className="font-display text-[2.6rem] font-medium leading-none text-bone">₪89</span>
+      <span className="text-sm text-bone/65 line-through">₪119.90</span>
     </div>
-    <p className="text-sm text-ink">
+    <p className="text-sm text-bone">
       <span className="ml-1.5 inline-block h-2 w-2 rounded-full bg-ball align-middle" aria-hidden="true" />
       שתי יחידות ב-<span className="font-display text-lg font-medium">₪149</span>
     </p>
@@ -138,7 +138,7 @@ const Price = ({ className = '' }) => (
 const OrderButton = ({ children = 'להזמנה', className = '' }) => (
   <a
     href="/pay"
-    className={`group flex h-14 w-full items-center justify-center gap-2 rounded-full bg-ball text-lg font-semibold text-ink transition-colors hover:bg-ink hover:text-ball focus:outline-none focus-visible:ring-4 focus-visible:ring-ink/30 ${className}`}
+    className={`group flex h-14 w-full items-center justify-center gap-2 rounded-full bg-ball text-lg font-semibold text-ink transition-colors hover:bg-bone hover:text-ink focus:outline-none focus-visible:ring-4 focus-visible:ring-ball/40 ${className}`}
   >
     {children}
     <ArrowUpLeft size={19} strokeWidth={2.25} className="transition-transform group-hover:-translate-x-0.5 group-hover:-translate-y-0.5" />
@@ -146,26 +146,36 @@ const OrderButton = ({ children = 'להזמנה', className = '' }) => (
 );
 
 const Hero = () => (
-  <section id="top" className="bg-bone">
+  <section id="top" className="relative isolate overflow-hidden bg-ink">
+    {/* the court: grass and the white line, darkened for legible type */}
+    <div
+      aria-hidden="true"
+      className="absolute inset-0 -z-10"
+      style={{
+        backgroundImage: `linear-gradient(180deg, rgba(13,13,13,0.62) 0%, rgba(13,13,13,0.5) 45%, rgba(13,13,13,0.82) 100%), url(${COURT_IMG})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
+    />
     <div
       id="main"
       tabIndex={-1}
       className="mx-auto grid max-w-6xl grid-cols-[1fr_38%] items-center gap-x-5 gap-y-6 px-5 pb-9 pt-6 outline-none sm:px-8 lg:grid-cols-[1fr_360px] lg:gap-x-20 lg:gap-y-10 lg:pb-20 lg:pt-16"
     >
       <div className="col-span-2 lg:col-span-1">
-        <p className="text-xs font-medium text-moss">תושבת צילום לרשת המגרש</p>
-        <h1 className="mt-3 font-display text-[2.7rem] font-medium leading-[1.02] tracking-[-0.01em] text-ink sm:text-6xl lg:text-[5.4rem]">
+        <p className="text-xs font-medium text-bone/75">תושבת צילום לרשת המגרש</p>
+        <h1 className="mt-3 font-display text-[2.7rem] font-medium leading-[1.02] tracking-[-0.01em] text-bone [text-shadow:0_2px_24px_rgba(0,0,0,0.35)] sm:text-6xl lg:text-[5.4rem]">
           צלם כל נקודה.
           <br />
-          <span className="text-moss">שחק חכם יותר.</span>
+          <span className="text-ball">שחק חכם יותר.</span>
         </h1>
       </div>
 
       <dl className="self-center lg:col-start-1 lg:max-w-md">
         {SPECS.map(([k, v]) => (
-          <div key={k} className="border-t border-ink/15 py-2.5 first:border-t-0 first:pt-0 lg:flex lg:items-baseline lg:justify-between lg:py-3.5 lg:first:border-t lg:first:pt-3.5">
-            <dt className="text-xs text-moss">{k}</dt>
-            <dd className="text-[15px] font-medium leading-snug text-ink lg:text-base">{v}</dd>
+          <div key={k} className="border-t border-bone/20 py-2.5 first:border-t-0 first:pt-0 lg:flex lg:items-baseline lg:justify-between lg:py-3.5 lg:first:border-t lg:first:pt-3.5">
+            <dt className="text-xs text-bone/65">{k}</dt>
+            <dd className="text-[15px] font-medium leading-snug text-bone lg:text-base">{v}</dd>
           </div>
         ))}
       </dl>
@@ -175,7 +185,7 @@ const Hero = () => (
       <div className="col-span-2 lg:col-span-1 lg:max-w-md">
         <Price />
         <OrderButton className="mt-4" />
-        <p className="mt-3 text-center text-xs text-moss lg:text-right">
+        <p className="mt-3 text-center text-xs text-bone/75 lg:text-right">
           משלוח חינם עד הדלת תוך 7–12 ימי עסקים · תשלום מאובטח
         </p>
       </div>
@@ -240,7 +250,7 @@ const NetBand = () => (
         maskImage: 'linear-gradient(to bottom, #000, transparent)',
       }}
     />
-    <div className="mx-auto grid max-w-6xl gap-8 px-5 pb-14 sm:px-8 lg:grid-cols-2 lg:items-center lg:gap-16 lg:pb-24">
+    <div className="mx-auto max-w-6xl px-5 pb-14 sm:px-8 lg:pb-24">
       <div>
         <h2 id="line-call" className="font-display text-[2.2rem] font-medium leading-[1.08] sm:text-6xl">
           הכדור היה על הקו?
@@ -255,13 +265,7 @@ const NetBand = () => (
           <p className="mt-3 text-center text-xs text-bone/70">או יחידה אחת ב-₪89 · משלוח חינם עד הדלת</p>
         </div>
       </div>
-      <img
-        src={LINE_CALL_IMG}
-        loading="lazy"
-        decoding="async"
-        alt="כדור טניס נוחת על קו המגרש, עם סימון BALL IN"
-        className="aspect-[4/3] w-full rounded-[18px] object-cover"
-      />
+
     </div>
   </section>
 );
