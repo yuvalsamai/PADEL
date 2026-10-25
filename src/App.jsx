@@ -114,12 +114,12 @@ const HeroMedia = ({ className = '' }) => {
   );
 };
 
-/* Spec-sheet rows instead of icon bullets. */
-const SPECS = [
-  ['טלפון', 'כל דגם'],
-  ['התקנה', 'שניות, על רשת המגרש'],
-  ['מגרש', 'פאדל · טניס'],
-  ['בשביל', 'תיעוד, שיפור והכרעת קו'],
+/* What it does — four plain statements, set as a ruled list with a lime tick. */
+const POINTS = [
+  'מתאים לכל סוגי הפלאפונים',
+  'השופט שלכם אם הכדור עבר את הקו',
+  'מתאים לשיפור טכניקה ולתיעוד של נקודות מכריעות',
+  'מתאים גם לטניס וגם לפאדל',
 ];
 
 const Price = ({ className = '' }) => (
@@ -171,14 +171,17 @@ const Hero = () => (
         </h1>
       </div>
 
-      <dl className="self-center lg:col-start-1 lg:max-w-md">
-        {SPECS.map(([k, v]) => (
-          <div key={k} className="border-t border-bone/20 py-2.5 first:border-t-0 first:pt-0 lg:flex lg:items-baseline lg:justify-between lg:py-3.5 lg:first:border-t lg:first:pt-3.5">
-            <dt className="text-xs text-bone/65">{k}</dt>
-            <dd className="text-[15px] font-medium leading-snug text-bone lg:text-base">{v}</dd>
-          </div>
+      <ul className="self-center lg:col-start-1 lg:max-w-md">
+        {POINTS.map((t) => (
+          <li
+            key={t}
+            className="flex items-start gap-3 border-t border-bone/20 py-3 text-[15px] font-medium leading-snug text-bone first:border-t-0 first:pt-0 lg:py-4 lg:text-lg lg:first:border-t lg:first:pt-4"
+          >
+            <span aria-hidden="true" className="mt-[0.55em] h-[2px] w-3.5 flex-shrink-0 bg-ball" />
+            {t}
+          </li>
         ))}
-      </dl>
+      </ul>
 
       <HeroMedia className="w-full lg:col-start-2 lg:row-span-3 lg:row-start-1" />
 
