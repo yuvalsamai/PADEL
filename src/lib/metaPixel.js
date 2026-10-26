@@ -22,6 +22,10 @@ function load() {
     s = b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t, s);
   })(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
   /* eslint-enable */
+  // No automatic events: Meta otherwise guesses events from button clicks (it was
+  // logging stray AddToCart events). The funnel is reported explicitly instead:
+  // PageView/ViewContent → InitiateCheckout → AddPaymentInfo → Purchase.
+  window.fbq('set', 'autoConfig', false, PIXEL_ID);
   window.fbq('init', PIXEL_ID);
   window.fbq('track', 'PageView');
   // Events fired before consent (e.g. a purchase on the thank-you page) are sent now.
