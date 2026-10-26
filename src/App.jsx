@@ -160,18 +160,36 @@ const Hero = () => (
     <div
       id="main"
       tabIndex={-1}
-      className="mx-auto grid max-w-6xl grid-cols-[1fr_38%] items-center gap-x-5 gap-y-6 px-5 pb-9 pt-6 outline-none sm:px-8 lg:grid-cols-[1fr_360px] lg:gap-x-20 lg:gap-y-10 lg:pb-20 lg:pt-16"
+      className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-y-6 px-5 pb-9 pt-6 outline-none sm:px-8 lg:grid-cols-[1fr_360px] lg:gap-x-20 lg:gap-y-8 lg:pb-20 lg:pt-16"
     >
-      <div className="col-span-2 lg:col-span-1">
+      <div className="lg:col-start-1">
         <p className="text-xs font-medium text-bone/75">תושבת צילום לרשת המגרש</p>
-        <h1 className="mt-3 font-display text-[2.7rem] font-medium leading-[1.02] tracking-[-0.01em] text-bone [text-shadow:0_2px_24px_rgba(0,0,0,0.35)] sm:text-6xl lg:text-[5.4rem]">
-          צלם כל נקודה.
+        <h1
+          dir="ltr"
+          className="mt-3 text-right font-display text-[2.7rem] font-medium leading-[1.02] tracking-[-0.01em] text-bone [text-shadow:0_2px_24px_rgba(0,0,0,0.35)] sm:text-6xl lg:text-[5.4rem]"
+        >
+          Your game
           <br />
-          <span className="text-ball">שחק חכם יותר.</span>
+          <span className="text-ball">on camera</span>
         </h1>
+        <p className="mt-4 max-w-xl text-[17px] leading-relaxed text-bone lg:text-xl">
+          NETCAM מאפשר לך להציב את הטלפון על רשת הטניס ולצלם את המשחק שלך — לאימון, לניתוח ביצועים ולהכרעה
+          במחלוקות על נקודות.
+        </p>
       </div>
 
-      <ul className="self-center lg:col-start-1 lg:max-w-md">
+      {/* The video, big: near full width on phones, its own tall column on desktop. */}
+      <HeroMedia className="mx-auto w-full max-w-[min(100%,calc(72svh*9/16))] lg:col-start-2 lg:row-span-3 lg:row-start-1 lg:max-w-none" />
+
+      <div className="lg:col-start-1 lg:max-w-md">
+        <Price />
+        <OrderButton className="mt-4" />
+        <p className="mt-3 text-center text-xs text-bone/75 lg:text-right">
+          משלוח חינם עד הדלת תוך 7–12 ימי עסקים · תשלום מאובטח
+        </p>
+      </div>
+
+      <ul className="lg:col-start-1 lg:max-w-md">
         {POINTS.map((t) => (
           <li
             key={t}
@@ -182,16 +200,6 @@ const Hero = () => (
           </li>
         ))}
       </ul>
-
-      <HeroMedia className="w-full lg:col-start-2 lg:row-span-3 lg:row-start-1" />
-
-      <div className="col-span-2 lg:col-span-1 lg:max-w-md">
-        <Price />
-        <OrderButton className="mt-4" />
-        <p className="mt-3 text-center text-xs text-bone/75 lg:text-right">
-          משלוח חינם עד הדלת תוך 7–12 ימי עסקים · תשלום מאובטח
-        </p>
-      </div>
     </div>
   </section>
 );
