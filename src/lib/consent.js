@@ -25,5 +25,8 @@ export function setConsent(value) {
   window.dispatchEvent(new Event('cc-consent'));
 }
 
+// Meta Pixel runs unless the visitor chose "הכרחיות בלבד" (opt-out).
+export const adsAllowed = () => getConsent() !== 'necessary';
+
 // Lets any page reopen the banner (e.g. the "הגדרות עוגיות" footer link).
 export const openConsentSettings = () => window.dispatchEvent(new Event('cc-consent-open'));

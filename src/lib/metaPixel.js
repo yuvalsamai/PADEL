@@ -1,7 +1,7 @@
-// Meta (Facebook) Pixel. It sets advertising cookies, so it is loaded only after
-// the visitor clicks "אישור" in the cookie banner (consent === 'all') — on page
-// load if they already accepted, or the moment they accept.
-import { getConsent } from './consent.js';
+// Meta (Facebook) Pixel. Loaded on page load for every visitor, unless they chose
+// "הכרחיות בלבד" in the cookie banner (opt-out) — then it is never loaded, or is
+// revoked the moment they choose it.
+import { adsAllowed } from './consent.js';
 import { PIXEL_ID } from './meta.js';
 
 let loaded = false;
@@ -34,9 +34,9 @@ function load() {
 
 // Call once at startup.
 export function initMetaPixel() {
-  if (getConsent() === 'all') load();
+  if (adsAllowed()) load();
   window.addEventListener('cc-consent', () => {
-    if (getConsent() === 'all') {
+    if (adsAllowed()) {
       if (loaded) window.fbq?.('consent', 'grant');
       else load();
     } else if (loaded) {
@@ -46,9 +46,9 @@ export function initMetaPixel() {
 }
 
 // Meta's browser id cookies, forwarded to the server so Conversions API events
-// match this visitor. Only meaningful after consent (the pixel sets them).
+// match this visitor. Not sent for visitors who opted out.
 export function metaBrowserIds() {
-  if (getConsent() !== 'all') return { consent: false };
+  if (!adsAllowed()) return { consent: false };
   const cookie = (k) => document.cookie.split('; ').find((c) => c.startsWith(`${k}=`))?.split('=')[1] || null;
   let fbc = cookie('_fbc');
   const fbclid = new URLSearchParams(window.location.search).get('fbclid');
@@ -60,5 +60,5 @@ export function metaBrowserIds() {
 export function fbEvent(name, params, options) {
   const args = ['track', name, params || {}, ...(options ? [options] : [])];
   if (loaded && window.fbq) window.fbq(...args);
-  else if (getConsent() !== 'necessary') pending.push(args); // may still be accepted on this page
+  else if (adsAllowed()) pending.push(args);
 }
