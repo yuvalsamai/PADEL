@@ -176,7 +176,7 @@ function getCheckout() {
   return { amount, token };
 }
 
-export default function PayPage() {
+export default function PayPage({ onClose }) {
   const [form, setForm] = useState({ fullName: '', cell: '', email: '', street: '', city: '', zip: '' });
   const [{ amount, token }] = useState(getCheckout);
   const [qty, setQty] = useState(1);
@@ -273,13 +273,14 @@ export default function PayPage() {
   };
 
   return (
-    <div className="flex h-screen flex-col bg-bone">
+    <div className={`flex ${onClose ? 'h-full' : 'h-screen'} flex-col bg-bone`}>
       <header className="flex items-center justify-between border-b border-white/10 bg-court px-5 py-3">
-        <a href="/" aria-label="NETCAM" className="inline-flex items-center">
+        <a href="/" aria-label="NETCAM" onClick={onClose ? (e) => { e.preventDefault(); onClose(); } : undefined} className="inline-flex items-center">
           <Logo dark className="h-12" />
         </a>
         <a
           href="/"
+          onClick={onClose ? (e) => { e.preventDefault(); onClose(); } : undefined}
           className="rounded-xl border border-white/15 px-4 py-2 text-sm font-medium text-bone hover:bg-white/10"
         >
           חזרה לאתר
