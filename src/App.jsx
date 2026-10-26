@@ -173,7 +173,7 @@ const Hero = () => (
           <span className="text-ball">on camera</span>
         </h1>
         <p className="mt-4 max-w-xl text-[17px] leading-relaxed text-bone lg:text-xl">
-          NETCAM מאפשר לך להציב את הטלפון על רשת הטניס ולצלם את המשחק שלך — לאימון, לניתוח ביצועים ולהכרעה
+          NETCAM מאפשר לך להציב את הטלפון על רשת הטניס או הפאדל ולצלם את המשחק שלך — לאימון, לניתוח ביצועים ולהכרעה
           במחלוקות על נקודות.
         </p>
       </div>

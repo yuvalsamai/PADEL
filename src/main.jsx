@@ -56,7 +56,13 @@ if (route === 'landing') {
           <Admin />
         </Suspense>
       ) : route === 'pay' ? (
-        <Suspense fallback={null}>
+        <Suspense
+          fallback={
+            <div dir="rtl" className="flex h-screen items-center justify-center bg-bone text-lg text-ink/60">
+              טוען את טופס ההזמנה…
+            </div>
+          }
+        >
           <PayPage />
         </Suspense>
       ) : route === 'thankyou' ? (
