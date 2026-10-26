@@ -419,6 +419,7 @@ const StickyBar = () => {
           animate={{ y: 0 }}
           exit={{ y: 100 }}
           transition={{ type: 'spring', stiffness: 320, damping: 32 }}
+          style={{ bottom: 'var(--cc-banner-h, 0px)' }}
           className="fixed inset-x-0 bottom-0 z-[70] border-t border-ink/10 bg-bone/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur-md lg:hidden"
         >
           <div className="flex items-center gap-4">

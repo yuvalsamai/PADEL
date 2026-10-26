@@ -9,8 +9,8 @@ export default function CookieBanner() {
   const [show, setShow] = useState(false);
   const ref = useRef(null);
 
-  // Below lg the banner sits at the top (the bottom holds the order buttons) and
-  // its height (--cc-banner-h) pushes the page down, so it never hides content.
+  // Publish the banner's height (--cc-banner-h) so bottom-fixed UI such as the
+  // mobile order bar sits above it instead of being hidden underneath.
   useEffect(() => {
     const root = document.documentElement;
     const el = ref.current;
@@ -45,7 +45,7 @@ export default function CookieBanner() {
       dir="rtl"
       role="region"
       aria-label="הודעת עוגיות"
-      className="fixed inset-x-2 top-2 z-[100] lg:bottom-2 lg:top-auto mx-auto flex max-w-2xl flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl border border-white/10 bg-ink/95 px-3 py-2.5 text-bone shadow-2xl backdrop-blur-md sm:flex-nowrap"
+      className="fixed inset-x-2 bottom-2 z-[100] mx-auto flex max-w-2xl flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl border border-white/10 bg-ink/95 px-3 py-2.5 text-bone shadow-2xl backdrop-blur-md sm:flex-nowrap"
     >
       <p className="min-w-0 flex-1 text-xs leading-snug text-bone/80">
         האתר משתמש בעוגיות לסטטיסטיקה ולמדידת פרסום (Meta). אפשר לבחור הכרחיות בלבד.{' '}
