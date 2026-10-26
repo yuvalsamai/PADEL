@@ -182,6 +182,8 @@ export default function PayPage({ onClose }) {
   const [qty, setQty] = useState(1);
   const [color, setColor] = useState(DEFAULT_COLOR);
   const [agreed, setAgreed] = useState(false);
+  const [agreeMissing, setAgreeMissing] = useState(false);
+  const agreeRef = useRef(null);
 
   // Funnel: reached the checkout page.
   useEffect(() => {
@@ -229,6 +231,15 @@ export default function PayPage({ onClose }) {
       // Typed but never picked a suggestion — open the fields to complete it.
       toManual();
       setError('נא לבחור כתובת מהרשימה, או להשלים עיר ומיקוד.');
+      return;
+    }
+    // Checked here, not with `required`: in-app browsers (Facebook/Instagram) may
+    // not show the native bubble, so the button would seem to do nothing.
+    if (!agreed) {
+      setAgreeMissing(true);
+      setError('כדי להמשיך לתשלום יש לסמן את תיבת האישור לתקנון ולמדיניות הפרטיות.');
+      agreeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      agreeRef.current?.focus({ preventScroll: true });
       return;
     }
     setError('');
@@ -478,12 +489,20 @@ export default function PayPage({ onClose }) {
               <p role="alert" className="mt-4 rounded-xl bg-red-100 px-4 py-3 text-sm text-red-800">{error}</p>
             )}
 
-            <label className="mt-4 flex items-start gap-2.5 text-sm text-ink/80">
+            <label
+              className={`mt-4 flex items-start gap-2.5 rounded-xl text-sm text-ink/80 ${agreeMissing && !agreed ? 'bg-red-50 p-2 ring-2 ring-red-500' : ''}`}
+            >
               <input
+                ref={agreeRef}
                 type="checkbox"
-                required
                 checked={agreed}
-                onChange={(e) => setAgreed(e.target.checked)}
+                onChange={(e) => {
+                  setAgreed(e.target.checked);
+                  if (e.target.checked && agreeMissing) {
+                    setAgreeMissing(false);
+                    setError('');
+                  }
+                }}
                 className="mt-0.5 h-5 w-5 flex-shrink-0 accent-ink"
               />
               <span>
