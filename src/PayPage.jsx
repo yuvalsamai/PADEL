@@ -306,7 +306,7 @@ export default function PayPage({ onClose }) {
           allow="payment"
         />
       ) : (
-        <main dir="rtl" className="flex flex-1 items-start justify-center overflow-y-auto px-5 py-8">
+        <main dir="rtl" style={{ paddingBottom: 'calc(2rem + var(--cc-banner-h, 0px))' }} className="flex flex-1 items-start justify-center overflow-y-auto px-5 py-8">
           <form onSubmit={handleSubmit} className="w-full max-w-md rounded-3xl bg-chalk p-6 shadow-lg ring-1 ring-ink/5 sm:p-8">
             <h1 className="font-display text-3xl font-black text-ink">פרטי ההזמנה</h1>
             <p className="mt-2 text-sm text-ink/60">

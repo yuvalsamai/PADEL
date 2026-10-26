@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { getConsent, setConsent } from './lib/consent.js';
 
 /* Cookie / browser-storage notice. Strictly necessary storage always; the Meta
@@ -7,6 +7,23 @@ import { getConsent, setConsent } from './lib/consent.js';
    ("הגדרות עוגיות"). */
 export default function CookieBanner() {
   const [show, setShow] = useState(false);
+  const ref = useRef(null);
+
+  // Below lg the banner sits at the top (the bottom holds the order buttons) and
+  // its height (--cc-banner-h) pushes the page down, so it never hides content.
+  useEffect(() => {
+    const root = document.documentElement;
+    const el = ref.current;
+    if (!show || !el) return undefined;
+    const set = () => root.style.setProperty('--cc-banner-h', `${el.offsetHeight + 8}px`);
+    set();
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(set) : null;
+    ro?.observe(el);
+    return () => {
+      ro?.disconnect();
+      root.style.removeProperty('--cc-banner-h');
+    };
+  }, [show]);
 
   useEffect(() => {
     if (!getConsent()) setShow(true);
@@ -24,10 +41,11 @@ export default function CookieBanner() {
 
   return (
     <div
+      ref={ref}
       dir="rtl"
       role="region"
       aria-label="הודעת עוגיות"
-      className="fixed inset-x-2 bottom-2 z-[100] mx-auto flex max-w-2xl flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl border border-white/10 bg-ink/95 px-3 py-2.5 text-bone shadow-2xl backdrop-blur-md sm:flex-nowrap"
+      className="fixed inset-x-2 top-2 z-[100] lg:bottom-2 lg:top-auto mx-auto flex max-w-2xl flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl border border-white/10 bg-ink/95 px-3 py-2.5 text-bone shadow-2xl backdrop-blur-md sm:flex-nowrap"
     >
       <p className="min-w-0 flex-1 text-xs leading-snug text-bone/80">
         האתר משתמש בעוגיות לסטטיסטיקה ולמדידת פרסום (Meta). אפשר לבחור הכרחיות בלבד.{' '}

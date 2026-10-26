@@ -49,7 +49,7 @@ export default function CheckoutOverlay() {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[90] bg-bone" role="dialog" aria-modal="true" aria-label="הזמנה">
+    <div className="fixed inset-x-0 bottom-0 top-[var(--cc-banner-h,0px)] z-[90] bg-bone lg:top-0" role="dialog" aria-modal="true" aria-label="הזמנה">
       <Suspense fallback={null}>
         <PayPage onClose={() => window.history.back()} />
       </Suspense>

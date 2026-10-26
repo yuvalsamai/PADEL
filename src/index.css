@@ -67,3 +67,8 @@ html.acc-no-animations *::after {
 /* Keep the accessibility widget itself unfiltered/legible even when the page
    has a grayscale/contrast filter applied to <body>. */
 #a11y-widget { filter: none !important; }
+
+/* Room for the cookie banner, which is pinned to the top below lg (see CookieBanner). */
+@media (max-width: 1023.98px) {
+  body { padding-top: var(--cc-banner-h, 0px); }
+}
