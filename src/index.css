@@ -67,3 +67,22 @@ html.acc-no-animations *::after {
 /* Keep the accessibility widget itself unfiltered/legible even when the page
    has a grayscale/contrast filter applied to <body>. */
 #a11y-widget { filter: none !important; }
+
+/* Order button tapped, checkout loading (set in main.jsx). */
+a[data-loading] {
+  opacity: 0.7;
+  pointer-events: none;
+}
+a[data-loading]::after {
+  content: '';
+  width: 1em;
+  height: 1em;
+  flex-shrink: 0;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 9999px;
+  animation: cc-spin 0.7s linear infinite;
+}
+@keyframes cc-spin {
+  to { transform: rotate(360deg); }
+}

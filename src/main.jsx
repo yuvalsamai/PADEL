@@ -42,6 +42,17 @@ if (route !== 'admin') {
   if (route === 'landing') fbEvent('ViewContent', { ...CONTENT, value: 89, currency: 'ILS' })
 }
 
+// Instant feedback on order buttons: the tapped link dims and spins until the
+// checkout page replaces this one, and a second tap can't fire. Cleared when
+// the page is shown again from the back/forward cache.
+document.addEventListener('click', (e) => {
+  const a = e.target.closest?.('a[href="/pay"]')
+  if (a && !e.defaultPrevented && e.button === 0 && !e.metaKey && !e.ctrlKey) a.setAttribute('data-loading', '')
+})
+window.addEventListener('pageshow', () => {
+  document.querySelectorAll('a[data-loading]').forEach((a) => a.removeAttribute('data-loading'))
+})
+
 const rootEl = document.getElementById('root')
 
 if (route === 'landing') {
