@@ -6,6 +6,7 @@ import { trackPageview } from './lib/analytics.js'
 import AccessibilityWidget from './Accessibility.jsx'
 import CookieBanner from './CookieBanner.jsx'
 import { fbEvent, initMetaPixel } from './lib/metaPixel.js'
+import { inject as injectVercelAnalytics } from '@vercel/analytics'
 import { CONTENT } from './lib/meta.js'
 import { captureAttribution } from './lib/attribution.js'
 
@@ -36,6 +37,7 @@ const route =
 
 // Record a first-party pageview for every public page (skip the admin panel).
 if (route !== 'admin') {
+  injectVercelAnalytics() // Vercel Web Analytics (cookieless visitor / page-view counts)
   captureAttribution()
   trackPageview()
   initMetaPixel()
